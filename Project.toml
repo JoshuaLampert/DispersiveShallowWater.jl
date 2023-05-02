@@ -1,7 +1,7 @@
 name = "DispersiveShallowWater"
 uuid = "4ab875f6-b79a-4e28-9745-4f0293954817"
-authors = ["Joshua Lampert <joshua.lampert@tuhh.de> and contributors"]
-version = "1.0.0-DEV"
+authors = ["Joshua Lampert <joshua.lampert@tuhh.de>"]
+version = "0.1.0-pre"
 
 [compat]
 julia = "1.6"
