@@ -1,5 +1,7 @@
 module DispersiveShallowWater
 
-# Write your package code here.
+foo() = true
+
+export foo
 
 end
