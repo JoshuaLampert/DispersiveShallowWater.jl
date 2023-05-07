@@ -4,6 +4,7 @@ authors = ["Joshua Lampert <joshua.lampert@tuhh.de>"]
 version = "0.1.0-pre"
 
 [deps]
+ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
 SciMLBase = "0bca4576-84f4-4d90-8ffe-ffa030f20462"
@@ -12,6 +13,7 @@ StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 SummationByPartsOperators = "9f78cca6-572e-554e-b819-917d2f1cf240"
 
 [compat]
+ForwardDiff = "0.10.18"
 Reexport = "1.0"
 SciMLBase = "1.90"
 SimpleUnPack = "1.1"
