@@ -16,10 +16,11 @@ makedocs(;
     ),
     pages=[
         "Home" => "index.md",
+        "Reference" => "ref.md",
     ],
 )
 
-deploydocs(;
-    repo="github.com/JoshuaLampert/DispersiveShallowWater.jl",
-    devbranch="main",
-)
+#deploydocs(;
+#    repo="github.com/JoshuaLampert/DispersiveShallowWater.jl",
+#    devbranch="main",
+#)

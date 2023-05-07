@@ -1,6 +1,6 @@
-using DispersiveShallowWater
 using Test
 
 @testset "DispersiveShallowWater.jl" begin
-    @test foo()
+    include("test_unit.jl")
+    include("test_bbm_bbm_1d.jl")
 end
