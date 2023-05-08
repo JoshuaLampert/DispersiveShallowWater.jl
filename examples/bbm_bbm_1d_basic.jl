@@ -29,4 +29,3 @@ tspan = (0.0, 30.0)
 ode = semidiscretize(semi, tspan)
 
 sol = solve(ode, RK4(), save_everystep=true)
-
