@@ -34,36 +34,31 @@ varnames(::BBMBBMEquations1D) = ("eta", "v")
 
 A travelling-wave solution used for convergence tests in a periodic domain.
 
-For details see Example 5 in Section 3 from:
+For details see Example 5 in Section 3 from (here adapted for dimensional equations):
 - Min Chen (1997)
   Exact Traveling-Wave Solutions to Bidirectional Wave Equations
   [DOI: 10.1023/A:1026667903256](https://doi.org/10.1023/A:1026667903256)
 """
 # TODO: Initial condition should not get a `mesh`
-# TODO: This is only a solution for `gravity` = `D` = 0
 function initial_condition_convergence_test(x, t, equations::BBMBBMEquations1D, mesh)
+  g = equations.gravity
   c = 5/2
-  rho = 18/5
+  rho = 18/5 * sqrt(equations.D * g)
   x_t = mod(x - c*t - xmin(mesh), xmax(mesh) - xmin(mesh)) + xmin(mesh)
-    
-  eta = -1 + c^2*rho^2/81 + 5*c^2*rho^2/108 * (2 / cosh(sqrt(rho)/2*x_t)^2 - 3 / cosh(sqrt(rho)/2*x_t)^4)
-  v = c * (1 - 5*rho/18) + 5*c*rho/6 / cosh(sqrt(rho)/2*x_t)^2
+
+  b = 0.5 * sqrt(rho) * x_t / equations.D
+  eta = -equations.D + c^2*rho^2/(81 * g) + 5*c^2*rho^2/(108 * g) * (2 / cosh(b)^2 - 3 / cosh(b)^4)
+  v = c * (1 - 5*rho/18) + 5*c*rho/6 / cosh(b)^2
   return SVector(eta, v)
 end
 
 function create_cache(mesh, equations::BBMBBMEquations1D, solver, RealT, uEltype)
-  D = solver.D
-  # TODO: Should not convert D2 to matrix here (but necessary for `/` ?)
-  D2 = Matrix(solver.D2)
-  invImD2 = isa(D2, AbstractMatrix) ? factorize(I - 1/6 * equations.D^2 * D2) : I - 1/6 * equations.D^2 * D2
-  D_ImD2 = if isa(D2, AbstractMatrix)
-    nothing
-  else
-    D / (I - 1/6 * equations.D^2 * D2)
-   end
+  D = Matrix(solver.D)
+  D2 = sparse(solver.D2)
+  D_ImD2 = D / (I - 1/6 * equations.D^2 * D2)
   tmp1 = Array{RealT}(undef, nnodes(mesh))
   tmp2 = similar(tmp1)
-  return (D=D, invImD2=invImD2, D_ImD2=D_ImD2, tmp1=tmp1, tmp2=tmp2)
+  return (D=D, D_ImD2=D_ImD2, tmp1=tmp1, tmp2=tmp2)
 end
 
 # Discretization that conserves the mass (for eta and u) and the energy for periodic boundary conditions, see
@@ -71,7 +66,7 @@ end
 #   A Broad Class of Conservative Numerical Methods for Dispersive Wave Equations
 #   [DOI: 10.4208/cicp.OA-2020-0119](https://doi.org/10.4208/cicp.OA-2020-0119)
 function rhs!(du, u, t, mesh, equations::BBMBBMEquations1D, initial_condition, ::BoundaryConditionPeriodic, solver, cache)
-    @unpack D, invImD2, D_ImD2, tmp1, tmp2 = cache
+    @unpack D, D_ImD2, tmp1, tmp2 = cache
 
     eta = view(u, 1, :)
     v = view(u, 2, :)
@@ -80,20 +75,10 @@ function rhs!(du, u, t, mesh, equations::BBMBBMEquations1D, initial_condition, :
     
     # energy and mass conservative semidiscretization
     @. tmp1 = -(equations.D * v + eta * v)
-    if D_ImD2 === nothing
-        ldiv!(tmp2, invImD2, tmp1)
-        mul!(deta, D, tmp2)
-    else
-        mul!(deta, D_ImD2, tmp1)
-    end
+    mul!(deta, D_ImD2, tmp1)
 
     @. tmp1 = -(equations.gravity * eta + 0.5 * v^2)
-    if D_ImD2 === nothing
-        ldiv!(tmp2, invImD2, tmp1)
-        mul!(dv, D, tmp2)
-    else
-        mul!(dv, D_ImD2, tmp1)
-    end
+    mul!(dv, D_ImD2, tmp1)
     
     return nothing
 end
