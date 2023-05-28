@@ -11,11 +11,14 @@ using SparseArrays: sparse
 using SummationByPartsOperators: AbstractDerivativeOperator, periodic_derivative_operator, derivative_order
 import SummationByPartsOperators: grid, xmin, xmax
 
+include("util.jl")
 include("boundary_conditions.jl")
 include("mesh.jl")
 include("solver.jl")
 include("semidiscretization.jl")
 include("equations/equations.jl")
+
+export examples_dir, trixi_include
 
 export BBMBBMEquations1D
 

@@ -1,10 +1,9 @@
 using DispersiveShallowWater
 using Plots
 
-EXAMPLES_DIR = pkgdir(DispersiveShallowWater, "examples")
 
-function create_gif(filename; ylims=:auto)
-  include(joinpath(EXAMPLES_DIR, filename))
+function create_gif(filename; ylims=:auto, kwargs...)
+  trixi_include(joinpath(examples_dir(), filename); kwargs...)
   x = DispersiveShallowWater.grid(semi)
   anim = @animate for step in 1:length(sol.u)
     t = sol.t[step]
@@ -19,9 +18,9 @@ end
 ###############################################################################
 # Travelling wave solution for one-dimensional BBM-BBM equations with periodic boundary conditions
 # using periodic SBP operators
-create_gif("bbm_bbm_1d_basic.jl", ylims=(-8, 4))
+create_gif("bbm_bbm_1d_basic.jl"; ylims=(-8, 4), tspan=(0.0, 50.0))
 
 ###############################################################################
 # Travelling wave solution for one-dimensional BBM-BBM equations with periodic boundary conditions
 # using discontinuously coupled Legendre SBP operators
-create_gif("bbm_bbm_1d_dg.jl", ylims=(-4, 2))
+create_gif("bbm_bbm_1d_dg.jl"; ylims=(-4, 2))
