@@ -7,5 +7,6 @@
 Structure-preserving Numerical Methods for Dispersive Shallow Water Models
 
 **Note: This repository is still in its alpha stage and anything might change at
-any time and without warning, including the deletion of this repository
-itself.**
+any time and without warning.**
+
+Parts of this repository are based on parts of [Dispersive-wave-schemes-notebooks. A Broad Class of Conservative Numerical Methods for Dispersive Wave Equations](https://github.com/ranocha/Dispersive-wave-schemes-notebooks) by Hendrik Ranocha, Dimitrios Mitsotakis and David Ketcheson. The code structure is inspired by [Trixi.jl](https://github.com/trixi-framework/Trixi.jl/).

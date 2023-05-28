@@ -1,0 +1,84 @@
+@doc raw"""
+    BBMBBMEquations1D(gravity, D)
+
+BBM-BBM (Benjamin–Bona–Mahony) system in one spatial dimension. The equations are given by
+```math
+\begin{aligned}
+  \frac{\partial\eta}{\partial t} + \frac{\partial}{\partial x}((\eta + D)v) - \frac{1}{6}D^2\frac{\partial}{\partial t}\frac{\partial^2}{\partial x^2}\eta &= 0,\\
+  \frac{\partial v}{\partial t} + g\frac{\partial\eta}{\partial x} + \frac{\partial}{\partial x}\left(\frac{1}{2}v^2\right) - \frac{1}{6}D^2\frac{\partial}{\partial t}\frac{\partial^2}{\partial x^2}v &= 0.
+\end{aligned}
+```
+The unknown quantities of the BBM-BBM equations are the total water height ``\eta`` and the velocity ``v``.
+The gravitational constant is denoted by `g` and the constant bottom topography (bathymetry) ``b = -D > 0``. The water height above the bathymetry is therefore given by
+``h = \eta + D``.
+
+One reference for the BBM-BBM system can be found in
+- Jerry L. Bona, Min Chen (1998)
+  A Boussinesq system for two-way propagation of nonlinear dispersive waves
+  [DOI: 10.1016/S0167-2789(97)00249-2](https://doi.org/10.1016/S0167-2789(97)00249-2)
+
+"""
+struct BBMBBMEquations1D{RealT <: Real} <: AbstractBBMBBMEquations{1, 2}
+  gravity::RealT # gravitational constant
+  D::RealT       # constant bathymetry
+end
+
+function BBMBBMEquations1D(; gravity_constant, D=1.0)
+  BBMBBMEquations1D(gravity_constant, D)
+end
+
+varnames(::BBMBBMEquations1D) = ("eta", "v")
+
+"""
+    initial_condition_convergence_test(x, t, equations::BBMBBMEquations1D, mesh)
+
+A travelling-wave solution used for convergence tests in a periodic domain.
+
+For details see Example 5 in Section 3 from (here adapted for dimensional equations):
+- Min Chen (1997)
+  Exact Traveling-Wave Solutions to Bidirectional Wave Equations
+  [DOI: 10.1023/A:1026667903256](https://doi.org/10.1023/A:1026667903256)
+"""
+# TODO: Initial condition should not get a `mesh`
+function initial_condition_convergence_test(x, t, equations::BBMBBMEquations1D, mesh)
+  g = equations.gravity
+  c = 5/2
+  rho = 18/5 * sqrt(equations.D * g)
+  x_t = mod(x - c*t - xmin(mesh), xmax(mesh) - xmin(mesh)) + xmin(mesh)
+
+  b = 0.5 * sqrt(rho) * x_t / equations.D
+  eta = -equations.D + c^2*rho^2/(81 * g) + 5*c^2*rho^2/(108 * g) * (2 / cosh(b)^2 - 3 / cosh(b)^4)
+  v = c * (1 - 5*rho/18) + 5*c*rho/6 / cosh(b)^2
+  return SVector(eta, v)
+end
+
+function create_cache(mesh, equations::BBMBBMEquations1D, solver, RealT, uEltype)
+  D = Matrix(solver.D)
+  D2 = sparse(solver.D2)
+  D_ImD2 = D / (I - 1/6 * equations.D^2 * D2)
+  tmp1 = Array{RealT}(undef, nnodes(mesh))
+  tmp2 = similar(tmp1)
+  return (D=D, D_ImD2=D_ImD2, tmp1=tmp1, tmp2=tmp2)
+end
+
+# Discretization that conserves the mass (for eta and u) and the energy for periodic boundary conditions, see
+# - Hendrik Ranocha, Dimitrios Mitsotakis and David I. Ketcheson (2020)
+#   A Broad Class of Conservative Numerical Methods for Dispersive Wave Equations
+#   [DOI: 10.4208/cicp.OA-2020-0119](https://doi.org/10.4208/cicp.OA-2020-0119)
+function rhs!(du, u, t, mesh, equations::BBMBBMEquations1D, initial_condition, ::BoundaryConditionPeriodic, solver, cache)
+    @unpack D, D_ImD2, tmp1, tmp2 = cache
+
+    eta = view(u, 1, :)
+    v = view(u, 2, :)
+    deta = view(du, 1, :)
+    dv = view(du, 2, :)
+    
+    # energy and mass conservative semidiscretization
+    @. tmp1 = -(equations.D * v + eta * v)
+    mul!(deta, D_ImD2, tmp1)
+
+    @. tmp1 = -(equations.gravity * eta + 0.5 * v^2)
+    mul!(dv, D_ImD2, tmp1)
+    
+    return nothing
+end

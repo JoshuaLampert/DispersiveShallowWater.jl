@@ -1,5 +1,8 @@
+*.pdf
+*.png
 *.jl.*.cov
 *.jl.cov
 *.jl.mem
 **/Manifest.toml
+out*/
 /docs/build/
