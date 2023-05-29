@@ -8,7 +8,8 @@ struct Solver{RealT <: Real}
   D2::Union{AbstractDerivativeOperator{RealT}, AbstractMatrix{RealT}}
 
   function Solver{RealT}(D::Union{AbstractDerivativeOperator{RealT}, AbstractMatrix{RealT}},
-                         D2::Union{AbstractDerivativeOperator{RealT}, AbstractMatrix{RealT}}) where {RealT}
+                         D2::Union{AbstractDerivativeOperator{RealT}, AbstractMatrix{RealT}
+                                   }) where {RealT}
     if D isa AbstractDerivativeOperator{RealT} && D2 isa AbstractDerivativeOperator{RealT}
       @assert grid(D) == grid(D2)
     end
@@ -44,7 +45,9 @@ is an `AbstractDerivativeOperator` of second `derivative_order` from [SummationB
 Both summation by parts operators should be associated with the same grid.
 """
 function Solver(D::Union{AbstractDerivativeOperator{RealT}, AbstractMatrix{RealT}},
-                D2::Union{AbstractDerivativeOperator{RealT}, AbstractMatrix{RealT}}) where {RealT}
+                D2::Union{AbstractDerivativeOperator{RealT}, AbstractMatrix{RealT}}) where {
+                                                                                            RealT
+                                                                                            }
   Solver{RealT}(D, D2)
 end
 

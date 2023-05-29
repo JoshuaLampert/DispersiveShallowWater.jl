@@ -6,8 +6,7 @@ A struct containing everything needed to describe a spatial semidiscretization
 of an equation.
 """
 struct Semidiscretization{Mesh, Equations, InitialCondition, BoundaryConditions,
-                          Solver, Cache} 
-
+                          Solver, Cache}
   mesh::Mesh
   equations::Equations
 
@@ -19,10 +18,13 @@ struct Semidiscretization{Mesh, Equations, InitialCondition, BoundaryConditions,
   solver::Solver
   cache::Cache
 
-  function Semidiscretization{Mesh, Equations, InitialCondition, BoundaryConditions, Solver, Cache}(
-      mesh::Mesh, equations::Equations, initial_condition::InitialCondition,
-      boundary_conditions::BoundaryConditions, solver::Solver,
-      cache::Cache) where {Mesh, Equations, InitialCondition, BoundaryConditions, Solver, Cache}
+  function Semidiscretization{Mesh, Equations, InitialCondition, BoundaryConditions, Solver,
+                              Cache}(mesh::Mesh, equations::Equations,
+                                     initial_condition::InitialCondition,
+                                     boundary_conditions::BoundaryConditions,
+                                     solver::Solver,
+                                     cache::Cache) where {Mesh, Equations, InitialCondition,
+                                                          BoundaryConditions, Solver, Cache}
     @assert ndims(mesh) == ndims(equations)
     @assert xmin(mesh) == xmin(solver.D)
     @assert xmax(mesh) == xmax(solver.D)
@@ -30,8 +32,7 @@ struct Semidiscretization{Mesh, Equations, InitialCondition, BoundaryConditions,
 
     new(mesh, equations, initial_condition, boundary_conditions, solver, cache)
   end
-end 
-
+end
 
 """
     Semidiscretization(mesh, equations, initial_condition, solver;
@@ -43,30 +44,33 @@ end
 Construct a semidiscretization of a PDE.
 """
 function Semidiscretization(mesh, equations, initial_condition, solver;
-                            boundary_conditions=boundary_condition_periodic,
+                            boundary_conditions = boundary_condition_periodic,
                             # `RealT` is used as real type for node locations etc.
                             # while `uEltype` is used as element type of solutions etc.
-                            RealT=real(solver), uEltype=RealT,
-                            initial_cache=NamedTuple())
-
+                            RealT = real(solver), uEltype = RealT,
+                            initial_cache = NamedTuple())
   cache = (; create_cache(mesh, equations, solver, RealT, uEltype)..., initial_cache...)
 
-  Semidiscretization{typeof(mesh), typeof(equations), typeof(initial_condition), typeof(boundary_conditions), typeof(solver), typeof(cache)}(
-    mesh, equations, initial_condition, boundary_conditions, solver, cache)
+  Semidiscretization{typeof(mesh), typeof(equations), typeof(initial_condition),
+                     typeof(boundary_conditions), typeof(solver), typeof(cache)}(mesh,
+                                                                                 equations,
+                                                                                 initial_condition,
+                                                                                 boundary_conditions,
+                                                                                 solver,
+                                                                                 cache)
 end
-
 
 function Base.show(io::IO, semi::Semidiscretization)
   @nospecialize semi # reduce precompilation time
 
   print(io, "Semidiscretization(")
-  print(io,       semi.mesh)
+  print(io, semi.mesh)
   print(io, ", ", semi.equations)
   print(io, ", ", semi.initial_condition)
   print(io, ", ", semi.boundary_conditions)
   print(io, ", ", semi.solver)
   print(io, ", cache(")
-  for (idx,key) in enumerate(keys(semi.cache))
+  for (idx, key) in enumerate(keys(semi.cache))
     idx > 1 && print(io, " ")
     print(io, key)
   end
@@ -104,7 +108,8 @@ grid(semi::Semidiscretization) = grid(semi.solver)
 function rhs!(du_ode, u_ode, semi::Semidiscretization, t)
   @unpack mesh, equations, initial_condition, boundary_conditions, solver, cache = semi
 
-  rhs!(du_ode, u_ode, t, mesh, equations, initial_condition, boundary_conditions, solver, cache)
+  rhs!(du_ode, u_ode, t, mesh, equations, initial_condition, boundary_conditions, solver,
+       cache)
 
   return nothing
 end
@@ -136,7 +141,8 @@ Wrap the semidiscretization `semi` as an ODE problem in the time interval `tspan
 that can be passed to `solve` from the [SciML ecosystem](https://diffeq.sciml.ai/latest/).
 """
 function semidiscretize(semi::Semidiscretization, tspan)
-  u0_ode = compute_coefficients(semi.initial_condition, semi.solver, first(tspan), semi.equations, semi.mesh)
+  u0_ode = compute_coefficients(semi.initial_condition, semi.solver, first(tspan),
+                                semi.equations, semi.mesh)
   iip = true # is-inplace, i.e., we modify a vector when calling rhs!
   return ODEProblem{iip}(rhs!, u0_ode, tspan, semi)
 end

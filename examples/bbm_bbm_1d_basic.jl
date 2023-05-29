@@ -4,7 +4,7 @@ using DispersiveShallowWater
 ###############################################################################
 # Semidiscretization of the BBM-BBM equations
 
-equations = BBMBBMEquations1D(gravity_constant=9.81, D=2.0)
+equations = BBMBBMEquations1D(gravity_constant = 9.81, D = 2.0)
 
 # initial_condition_convergence_test needs periodic boundary conditions
 initial_condition = initial_condition_convergence_test
@@ -20,7 +20,8 @@ mesh = Mesh1D(coordinates_min, coordinates_max, N)
 solver = Solver(mesh, 4)
 
 # semidiscretization holds all the necessary data structures for the spatial discretization
-semi = Semidiscretization(mesh, equations, initial_condition, solver, boundary_conditions=boundary_conditions)
+semi = Semidiscretization(mesh, equations, initial_condition, solver,
+                          boundary_conditions = boundary_conditions)
 
 ###############################################################################
 # Create `ODEProblem` and run the simulation
@@ -28,4 +29,4 @@ semi = Semidiscretization(mesh, equations, initial_condition, solver, boundary_c
 tspan = (0.0, 30.0)
 ode = semidiscretize(semi, tspan)
 
-sol = solve(ode, RK4(), save_everystep=true)
+sol = solve(ode, RK4(), save_everystep = true)

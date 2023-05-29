@@ -8,7 +8,8 @@ using SciMLBase: ODEProblem
 @reexport using StaticArrays: SVector
 using SimpleUnPack: @unpack
 using SparseArrays: sparse
-using SummationByPartsOperators: AbstractDerivativeOperator, periodic_derivative_operator, derivative_order
+using SummationByPartsOperators: AbstractDerivativeOperator, periodic_derivative_operator,
+                                 derivative_order
 import SummationByPartsOperators: grid, xmin, xmax
 
 include("util.jl")

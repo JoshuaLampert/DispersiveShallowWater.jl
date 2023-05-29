@@ -5,7 +5,7 @@ An abstract supertype of specific equations such as the BBM-BBM equations.
 The type parameters encode the number of spatial dimensions (`NDIMS`) and the
 number of primary variables (`NVARS`) of the physics model.
 """
-abstract type AbstractEquations{NDIMS, NVARS} end 
+abstract type AbstractEquations{NDIMS, NVARS} end
 
 # Retrieve number of variables from equation instance
 @inline nvariables(::AbstractEquations{NDIMS, NVARS}) where {NDIMS, NVARS} = NVARS
@@ -65,8 +65,7 @@ function Base.show(io::IO, ::MIME"text/plain", equations::AbstractEquations)
   end
 end
 
-@inline Base.ndims(::AbstractEquations{NDIMS}) where NDIMS = NDIMS
-
+@inline Base.ndims(::AbstractEquations{NDIMS}) where {NDIMS} = NDIMS
 
 # BBM-BBM equations
 abstract type AbstractBBMBBMEquations{NDIMS, NVARS} <: AbstractEquations{NDIMS, NVARS} end
