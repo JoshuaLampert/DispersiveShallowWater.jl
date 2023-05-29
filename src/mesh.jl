@@ -1,7 +1,7 @@
 """
     Mesh1D
 
-Struct that holds the information for a simple homogenuous one-dimensional mesh.
+Struct that holds the information for a simple homogeneous one-dimensional mesh.
 """
 struct Mesh1D{RealT}
   xmin::RealT
@@ -18,7 +18,7 @@ end
 """
     Mesh1D(xmin, xmax, N)
 
-Create a simple homogenuous one-dimensional mesh from `xmin` to `xmax` with `N` nodes.
+Create a simple homogeneous one-dimensional mesh from `xmin` to `xmax` with `N` nodes.
 """
 function Mesh1D(xmin, xmax, N)
   xmin, xmax = promote(xmin, xmax)
