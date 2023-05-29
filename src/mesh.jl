@@ -8,7 +8,7 @@ struct Mesh1D{RealT}
   xmax::RealT
   N::Int
 
-  function Mesh1D{RealT}(xmin::RealT, xmax::RealT, N::Int) where RealT
+  function Mesh1D{RealT}(xmin::RealT, xmax::RealT, N::Int) where {RealT}
     @assert xmin < xmax
     @assert N > 0
     new(xmin, xmax, N)

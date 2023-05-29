@@ -17,10 +17,10 @@ macro trixi_testset(name, expr)
   # module name here.
   quote
     @eval module TrixiTestModule
-      using Test
-      using DispersiveShallowWater
-      include(@__FILE__)
-      @testset $name $expr
+    using Test
+    using DispersiveShallowWater
+    include(@__FILE__)
+    @testset $name $expr
     end
     nothing
   end

@@ -3,7 +3,8 @@ module TestUnit
 using Test
 using DispersiveShallowWater
 using SummationByPartsOperators: PeriodicDerivativeOperator, UniformPeriodicCoupledOperator
-using SummationByPartsOperators: derivative_order, legendre_derivative_operator, UniformPeriodicMesh1D, couple_discontinuously
+using SummationByPartsOperators: derivative_order, legendre_derivative_operator,
+                                 UniformPeriodicMesh1D, couple_discontinuously
 using SparseArrays: sparse, SparseMatrixCSC
 
 @testset "Unit tests" begin
@@ -28,9 +29,9 @@ using SparseArrays: sparse, SparseMatrixCSC
     @test grid(solver) == grid(solver.D) == grid(solver.D2)
     @test real(solver) == Float64
     @test_nowarn show(stdout, solver)
-    
-    Dop = legendre_derivative_operator(-1.0, 1.0, p+1)
-    sbp_mesh = UniformPeriodicMesh1D(-1.0, 1.0, 512÷(p+1))
+
+    Dop = legendre_derivative_operator(-1.0, 1.0, p + 1)
+    sbp_mesh = UniformPeriodicMesh1D(-1.0, 1.0, 512 ÷ (p + 1))
     D = couple_discontinuously(Dop, sbp_mesh)
     D_pl = couple_discontinuously(Dop, sbp_mesh, Val(:plus))
     D_min = couple_discontinuously(Dop, sbp_mesh, Val(:minus))
@@ -40,6 +41,5 @@ using SparseArrays: sparse, SparseMatrixCSC
     @test solver.D2 isa SparseMatrixCSC
   end
 end
-
 
 end # module
