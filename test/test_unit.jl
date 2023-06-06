@@ -41,13 +41,13 @@ using SparseArrays: sparse, SparseMatrixCSC
     @test solver.D2 isa SparseMatrixCSC
   end
 
-  @testset "BBMBBM1DEquations" begin
-    equations = @test_nowarn BBMBBM1DEquations(gravity_constant = 9.81, D = 2.0)
+  @testset "BBMBBMEquations1D" begin
+    equations = @test_nowarn BBMBBMEquations1D(gravity_constant = 9.81, D = 2.0)
     u = [42.0, 2.0]
     @test waterheight_total(u, equations) == 42.0
     @test waterheight(u, equations) == 44.0
     @test velocity(u, equations) == 2.0
-    @test momentum(u, equations) == 84.0
+    @test momentum(u, equations) == 88.0
     @test isapprox(energy_total(u, equations), 17480.84)
     @test_nowarn show(stdout, equations)
   end
