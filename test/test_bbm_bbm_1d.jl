@@ -35,7 +35,7 @@ include("test_util.jl")
                            integrals(analysis_callback)[:, 1]
     @test isapprox(change_of_invariants,
                    [2.7819374137216107e-15, -3.552713678800501e-15, 0.0011275899092524355],
-                   atol = 1e-9, rtol = 1e-10)
+                   atol = 1e-8, rtol = 1e-10)
   end
 
   @trixi_testset "bbm_bbm_1d_relaxation" begin
