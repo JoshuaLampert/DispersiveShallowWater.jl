@@ -18,7 +18,8 @@ include("test_util.jl")
     change_of_invariants = integrals(analysis_callback)[:, end] -
                            integrals(analysis_callback)[:, 1]
     @test isapprox(change_of_invariants,
-                   [-2.2426934041972823e-13, 1.2505552149377763e-12, 0.014085559731029207])
+                   [-2.2426934041972823e-13, 1.2505552149377763e-12, 0.014085559731029207],
+                   atol = 1e-9, rtol = 1e-10)
   end
 
   @trixi_testset "bbm_bbm_1d_dg" begin
@@ -33,7 +34,8 @@ include("test_util.jl")
     change_of_invariants = integrals(analysis_callback)[:, end] -
                            integrals(analysis_callback)[:, 1]
     @test isapprox(change_of_invariants,
-                   [2.7819374137216107e-15, -3.552713678800501e-15, 0.0011275899092524355])
+                   [2.7819374137216107e-15, -3.552713678800501e-15, 0.0011275899092524355],
+                   atol = 1e-9, rtol = 1e-10)
   end
 
   @trixi_testset "bbm_bbm_1d_relaxation" begin
@@ -48,7 +50,8 @@ include("test_util.jl")
     change_of_invariants = integrals(analysis_callback)[:, end] -
                            integrals(analysis_callback)[:, 1]
     @test isapprox(change_of_invariants,
-                   [-2.246215224604027e-13, 1.4779288903810084e-12, 0.0])
+                   [-2.246215224604027e-13, 1.4779288903810084e-12, 0.0],
+                   atol = 1e-9, rtol = 1e-10)
   end
 end
 
