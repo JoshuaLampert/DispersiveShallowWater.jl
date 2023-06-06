@@ -24,8 +24,8 @@ jobs:
       - uses: actions/checkout@v3
       - name: Install JuliaFormatter and format
         run: |
-          julia -e 'using Pkg; Pkg.add(PackageSpec(name="JuliaFormatter"))'
-          julia -e 'using JuliaFormatter; format(["src", "test", "examples", "figures"], verbose=true)'
+          julia -e 'using Pkg; Pkg.add(PackageSpec(name = "JuliaFormatter", version = v"1.0.32"))'
+          julia -e 'using JuliaFormatter; format(["src", "test", "examples", "figures"], verbose = true)'
       - name: Format check
         run: |
           julia -e '
