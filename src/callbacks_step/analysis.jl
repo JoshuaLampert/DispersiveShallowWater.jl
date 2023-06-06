@@ -13,7 +13,7 @@ solution and integrated over the computational domain. Some examples for this ar
 You can also write your own function with the same signature as the examples listed above and
 pass it via `extra_analysis_integrals`.
 The computed errors and intergrals are saved for each timestep and can be obtained by calling
-`errors(analysis_callback)` and `integrals(analysis_callback)`.
+[`errors`](@ref) and [`integrals`](@ref).
 """
 mutable struct AnalysisCallback{T, AnalysisIntegrals, InitialStateIntegrals}
   analysis_errors::Vector{Symbol}
@@ -96,7 +96,7 @@ end
 """
     tstops(analysis_callback)
 
-Return the time values that correspond to the saved values of the `errors` and `integrals`.
+Return the time values that correspond to the saved values of the [`errors`](@ref) and [`integrals`](@ref).
 """
 function tstops(cb::DiscreteCallback{Condition, Affect!}) where {Condition,
                                                                  Affect! <:
