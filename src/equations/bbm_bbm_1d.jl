@@ -54,21 +54,21 @@ function initial_condition_convergence_test(x, t, equations::BBMBBMEquations1D, 
 end
 
 function create_cache(mesh, equations::BBMBBMEquations1D, solver, RealT, uEltype)
-  D = Matrix(solver.D)
-  D2 = sparse(solver.D2)
-  D_ImD2 = D / (I - 1 / 6 * equations.D^2 * D2)
+  D_ImD2 = Matrix(solver.D) / (I - 1 / 6 * equations.D^2 * sparse(solver.D2))
   tmp1 = Array{RealT}(undef, nnodes(mesh))
-  tmp2 = similar(tmp1)
-  return (D = D, D_ImD2 = D_ImD2, tmp1 = tmp1, tmp2 = tmp2)
+  return (D_ImD2 = D_ImD2, tmp1 = tmp1)
 end
 
 # Discretization that conserves the mass (for eta and u) and the energy for periodic boundary conditions, see
 # - Hendrik Ranocha, Dimitrios Mitsotakis and David I. Ketcheson (2020)
 #   A Broad Class of Conservative Numerical Methods for Dispersive Wave Equations
 #   [DOI: 10.4208/cicp.OA-2020-0119](https://doi.org/10.4208/cicp.OA-2020-0119)
-function rhs!(du, u, t, mesh, equations::BBMBBMEquations1D, initial_condition,
+function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMEquations1D, initial_condition,
               ::BoundaryConditionPeriodic, solver, cache)
-  @unpack D, D_ImD2, tmp1, tmp2 = cache
+  @unpack D_ImD2, tmp1 = cache
+
+  u = wrap_array(u_ode, mesh, equations, solver)
+  du = wrap_array(du_ode, mesh, equations, solver)
 
   eta = view(u, 1, :)
   v = view(u, 2, :)
@@ -84,3 +84,24 @@ function rhs!(du, u, t, mesh, equations::BBMBBMEquations1D, initial_condition,
 
   return nothing
 end
+
+@inline function waterheight_total(u, equations::BBMBBMEquations1D)
+  return u[1]
+end
+
+@inline function velocity(u, equations::BBMBBMEquations1D)
+  return u[2]
+end
+
+@inline function waterheight(u, equations::BBMBBMEquations1D)
+  return waterheight_total(u, equations) + equations.D
+end
+
+@inline function energy_total(u, equations::BBMBBMEquations1D)
+  eta, v = u
+  #e = 0.5 * equations.gravity * eta^2 + 0.5 * (equations.D + eta) * v^2
+  e = equations.gravity * eta^2 + (equations.D + eta) * v^2
+  return e
+end
+
+@inline entropy(u, equations::BBMBBMEquations1D) = energy_total(u, equations)

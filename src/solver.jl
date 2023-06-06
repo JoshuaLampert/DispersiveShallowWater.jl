@@ -69,3 +69,46 @@ grid(solver::Solver) = grid(solver.D)
 
 @inline eachnode(solver::Solver) = Base.OneTo(length(grid(solver)))
 @inline Base.real(solver::Solver{RealT}) where {RealT} = RealT
+
+@inline function set_node_vars!(u, u_node, equations, indices...)
+  for v in eachvariable(equations)
+    u[v, indices...] = u_node[v]
+  end
+  return nothing
+end
+
+function allocate_coefficients(mesh::Mesh1D, equations, solver::Solver)
+  # cf. wrap_array
+  zeros(real(solver), nvariables(equations) * nnodes(mesh)^ndims(mesh))
+end
+
+function wrap_array(u_ode, mesh, equations, solver)
+  unsafe_wrap(Array{eltype(u_ode), ndims(mesh) + 1}, pointer(u_ode),
+              (nvariables(equations), ntuple(_ -> nnodes(mesh), ndims(mesh))...))
+end
+
+function compute_coefficients!(u, func, t, mesh::Mesh1D, equations, solver::Solver)
+  x = grid(solver)
+  for i in eachnode(solver)
+    u_node = func(x[i], t, equations, mesh)
+    set_node_vars!(u, u_node, equations, i)
+  end
+end
+
+function calc_error_norms(u_ode, t, initial_condition, mesh::Mesh1D, equations,
+                          solver::Solver)
+  x = grid(solver)
+  u = wrap_array(u_ode, mesh, equations, solver)
+  u_exact = zeros(real(solver), (nvariables(equations), nnodes(mesh)))
+  for i in eachnode(solver)
+    u_exact[:, i] = initial_condition(x[i], t, equations, mesh)
+  end
+  l2_error = zeros(real(solver), nvariables(equations))
+  linf_error = similar(l2_error)
+  for v in eachvariable(equations)
+    @views diff = u[v, :] - u_exact[v, :]
+    l2_error[v] = integrate(u -> u^2, diff, solver.D) |> sqrt
+    linf_error[v] = maximum(abs.(diff))
+  end
+  return l2_error, linf_error
+end

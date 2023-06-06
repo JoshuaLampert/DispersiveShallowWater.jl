@@ -105,6 +105,53 @@ Get the grid of a semidiscretization.
 """
 grid(semi::Semidiscretization) = grid(semi.solver)
 
+function PolynomialBases.integrate(func, u_ode, semi::Semidiscretization; wrap = true)
+  if wrap == true
+    u = wrap_array(u_ode, semi)
+    integrals = zeros(real(semi), nvariables(semi))
+    for v in eachvariable(semi.equations)
+      integrals[v] = integrate(func, u[v, :], semi.solver.D)
+    end
+    return integrals
+  else
+    integrate(func, u_ode, semi.solver.D)
+  end
+end
+function PolynomialBases.integrate(u, semi::Semidiscretization; wrap = true)
+  integrate(identity, u, semi; wrap = wrap)
+end
+
+function integrate_quantity(func, u_ode, semi::Semidiscretization; wrap = true)
+  if wrap == true
+    u = wrap_array(u_ode, semi)
+  else
+    u = u_ode
+  end
+  quantity = zeros(eltype(u), size(u, 2))
+  for i in 1:size(u, 2)
+    quantity[i] = func(view(u, :, i))
+  end
+  integrate(quantity, semi; wrap = false)
+end
+
+@inline function mesh_equations_solver(semi::Semidiscretization)
+  @unpack mesh, equations, solver = semi
+  return mesh, equations, solver
+end
+
+@inline function mesh_equations_solver_cache(semi::Semidiscretization)
+  @unpack mesh, equations, solver, cache = semi
+  return mesh, equations, solver, cache
+end
+
+function calc_error_norms(u, t, semi::Semidiscretization)
+  calc_error_norms(u, t, semi.initial_condition, mesh_equations_solver(semi)...)
+end
+
+function wrap_array(u_ode, semi::Semidiscretization)
+  wrap_array(u_ode, mesh_equations_solver(semi)...)
+end
+
 function rhs!(du_ode, u_ode, semi::Semidiscretization, t)
   @unpack mesh, equations, initial_condition, boundary_conditions, solver, cache = semi
 
@@ -114,25 +161,17 @@ function rhs!(du_ode, u_ode, semi::Semidiscretization, t)
   return nothing
 end
 
-@inline function set_node_vars!(u, u_node, equations, indices...)
-  for v in eachvariable(equations)
-    u[v, indices...] = u_node[v]
-  end
-  return nothing
-end
-
-function compute_coefficients(func, solver, t, equations, mesh)
-  u_ode = zeros(real(solver), (nvariables(equations), nnodes(mesh)))
-  compute_coefficients!(u_ode, func, solver, t, equations, mesh)
+function compute_coefficients(func, t, semi::Semidiscretization)
+  @unpack mesh, equations, solver = semi
+  u_ode = allocate_coefficients(mesh_equations_solver(semi)...)
+  compute_coefficients!(u_ode, func, t, semi)
   return u_ode
 end
 
-function compute_coefficients!(u, func, solver, t, equations, mesh)
-  x = grid(solver)
-  for i in eachnode(solver)
-    u_node = func(x[i], t, equations, mesh)
-    set_node_vars!(u, u_node, equations, i)
-  end
+function compute_coefficients!(u_ode, func, t, semi::Semidiscretization)
+  u = wrap_array(u_ode, semi)
+  # Call `compute_coefficients` defined by the solver
+  compute_coefficients!(u, func, t, mesh_equations_solver(semi)...)
 end
 
 """
@@ -141,8 +180,7 @@ Wrap the semidiscretization `semi` as an ODE problem in the time interval `tspan
 that can be passed to `solve` from the [SciML ecosystem](https://diffeq.sciml.ai/latest/).
 """
 function semidiscretize(semi::Semidiscretization, tspan)
-  u0_ode = compute_coefficients(semi.initial_condition, semi.solver, first(tspan),
-                                semi.equations, semi.mesh)
+  u0_ode = compute_coefficients(semi.initial_condition, first(tspan), semi)
   iip = true # is-inplace, i.e., we modify a vector when calling rhs!
   return ODEProblem{iip}(rhs!, u0_ode, tspan, semi)
 end
