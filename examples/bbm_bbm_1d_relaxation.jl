@@ -26,7 +26,6 @@ semi = Semidiscretization(mesh, equations, initial_condition, solver,
 ###############################################################################
 # Create `ODEProblem` and run the simulation
 tspan = (0.0, 30.0)
-dt = 0.025
 ode = semidiscretize(semi, tspan)
 analysis_callback = AnalysisCallback(semi; interval = 10,
                                      extra_analysis_errors = (:conservation_error,),
@@ -37,5 +36,5 @@ relaxation_callback = RelaxationCallback(invariant = entropy)
 callbacks = CallbackSet(relaxation_callback, analysis_callback)
 
 saveat = range(tspan..., length = 100)
-sol = solve(ode, RK4(), abstol = 1.0e-7, reltol = 1.0e-7, dt = dt, adaptive = false,
+sol = solve(ode, Tsit5(), abstol = 1e-7, reltol = 1e-7,
             save_everystep = false, callback = callbacks, saveat = saveat)
