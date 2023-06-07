@@ -29,6 +29,7 @@ end
 
 varnames(::BBMBBMEquations1D) = ("eta", "v")
 
+# TODO: Initial condition should not get a `mesh`
 """
     initial_condition_convergence_test(x, t, equations::BBMBBMEquations1D, mesh)
 
@@ -39,7 +40,6 @@ For details see Example 5 in Section 3 from (here adapted for dimensional equati
   Exact Traveling-Wave Solutions to Bidirectional Wave Equations
   [DOI: 10.1023/A:1026667903256](https://doi.org/10.1023/A:1026667903256)
 """
-# TODO: Initial condition should not get a `mesh`
 function initial_condition_convergence_test(x, t, equations::BBMBBMEquations1D, mesh)
   g = equations.gravity
   c = 5 / 2
