@@ -16,6 +16,7 @@ The computed errors and intergrals are saved for each timestep and can be obtain
 [`errors`](@ref) and [`integrals`](@ref).
 """
 mutable struct AnalysisCallback{T, AnalysisIntegrals, InitialStateIntegrals}
+  interval::Int
   analysis_errors::Vector{Symbol}
   analysis_integrals::AnalysisIntegrals
   initial_state_integrals::InitialStateIntegrals
@@ -81,7 +82,7 @@ function AnalysisCallback(mesh, equations::AbstractEquations, solver;
       @warn "Extra analysis error $extra_analysis_error is not supported and will be ignored."
     end
   end
-  analysis_callback = AnalysisCallback(analysis_errors, Tuple(analysis_integrals),
+  analysis_callback = AnalysisCallback(interval, analysis_errors, Tuple(analysis_integrals),
                                        SVector(ntuple(_ -> zero(real(solver)),
                                                       Val(nvariables(equations)))),
                                        Vector{Float64}(),
