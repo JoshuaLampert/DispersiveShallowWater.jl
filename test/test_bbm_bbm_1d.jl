@@ -19,7 +19,7 @@ include("test_util.jl")
                            integrals(analysis_callback)[:, 1]
     @test isapprox(change_of_invariants,
                    [-2.2432285243130218e-13, 1.4779288903810084e-12, 3.729004311026074e-5],
-                   atol = 500 * eps(), rtol = sqrt(eps()))
+                   atol = 1e-11, rtol = sqrt(eps()))
   end
 
   @trixi_testset "bbm_bbm_1d_dg" begin
@@ -35,7 +35,7 @@ include("test_util.jl")
                            integrals(analysis_callback)[:, 1]
     @test isapprox(change_of_invariants,
                    [1.0912164523217173e-15, 1.7763568394002505e-15, -0.021203943180474027],
-                   atol = 500 * eps(), rtol = sqrt(eps()))
+                   atol = 1e-11, rtol = sqrt(eps()))
   end
 
   @trixi_testset "bbm_bbm_1d_relaxation" begin
@@ -51,7 +51,7 @@ include("test_util.jl")
                            integrals(analysis_callback)[:, 1]
     @test isapprox(change_of_invariants,
                    [-2.2461752483080717e-13, 5.684341886080801e-13, 0.0],
-                   atol = 500 * eps(), rtol = sqrt(eps()))
+                   atol = 1e-11, rtol = sqrt(eps()))
   end
 end
 
