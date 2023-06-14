@@ -152,3 +152,4 @@ default_analysis_integrals(::AbstractEquations) = Symbol[]
 # BBM-BBM equations
 abstract type AbstractBBMBBMEquations{NDIMS, NVARS} <: AbstractEquations{NDIMS, NVARS} end
 include("bbm_bbm_1d.jl")
+include("bbm_bbm_variable_bathymetry_1d.jl")

@@ -3,7 +3,8 @@ module TestUnit
 using Test
 using DispersiveShallowWater
 using SummationByPartsOperators: PeriodicDerivativeOperator, UniformPeriodicCoupledOperator
-using SummationByPartsOperators: derivative_order, legendre_derivative_operator,
+using SummationByPartsOperators: derivative_order,
+                                 legendre_derivative_operator,
                                  UniformPeriodicMesh1D, couple_discontinuously
 using SparseArrays: sparse, SparseMatrixCSC
 

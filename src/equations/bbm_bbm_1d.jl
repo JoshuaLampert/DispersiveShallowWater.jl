@@ -53,10 +53,15 @@ function initial_condition_convergence_test(x, t, equations::BBMBBMEquations1D, 
   return SVector(eta, v)
 end
 
-function create_cache(mesh, equations::BBMBBMEquations1D, solver, RealT, uEltype)
-  D_ImD2 = Matrix(solver.D) / (I - 1 / 6 * equations.D^2 * sparse(solver.D2))
+function create_cache(mesh,
+                      equations::BBMBBMEquations1D,
+                      solver,
+                      initial_condition,
+                      RealT,
+                      uEltype)
+  invImD2_D = (I - 1 / 6 * equations.D^2 * sparse(solver.D2)) \ Matrix(solver.D)
   tmp1 = Array{RealT}(undef, nnodes(mesh))
-  return (D_ImD2 = D_ImD2, tmp1 = tmp1)
+  return (invImD2_D = invImD2_D, tmp1 = tmp1)
 end
 
 # Discretization that conserves the mass (for eta and u) and the energy for periodic boundary conditions, see
@@ -65,7 +70,7 @@ end
 #   [DOI: 10.4208/cicp.OA-2020-0119](https://doi.org/10.4208/cicp.OA-2020-0119)
 function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMEquations1D, initial_condition,
               ::BoundaryConditionPeriodic, solver, cache)
-  @unpack D_ImD2, tmp1 = cache
+  @unpack invImD2_D, tmp1 = cache
 
   u = wrap_array(u_ode, mesh, equations, solver)
   du = wrap_array(du_ode, mesh, equations, solver)
@@ -77,10 +82,10 @@ function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMEquations1D, initial_cond
 
   # energy and mass conservative semidiscretization
   @. tmp1 = -(equations.D * v + eta * v)
-  mul!(deta, D_ImD2, tmp1)
+  mul!(deta, invImD2_D, tmp1)
 
   @. tmp1 = -(equations.gravity * eta + 0.5 * v^2)
-  mul!(dv, D_ImD2, tmp1)
+  mul!(dv, invImD2_D, tmp1)
 
   return nothing
 end
@@ -93,8 +98,12 @@ end
   return u[2]
 end
 
+@inline function bathymetry(u, equations::BBMBBMEquations1D)
+  return equations.D
+end
+
 @inline function waterheight(u, equations::BBMBBMEquations1D)
-  return waterheight_total(u, equations) + equations.D
+  return waterheight_total(u, equations) + bathymetry(u, equations)
 end
 
 @inline function energy_total(u, equations::BBMBBMEquations1D)

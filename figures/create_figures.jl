@@ -54,6 +54,22 @@ plot_gif_invariants("bbm_bbm_1d_dg.jl"; ylims_eta = (-4, 2))
 
 ###############################################################################
 # Travelling wave solution for one-dimensional BBM-BBM equations with periodic boundary conditions
-# using periodic SBP operators
+# using periodic SBP operators and relaxation, is energy-conservative
 plot_gif_invariants("bbm_bbm_1d_relaxation.jl"; ylims_eta = (-8, 4), ylims_v = (-10, 30),
                     tspan = (0.0, 30.0))
+
+###############################################################################
+# Travelling wave solution for one-dimensional BBM-BBM equations with periodic boundary conditions
+# using periodic SBP operators. Uses the BBM-BBM equations with variable bathymetry, but sets the bathymetry
+# as a constant. Should give the same result as "bbm_bbm_1d_basic.jl"
+plot_gif_invariants("bbm_bbm_variable_bathymetry_1d_basic.jl";
+                    ylims_eta = (-8, 4),
+                    tspan = (0.0, 50.0))
+
+###############################################################################
+# One-dimensional BBM-BBM equations with a Gaussian bump as initial condition for the water height
+# and initially still water. The bathymetry is a sine function. Relaxation is used, so the solution
+# is energy-conservative.
+plot_gif_invariants("bbm_bbm_variable_bathymetry_1d_relaxation.jl"; ylims_eta = (0, 6),
+                    ylims_v = (-10.0, 10.0),
+                    tspan = (0.0, 10.0))

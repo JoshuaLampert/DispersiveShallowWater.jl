@@ -49,7 +49,9 @@ function Semidiscretization(mesh, equations, initial_condition, solver;
                             # while `uEltype` is used as element type of solutions etc.
                             RealT = real(solver), uEltype = RealT,
                             initial_cache = NamedTuple())
-  cache = (; create_cache(mesh, equations, solver, RealT, uEltype)..., initial_cache...)
+  cache = (;
+           create_cache(mesh, equations, solver, initial_condition, RealT, uEltype)...,
+           initial_cache...)
 
   Semidiscretization{typeof(mesh), typeof(equations), typeof(initial_condition),
                      typeof(boundary_conditions), typeof(solver), typeof(cache)}(mesh,

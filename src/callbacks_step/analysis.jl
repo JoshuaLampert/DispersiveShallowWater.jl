@@ -99,9 +99,12 @@ end
 
 Return the time values that correspond to the saved values of the [`errors`](@ref) and [`integrals`](@ref).
 """
-function tstops(cb::DiscreteCallback{Condition, Affect!}) where {Condition,
-                                                                 Affect! <:
-                                                                 AnalysisCallback}
+function tstops(cb::DiscreteCallback{
+                                     Condition,
+                                     Affect!
+                                     }) where {Condition,
+                                               Affect! <:
+                                               AnalysisCallback}
   analysis_callback = cb.affect!
   return analysis_callback.tstops
 end
@@ -111,9 +114,12 @@ end
     
 Return the computed errors for each timestep. The shape is (nerrors, nvariables, ntimesteps).
 """
-function errors(cb::DiscreteCallback{Condition, Affect!}) where {Condition,
-                                                                 Affect! <:
-                                                                 AnalysisCallback}
+function errors(cb::DiscreteCallback{
+                                     Condition,
+                                     Affect!
+                                     }) where {Condition,
+                                               Affect! <:
+                                               AnalysisCallback}
   analysis_callback = cb.affect!
   # reshape to return 3D array of shape (nerrors, nvariables, ntimesteps)
   return reshape(reduce(hcat, analysis_callback.errors),
@@ -125,9 +131,12 @@ end
 
 Return the computed integrals for each timestep. The shape is (nintegrals, ntimesteps).
 """
-function integrals(cb::DiscreteCallback{Condition, Affect!}) where {Condition,
-                                                                    Affect! <:
-                                                                    AnalysisCallback}
+function integrals(cb::DiscreteCallback{
+                                        Condition,
+                                        Affect!
+                                        }) where {Condition,
+                                                  Affect! <:
+                                                  AnalysisCallback}
   analysis_callback = cb.affect!
   # reshape to return Matrix of shape (nintegrals, ntimesteps)
   return reduce(hcat, analysis_callback.integrals)
@@ -138,9 +147,12 @@ end
 
 Return the names of the computed integrals.
 """
-function integral_names(cb::DiscreteCallback{Condition, Affect!}) where {Condition,
-                                                                         Affect! <:
-                                                                         AnalysisCallback}
+function integral_names(cb::DiscreteCallback{
+                                             Condition,
+                                             Affect!
+                                             }) where {Condition,
+                                                       Affect! <:
+                                                       AnalysisCallback}
   analysis_callback = cb.affect!
   return nameof.(analysis_callback.analysis_integrals)
 end
