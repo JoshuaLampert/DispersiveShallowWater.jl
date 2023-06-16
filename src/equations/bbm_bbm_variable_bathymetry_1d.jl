@@ -108,6 +108,8 @@ function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMVariableEquations1D,
   D = view(u, 3, :)
   deta = view(du, 1, :)
   dv = view(du, 2, :)
+  dD = view(du, 3, :)
+  fill!(dD, zero(eltype(dD)))
 
   @. tmp1 = -(D * v + eta * v)
   mul!(deta, invImDKD_D, tmp1)

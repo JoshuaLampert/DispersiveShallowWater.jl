@@ -9,7 +9,6 @@ using SparseArrays: sparse
 equations = BBMBBMVariableEquations1D(gravity_constant = 9.81)
 
 # initial_condition_variable_bathymetry needs periodic boundary conditions
-# TODO: Test also initial_condition_convergence_test
 initial_condition = initial_condition_sin_bathymetry
 boundary_conditions = boundary_condition_periodic
 

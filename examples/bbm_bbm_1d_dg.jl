@@ -23,7 +23,7 @@ mesh = Mesh1D(coordinates_min, coordinates_max, N)
 # create solver
 p = 3 # N needs to be divisible by p + 1
 Dop = legendre_derivative_operator(-1.0, 1.0, p + 1)
-sbp_mesh = UniformPeriodicMesh1D(coordinates_min, coordinates_max, N ÷ (p + 1))
+sbp_mesh = UniformPeriodicMesh1D(coordinates_min, coordinates_max, div(N, p + 1))
 D = couple_discontinuously(Dop, sbp_mesh)
 D_pl = couple_discontinuously(Dop, sbp_mesh, Val(:plus))
 D_min = couple_discontinuously(Dop, sbp_mesh, Val(:minus))
