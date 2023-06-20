@@ -54,11 +54,9 @@ include("test_util.jl")
     change_of_invariants = integrals(analysis_callback)[:, end] -
                            integrals(analysis_callback)[:, 1]
     @test isapprox(change_of_invariants,
-                   [
-                     3.2152058793144533e-13,
+                   [3.2152058793144533e-13,
                      -1.0576435560682995e-12,
-                     -1.4210854715202004e-14,
-                   ],
+                     -1.4210854715202004e-14],
                    atol = 1e-11, rtol = sqrt(eps()))
   end
 end
