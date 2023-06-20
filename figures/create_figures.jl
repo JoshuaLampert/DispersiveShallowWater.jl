@@ -69,7 +69,15 @@ plot_gif_invariants("bbm_bbm_variable_bathymetry_1d_basic.jl";
 ###############################################################################
 # One-dimensional BBM-BBM equations with a Gaussian bump as initial condition for the water height
 # and initially still water. The bathymetry is a sine function. Relaxation is used, so the solution
-# is energy-conservative.
+# is energy-conservative. Uses periodic finite difference SBP operators.
 plot_gif_invariants("bbm_bbm_variable_bathymetry_1d_relaxation.jl"; ylims_eta = (0, 6),
+                    ylims_v = (-10.0, 10.0),
+                    tspan = (0.0, 10.0))
+
+###############################################################################
+# One-dimensional BBM-BBM equations with a Gaussian bump as initial condition for the water height
+# and initially still water. The bathymetry is a sine function. Relaxation is used, so the solution
+# is energy-conservative. Uses upwind discontinuously coupled SBP operators.
+plot_gif_invariants("bbm_bbm_variable_bathymetry_1d_dg_relaxation.jl"; ylims_eta = (0, 6),
                     ylims_v = (-10.0, 10.0),
                     tspan = (0.0, 10.0))
