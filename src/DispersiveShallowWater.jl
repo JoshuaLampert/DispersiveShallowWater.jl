@@ -13,7 +13,10 @@ import SciMLBase: get_tmp_cache, u_modified!
 using SimpleUnPack: @unpack
 using SparseArrays: sparse, spdiagm
 using SummationByPartsOperators: AbstractDerivativeOperator,
+                                 UniformPeriodicMesh1D,
                                  periodic_derivative_operator,
+                                 legendre_derivative_operator,
+                                 couple_discontinuously,
                                  derivative_order, integrate
 import SummationByPartsOperators: grid, xmin, xmax
 
@@ -33,7 +36,7 @@ export waterheight_total, waterheight, velocity, momentum, energy_total, entropy
 
 export Mesh1D, xmin, xmax, nnodes
 
-export Solver
+export Solver, UpwindSolver
 
 export Semidiscretization, semidiscretize, grid
 

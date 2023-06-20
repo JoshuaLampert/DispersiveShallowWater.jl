@@ -59,7 +59,7 @@ function create_cache(mesh,
                       initial_condition,
                       RealT,
                       uEltype)
-  invImD2_D = (I - 1 / 6 * equations.D^2 * sparse(solver.D2)) \ Matrix(solver.D)
+  invImD2_D = (I - 1 / 6 * equations.D^2 * sparse(solver.D2)) \ Matrix(solver.D1)
   tmp1 = Array{RealT}(undef, nnodes(mesh))
   return (invImD2_D = invImD2_D, tmp1 = tmp1)
 end
