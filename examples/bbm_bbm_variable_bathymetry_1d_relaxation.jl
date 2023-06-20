@@ -19,9 +19,9 @@ N = 512
 mesh = Mesh1D(coordinates_min, coordinates_max, N + 1)
 
 # create solver with periodic SBP operators
-D = periodic_derivative_operator(1, 4, mesh.xmin, mesh.xmax, mesh.N)
-D2 = sparse(D)^2
-solver = Solver(D, D2)
+D1 = periodic_derivative_operator(1, 4, mesh.xmin, mesh.xmax, mesh.N)
+D2 = sparse(D1)^2
+solver = Solver(D1, D2)
 
 # semidiscretization holds all the necessary data structures for the spatial discretization
 semi = Semidiscretization(mesh, equations, initial_condition, solver,
