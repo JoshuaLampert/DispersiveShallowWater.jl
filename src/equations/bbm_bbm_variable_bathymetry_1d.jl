@@ -103,7 +103,8 @@ function create_cache(mesh,
     D[i] = initial_condition(x[i], 0.0, equations, mesh)[3]
   end
   K = spdiagm(0 => D .^ 2)
-  invImDKD_D = (I - 1 / 6 * sparse(solver.D_min) * K * sparse(solver.D_pl)) \ Matrix(solver.D_pl)
+  invImDKD_D = (I - 1 / 6 * sparse(solver.D_min) * K * sparse(solver.D_pl)) \
+               Matrix(solver.D_pl)
   invImD2K_D = (I - 1 / 6 * sparse(solver.D2) * K) \ Matrix(solver.D_pl)
   tmp1 = Array{RealT}(undef, nnodes(mesh))
   return (invImDKD_D = invImDKD_D, invImD2K_D = invImD2K_D, tmp1 = tmp1)

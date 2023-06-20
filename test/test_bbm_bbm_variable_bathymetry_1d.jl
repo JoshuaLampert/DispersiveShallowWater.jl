@@ -42,7 +42,8 @@ include("test_util.jl")
 
   @trixi_testset "bbm_bbm_1d_variable_bathymetry_dg_relaxation" begin
     trixi_include(@__MODULE__,
-                  joinpath(examples_dir(), "bbm_bbm_variable_bathymetry_1d_dg_relaxation.jl"),
+                  joinpath(examples_dir(),
+                           "bbm_bbm_variable_bathymetry_1d_dg_relaxation.jl"),
                   tspan = (0.0, 1.0))
     errs = @view errors(analysis_callback)[:, :, end]
     @test isapprox(errs,
@@ -53,7 +54,11 @@ include("test_util.jl")
     change_of_invariants = integrals(analysis_callback)[:, end] -
                            integrals(analysis_callback)[:, 1]
     @test isapprox(change_of_invariants,
-                   [3.2152058793144533e-13, -1.0576435560682995e-12, -1.4210854715202004e-14],
+                   [
+                     3.2152058793144533e-13,
+                     -1.0576435560682995e-12,
+                     -1.4210854715202004e-14,
+                   ],
                    atol = 1e-11, rtol = sqrt(eps()))
   end
 end

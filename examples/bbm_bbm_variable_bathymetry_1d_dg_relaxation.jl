@@ -1,6 +1,7 @@
 using OrdinaryDiffEq
 using DispersiveShallowWater
-using SummationByPartsOperators: legendre_derivative_operator, UniformPeriodicMesh1D, couple_discontinuously
+using SummationByPartsOperators: legendre_derivative_operator, UniformPeriodicMesh1D,
+                                 couple_discontinuously
 using SparseArrays: sparse
 
 ###############################################################################

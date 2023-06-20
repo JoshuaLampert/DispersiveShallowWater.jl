@@ -14,7 +14,8 @@ struct Solver{RealT <: Real} <: AbstractSolver
   D1::Union{AbstractDerivativeOperator{RealT}, AbstractMatrix{RealT}}
   D2::Union{AbstractDerivativeOperator{RealT}, AbstractMatrix{RealT}}
 
-  function Solver{RealT}(D1::Union{AbstractDerivativeOperator{RealT}, AbstractMatrix{RealT}},
+  function Solver{RealT}(D1::Union{AbstractDerivativeOperator{RealT}, AbstractMatrix{RealT}
+                                   },
                          D2::Union{AbstractDerivativeOperator{RealT}, AbstractMatrix{RealT}
                                    }) where {RealT}
     if D1 isa AbstractDerivativeOperator{RealT} && D2 isa AbstractDerivativeOperator{RealT}
@@ -88,11 +89,16 @@ struct UpwindSolver{RealT <: Real} <: AbstractSolver
   D_min::Union{AbstractDerivativeOperator{RealT}, AbstractMatrix{RealT}}
   D2::Union{AbstractDerivativeOperator{RealT}, AbstractMatrix{RealT}}
 
-  function UpwindSolver{RealT}(D1::Union{AbstractDerivativeOperator{RealT}, AbstractMatrix{RealT}},
-                               D_pl::Union{AbstractDerivativeOperator{RealT}, AbstractMatrix{RealT}},
-                               D_min::Union{AbstractDerivativeOperator{RealT}, AbstractMatrix{RealT}
+  function UpwindSolver{RealT}(D1::Union{AbstractDerivativeOperator{RealT},
+                                         AbstractMatrix{RealT}},
+                               D_pl::Union{AbstractDerivativeOperator{RealT},
+                                           AbstractMatrix{RealT}},
+                               D_min::Union{AbstractDerivativeOperator{RealT},
+                                            AbstractMatrix{RealT}
                                             }) where {RealT}
-    if D1 isa AbstractDerivativeOperator{RealT} && D_pl isa AbstractDerivativeOperator{RealT} && D_min isa AbstractDerivativeOperator{RealT}
+    if D1 isa AbstractDerivativeOperator{RealT} &&
+       D_pl isa AbstractDerivativeOperator{RealT} &&
+       D_min isa AbstractDerivativeOperator{RealT}
       @assert grid(D1) == grid(D_pl) == grid(D_min)
     end
     if D1 isa AbstractDerivativeOperator{RealT}
@@ -135,9 +141,10 @@ All three summation by parts operators should be associated with the same grid.
 """
 function UpwindSolver(D1::Union{AbstractDerivativeOperator{RealT}, AbstractMatrix{RealT}},
                       D_pl::Union{AbstractDerivativeOperator{RealT}, AbstractMatrix{RealT}},
-                      D_min::Union{AbstractDerivativeOperator{RealT}, AbstractMatrix{RealT}}) where {
-                                                                                                     RealT
-                                                                                                     }
+                      D_min::Union{AbstractDerivativeOperator{RealT}, AbstractMatrix{RealT}
+                                   }) where {
+                                             RealT
+                                             }
   UpwindSolver{RealT}(D1, D_pl, D_mi)
 end
 
