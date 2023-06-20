@@ -1,5 +1,5 @@
 @doc raw"""
-    BBMBBMVariableEquations1D(gravity, D)
+    BBMBBMVariableEquations1D(gravity, eta0)
 
 BBM-BBM (Benjamin–Bona–Mahony) system in one spatial dimension with spatially varying bathymetry. The equations are given by
 ```math
@@ -20,10 +20,11 @@ One reference for the BBM-BBM system with spatially variying bathymetry can be f
 """
 struct BBMBBMVariableEquations1D{RealT <: Real} <: AbstractBBMBBMEquations{1, 3}
   gravity::RealT # gravitational constant
+  eta0::RealT    # constant "lake-at-rest" total water height
 end
 
-function BBMBBMVariableEquations1D(; gravity_constant)
-  BBMBBMVariableEquations1D(gravity_constant)
+function BBMBBMVariableEquations1D(; gravity_constant, eta0 = 0.0)
+  BBMBBMVariableEquations1D(gravity_constant, eta0)
 end
 
 varnames(::BBMBBMVariableEquations1D) = ("eta", "v", "D")
@@ -163,3 +164,10 @@ end
 end
 
 @inline entropy(u, equations::BBMBBMVariableEquations1D) = energy_total(u, equations)
+
+# Calculate the error for the "lake-at-rest" test case where eta should
+# be a constant value over time
+@inline function lake_at_rest_error(u, equations::BBMBBMVariableEquations1D)
+  eta, _, _ = u
+  return abs(equations.eta0 - eta)
+end

@@ -81,3 +81,13 @@ plot_gif_invariants("bbm_bbm_variable_bathymetry_1d_relaxation.jl"; ylims_eta = 
 plot_gif_invariants("bbm_bbm_variable_bathymetry_1d_dg_relaxation.jl"; ylims_eta = (0, 6),
                     ylims_v = (-10.0, 10.0),
                     tspan = (0.0, 10.0))
+
+###############################################################################
+# One-dimensional BBM-BBM equations with a constant water height
+# and initially still water. The bathymetry is discontinuous. Relaxation is used, so the solution
+# is energy-conservative. Uses periodic finite difference SBP operators. The solution should be
+# (exactly) constant in time.
+plot_gif_invariants("bbm_bbm_variable_bathymetry_1d_well_balanced.jl";
+                    ylims_eta = (2.0 - 1e-3, 2.0 + 1e-3),
+                    ylims_v = (-1e-3, 1e-3),
+                    tspan = (0.0, 10.0))

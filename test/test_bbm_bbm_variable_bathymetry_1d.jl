@@ -59,6 +59,27 @@ include("test_util.jl")
                      -1.4210854715202004e-14],
                    atol = 1e-11, rtol = sqrt(eps()))
   end
+
+  @trixi_testset "bbm_bbm_1d_variable_bathymetry_well_balanced" begin
+    trixi_include(@__MODULE__,
+                  joinpath(examples_dir(),
+                           "bbm_bbm_variable_bathymetry_1d_well_balanced.jl"),
+                  tspan = (0.0, 10.0))
+    errs = @view errors(analysis_callback)[:, :, end]
+    @test isapprox(errs,
+                   [9.141575601728803e-5 0.00019224199919408604 0.0
+                    0.00018443809117507648 0.0004397286806761726 0.0
+                    0.0 2.5276457103732493e-14 0.0],
+                   atol = 500 * eps(), rtol = sqrt(eps()))
+    change_of_invariants = integrals(analysis_callback)[:, end] -
+                           integrals(analysis_callback)[:, 1]
+    @test isapprox(change_of_invariants,
+                   [0.0,
+                     -2.5276457103732493e-14,
+                     1.5589448310038279e-7,
+                     0.0001002024174321186],
+                   atol = 1e-11, rtol = sqrt(eps()))
+  end
 end
 
 end # module
