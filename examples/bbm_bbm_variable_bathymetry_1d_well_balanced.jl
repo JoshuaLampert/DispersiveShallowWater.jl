@@ -58,6 +58,7 @@ analysis_callback = AnalysisCallback(semi; interval = 10,
 # Always put relaxation_callback before analysis_callback to guarantee conservation of the invariant
 callbacks = CallbackSet(analysis_callback)
 
+dt = 0.0005
 saveat = range(tspan..., length = 100)
-sol = solve(ode, Tsit5(), abstol = 1e-7, reltol = 1e-7,
-            save_everystep = false, callback = callbacks, saveat = saveat)
+sol = solve(ode, Tsit5(), dt = dt, adaptive = false, save_everystep = false,
+            callback = callbacks, saveat = saveat)
