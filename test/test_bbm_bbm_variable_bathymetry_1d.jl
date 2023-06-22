@@ -67,17 +67,14 @@ include("test_util.jl")
                   tspan = (0.0, 10.0))
     errs = @view errors(analysis_callback)[:, :, end]
     @test isapprox(errs,
-                   [4.928160394200046e-14 1.4969783499328085e-13 0.0
-                    1.0480505352461478e-13 2.549919800834975e-13 0.0
-                    7.993605777301127e-15 5.91760987438907e-14 0.0],
+                   [6.313048635750119e-15 3.793418293562131e-14 0.0
+                    1.9317880628477724e-14 1.1898289293196742e-13 0.0
+                    0.0 5.728935765975126e-15 0.0],
                    atol = 500 * eps(), rtol = sqrt(eps()))
     change_of_invariants = integrals(analysis_callback)[:, end] -
                            integrals(analysis_callback)[:, 1]
     @test isapprox(change_of_invariants,
-                   [-7.993605777301127e-15,
-                     -5.91760987438907e-14,
-                     -4.405364961712621e-13,
-                     5.5152763447870053e-14],
+                   [0.0, -5.728935765975126e-15, 0.0, 6.725397799854067e-15],
                    atol = 1e-11, rtol = sqrt(eps()))
   end
 end

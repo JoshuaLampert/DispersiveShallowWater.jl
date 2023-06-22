@@ -18,7 +18,7 @@ function initial_condition_discontinuous_well_balancedness(x, t,
   # Set the background values
   eta = equations.eta0
   v = 0.0
-  D = 0.0
+  D = -1.0
 
   # Setup a discontinuous bottom topography
   if x >= 0.5 && x <= 0.75
@@ -38,9 +38,9 @@ N = 512
 mesh = Mesh1D(coordinates_min, coordinates_max, N + 1)
 
 # create solver with periodic SBP operators
-D = periodic_derivative_operator(1, 4, mesh.xmin, mesh.xmax, mesh.N)
-D2 = sparse(D)^2
-solver = Solver(D, D2)
+D1 = periodic_derivative_operator(1, 4, mesh.xmin, mesh.xmax, mesh.N)
+D2 = sparse(D1)^2
+solver = Solver(D1, D2)
 
 # semidiscretization holds all the necessary data structures for the spatial discretization
 semi = Semidiscretization(mesh, equations, initial_condition, solver,
@@ -58,7 +58,7 @@ analysis_callback = AnalysisCallback(semi; interval = 10,
 # Always put relaxation_callback before analysis_callback to guarantee conservation of the invariant
 callbacks = CallbackSet(analysis_callback)
 
-dt = 0.0005
+dt = 0.5
 saveat = range(tspan..., length = 100)
 sol = solve(ode, Tsit5(), dt = dt, adaptive = false, save_everystep = false,
             callback = callbacks, saveat = saveat)
