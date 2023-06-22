@@ -145,7 +145,7 @@ function UpwindSolver(D1::Union{AbstractDerivativeOperator{RealT}, AbstractMatri
                                    }) where {
                                              RealT
                                              }
-  UpwindSolver{RealT}(D1, D_pl, D_mi)
+  UpwindSolver{RealT}(D1, D_pl, D_min)
 end
 
 function Base.show(io::IO, solver::UpwindSolver{RealT}) where {RealT}

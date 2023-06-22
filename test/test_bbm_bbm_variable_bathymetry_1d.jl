@@ -42,10 +42,10 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_variable_bathymetry_1d")
                    atol = 1e-11, rtol = sqrt(eps()))
   end
 
-  @trixi_testset "bbm_bbm_variable_bathymetry_1d_dg_relaxation" begin
+  @trixi_testset "bbm_bbm_variable_bathymetry_1d_dg_upwind_relaxation" begin
     trixi_include(@__MODULE__,
                   joinpath(EXAMPLES_DIR,
-                           "bbm_bbm_variable_bathymetry_1d_dg_relaxation.jl"),
+                           "bbm_bbm_variable_bathymetry_1d_dg_upwind_relaxation.jl"),
                   tspan = (0.0, 1.0))
     errs = @view errors(analysis_callback)[:, :, end]
     @test isapprox(errs,
@@ -59,6 +59,24 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_variable_bathymetry_1d")
                    [3.2152058793144533e-13,
                      -1.0576435560682995e-12,
                      -1.4210854715202004e-14],
+                   atol = 1e-11, rtol = sqrt(eps()))
+  end
+
+  @trixi_testset "bbm_bbm_variable_bathymetry_1d_upwind_relaxation" begin
+    trixi_include(@__MODULE__,
+                  joinpath(EXAMPLES_DIR,
+                           "bbm_bbm_variable_bathymetry_1d_upwind_relaxation.jl"),
+                  tspan = (0.0, 1.0))
+    errs = @view errors(analysis_callback)[:, :, end]
+    @test isapprox(errs,
+                   [1.6263014396164643 2.1343190212669234 0.0
+                    2.020820789184524 2.6332272207139242 0.0
+                    1.5010215292932116e-13 1.8715064220575783e-13 0.0],
+                   atol = 500 * eps(), rtol = sqrt(eps()))
+    change_of_invariants = integrals(analysis_callback)[:, end] -
+                           integrals(analysis_callback)[:, 1]
+    @test isapprox(change_of_invariants,
+                   [-1.5010215292932116e-13, 1.8715064220575783e-13, 0.0],
                    atol = 1e-11, rtol = sqrt(eps()))
   end
 
