@@ -5,10 +5,12 @@ using DispersiveShallowWater
 
 include("test_util.jl")
 
+EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_variable_bathymetry_1d")
+
 @testset "BBMBBMVariableBathymetry1D" begin
-  @trixi_testset "bbm_bbm_1d_variable_bathymetry_basic" begin
+  @trixi_testset "bbm_bbm_variable_bathymetry_1d_basic" begin
     trixi_include(@__MODULE__,
-                  joinpath(examples_dir(), "bbm_bbm_variable_bathymetry_1d_basic.jl"),
+                  joinpath(EXAMPLES_DIR, "bbm_bbm_variable_bathymetry_1d_basic.jl"),
                   tspan = (0.0, 1.0))
     errs = @view errors(analysis_callback)[:, :, end]
     @test isapprox(errs,
@@ -23,9 +25,9 @@ include("test_util.jl")
                    atol = 1e-11, rtol = sqrt(eps()))
   end
 
-  @trixi_testset "bbm_bbm_1d_variable_bathymetry_relaxation" begin
+  @trixi_testset "bbm_bbm_variable_bathymetry_1d_relaxation" begin
     trixi_include(@__MODULE__,
-                  joinpath(examples_dir(), "bbm_bbm_variable_bathymetry_1d_relaxation.jl"),
+                  joinpath(EXAMPLES_DIR, "bbm_bbm_variable_bathymetry_1d_relaxation.jl"),
                   tspan = (0.0, 1.0))
     errs = @view errors(analysis_callback)[:, :, end]
     @test isapprox(errs,
@@ -40,9 +42,9 @@ include("test_util.jl")
                    atol = 1e-11, rtol = sqrt(eps()))
   end
 
-  @trixi_testset "bbm_bbm_1d_variable_bathymetry_dg_relaxation" begin
+  @trixi_testset "bbm_bbm_variable_bathymetry_1d_dg_relaxation" begin
     trixi_include(@__MODULE__,
-                  joinpath(examples_dir(),
+                  joinpath(EXAMPLES_DIR,
                            "bbm_bbm_variable_bathymetry_1d_dg_relaxation.jl"),
                   tspan = (0.0, 1.0))
     errs = @view errors(analysis_callback)[:, :, end]
@@ -60,9 +62,9 @@ include("test_util.jl")
                    atol = 1e-11, rtol = sqrt(eps()))
   end
 
-  @trixi_testset "bbm_bbm_1d_variable_bathymetry_well_balanced" begin
+  @trixi_testset "bbm_bbm_variable_bathymetry_1d_well_balanced" begin
     trixi_include(@__MODULE__,
-                  joinpath(examples_dir(),
+                  joinpath(EXAMPLES_DIR,
                            "bbm_bbm_variable_bathymetry_1d_well_balanced.jl"),
                   tspan = (0.0, 10.0))
     errs = @view errors(analysis_callback)[:, :, end]

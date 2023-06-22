@@ -1,8 +1,5 @@
 using OrdinaryDiffEq
 using DispersiveShallowWater
-using SummationByPartsOperators: legendre_derivative_operator, UniformPeriodicMesh1D,
-                                 couple_discontinuously
-using SparseArrays: sparse
 
 ###############################################################################
 # Semidiscretization of the BBM-BBM equations

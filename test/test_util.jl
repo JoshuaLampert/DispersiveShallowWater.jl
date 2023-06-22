@@ -20,6 +20,14 @@ macro trixi_testset(name, expr)
     using Test
     using DispersiveShallowWater
     include(@__FILE__)
+    # We define `EXAMPLES_DIR` in (nearly) all test modules and use it to
+    # get the path to the elixirs to be tested. However, that's not required
+    # and we want to fail gracefully if it's not defined.
+    try
+      import ..EXAMPLES_DIR
+    catch
+      nothing
+    end
     @testset $name $expr
     end
     nothing
