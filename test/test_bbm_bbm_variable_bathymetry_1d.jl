@@ -49,16 +49,16 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_variable_bathymetry_1d")
                   tspan = (0.0, 1.0))
     errs = @view errors(analysis_callback)[:, :, end]
     @test isapprox(errs,
-                   [1.6263014468802284 2.134318981212618 0.0
-                    2.020841127902278 2.6332103195428296 0.0
-                    3.2152058793144533e-13 1.0576435560682995e-12 0.0],
+                   [1.6263014468792105 2.134318981217363 0.0
+                    2.020841121130176 2.6332103195755705 0.0
+                    3.1796787425264483e-13 1.0584519372081047e-12 0.0],
                    atol = 500 * eps(), rtol = sqrt(eps()))
     change_of_invariants = integrals(analysis_callback)[:, end] -
                            integrals(analysis_callback)[:, 1]
     @test isapprox(change_of_invariants,
-                   [3.2152058793144533e-13,
-                     -1.0576435560682995e-12,
-                     -1.4210854715202004e-14],
+                   [3.1796787425264483e-13
+                    -1.0584519372081047e-12
+                    1.4210854715202004e-14],
                    atol = 1e-11, rtol = sqrt(eps()))
   end
 
@@ -69,14 +69,16 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_variable_bathymetry_1d")
                   tspan = (0.0, 1.0))
     errs = @view errors(analysis_callback)[:, :, end]
     @test isapprox(errs,
-                   [1.6263014396164643 2.1343190212669234 0.0
-                    2.020820789184524 2.6332272207139242 0.0
-                    1.5010215292932116e-13 1.8715064220575783e-13 0.0],
+                   [1.626301439652868 2.134319022870026 0.0
+                    2.0208207914664107 2.633227224286964 0.0
+                    1.5765166949677223e-13 1.8791999206735355e-13 0.0],
                    atol = 500 * eps(), rtol = sqrt(eps()))
     change_of_invariants = integrals(analysis_callback)[:, end] -
                            integrals(analysis_callback)[:, 1]
     @test isapprox(change_of_invariants,
-                   [-1.5010215292932116e-13, 1.8715064220575783e-13, 0.0],
+                   [-1.5765166949677223e-13
+                    1.8791999206735355e-13
+                    2.1316282072803006e-14],
                    atol = 1e-11, rtol = sqrt(eps()))
   end
 
