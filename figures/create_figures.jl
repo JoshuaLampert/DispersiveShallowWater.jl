@@ -4,7 +4,8 @@ using Plots
 
 function plot_gif_invariants(filename; ylims_eta = :auto, ylims_v = :auto, kwargs...)
   trixi_include(joinpath(examples_dir(), filename); kwargs...)
-  elixirname = splitext(splitpath(filename)[end])[1]
+  elixirname = splitext(basename(filename))[1]
+  outdir = joinpath("out", dirname(filename))
   x = DispersiveShallowWater.grid(semi)
 
   # Plot solution for eta
@@ -17,8 +18,8 @@ function plot_gif_invariants(filename; ylims_eta = :auto, ylims_v = :auto, kwarg
     u_exact = DispersiveShallowWater.wrap_array(u_ode_exact, semi)
     plot!(x, view(u_exact, 1, :), legend = true, label = "analytical η")
   end
-  isdir("out") || mkdir("out")
-  gif(anim, "out/solution_eta_" * elixirname * ".gif", fps = 25)
+  ispath(outdir) || mkpath(outdir)
+  gif(anim, joinpath(outdir, "solution_eta_" * elixirname * ".gif"), fps = 25)
 
   # Plot solution for v
   anim = @animate for step in 1:length(sol.u)
@@ -30,7 +31,7 @@ function plot_gif_invariants(filename; ylims_eta = :auto, ylims_v = :auto, kwarg
     u_exact = DispersiveShallowWater.wrap_array(u_ode_exact, semi)
     plot!(x, view(u_exact, 2, :), legend = true, label = "analytical v")
   end
-  gif(anim, "out/solution_v_" * elixirname * ".gif", fps = 25)
+  gif(anim, joinpath(outdir, "solution_v_" * elixirname * ".gif"), fps = 25)
 
   # Plot error in invariants
   tstops = DispersiveShallowWater.tstops(analysis_callback)
@@ -40,7 +41,7 @@ function plot_gif_invariants(filename; ylims_eta = :auto, ylims_v = :auto, kwarg
   for i in 1:size(integrals, 1)
     plot!(tstops, view(integrals, i, :) .- view(integrals, i, 1), label = string(labels[i]))
   end
-  savefig("out/invariants_" * elixirname * ".pdf")
+  savefig(joinpath(outdir, "invariants_" * elixirname * ".pdf"))
 end
 
 EXAMPLES_DIR_BBMBBM = "bbm_bbm_1d"
