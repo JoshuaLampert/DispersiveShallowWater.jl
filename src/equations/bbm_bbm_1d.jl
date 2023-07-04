@@ -19,12 +19,12 @@ One reference for the BBM-BBM system can be found in
 
 """
 struct BBMBBMEquations1D{RealT <: Real} <: AbstractBBMBBMEquations{1, 2}
-  gravity::RealT # gravitational constant
-  D::RealT       # constant bathymetry
+    gravity::RealT # gravitational constant
+    D::RealT       # constant bathymetry
 end
 
 function BBMBBMEquations1D(; gravity_constant, D = 1.0)
-  BBMBBMEquations1D(gravity_constant, D)
+    BBMBBMEquations1D(gravity_constant, D)
 end
 
 varnames(::BBMBBMEquations1D) = ("eta", "v")
@@ -41,16 +41,16 @@ For details see Example 5 in Section 3 from (here adapted for dimensional equati
   [DOI: 10.1023/A:1026667903256](https://doi.org/10.1023/A:1026667903256)
 """
 function initial_condition_convergence_test(x, t, equations::BBMBBMEquations1D, mesh)
-  g = equations.gravity
-  c = 5 / 2
-  rho = 18 / 5 * sqrt(equations.D * g)
-  x_t = mod(x - c * t - xmin(mesh), xmax(mesh) - xmin(mesh)) + xmin(mesh)
+    g = equations.gravity
+    c = 5 / 2
+    rho = 18 / 5 * sqrt(equations.D * g)
+    x_t = mod(x - c * t - xmin(mesh), xmax(mesh) - xmin(mesh)) + xmin(mesh)
 
-  b = 0.5 * sqrt(rho) * x_t / equations.D
-  eta = -equations.D + c^2 * rho^2 / (81 * g) +
-        5 * c^2 * rho^2 / (108 * g) * (2 / cosh(b)^2 - 3 / cosh(b)^4)
-  v = c * (1 - 5 * rho / 18) + 5 * c * rho / 6 / cosh(b)^2
-  return SVector(eta, v)
+    b = 0.5 * sqrt(rho) * x_t / equations.D
+    eta = -equations.D + c^2 * rho^2 / (81 * g) +
+          5 * c^2 * rho^2 / (108 * g) * (2 / cosh(b)^2 - 3 / cosh(b)^4)
+    v = c * (1 - 5 * rho / 18) + 5 * c * rho / 6 / cosh(b)^2
+    return SVector(eta, v)
 end
 
 function create_cache(mesh,
@@ -59,9 +59,9 @@ function create_cache(mesh,
                       initial_condition,
                       RealT,
                       uEltype)
-  invImD2_D = (I - 1 / 6 * equations.D^2 * sparse(solver.D2)) \ Matrix(solver.D1)
-  tmp1 = Array{RealT}(undef, nnodes(mesh))
-  return (invImD2_D = invImD2_D, tmp1 = tmp1)
+    invImD2_D = (I - 1 / 6 * equations.D^2 * sparse(solver.D2)) \ Matrix(solver.D1)
+    tmp1 = Array{RealT}(undef, nnodes(mesh))
+    return (invImD2_D = invImD2_D, tmp1 = tmp1)
 end
 
 # Discretization that conserves the mass (for eta and u) and the energy for periodic boundary conditions, see
@@ -70,46 +70,46 @@ end
 #   [DOI: 10.4208/cicp.OA-2020-0119](https://doi.org/10.4208/cicp.OA-2020-0119)
 function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMEquations1D, initial_condition,
               ::BoundaryConditionPeriodic, solver, cache)
-  @unpack invImD2_D, tmp1 = cache
+    @unpack invImD2_D, tmp1 = cache
 
-  u = wrap_array(u_ode, mesh, equations, solver)
-  du = wrap_array(du_ode, mesh, equations, solver)
+    u = wrap_array(u_ode, mesh, equations, solver)
+    du = wrap_array(du_ode, mesh, equations, solver)
 
-  eta = view(u, 1, :)
-  v = view(u, 2, :)
-  deta = view(du, 1, :)
-  dv = view(du, 2, :)
+    eta = view(u, 1, :)
+    v = view(u, 2, :)
+    deta = view(du, 1, :)
+    dv = view(du, 2, :)
 
-  # energy and mass conservative semidiscretization
-  @. tmp1 = -(equations.D * v + eta * v)
-  mul!(deta, invImD2_D, tmp1)
+    # energy and mass conservative semidiscretization
+    @. tmp1 = -(equations.D * v + eta * v)
+    mul!(deta, invImD2_D, tmp1)
 
-  @. tmp1 = -(equations.gravity * eta + 0.5 * v^2)
-  mul!(dv, invImD2_D, tmp1)
+    @. tmp1 = -(equations.gravity * eta + 0.5 * v^2)
+    mul!(dv, invImD2_D, tmp1)
 
-  return nothing
+    return nothing
 end
 
 @inline function waterheight_total(u, equations::BBMBBMEquations1D)
-  return u[1]
+    return u[1]
 end
 
 @inline function velocity(u, equations::BBMBBMEquations1D)
-  return u[2]
+    return u[2]
 end
 
 @inline function bathymetry(u, equations::BBMBBMEquations1D)
-  return equations.D
+    return equations.D
 end
 
 @inline function waterheight(u, equations::BBMBBMEquations1D)
-  return waterheight_total(u, equations) + bathymetry(u, equations)
+    return waterheight_total(u, equations) + bathymetry(u, equations)
 end
 
 @inline function energy_total(u, equations::BBMBBMEquations1D)
-  eta, v = u
-  e = equations.gravity * eta^2 + (equations.D + eta) * v^2
-  return e
+    eta, v = u
+    e = equations.gravity * eta^2 + (equations.D + eta) * v^2
+    return e
 end
 
 @inline entropy(u, equations::BBMBBMEquations1D) = energy_total(u, equations)
