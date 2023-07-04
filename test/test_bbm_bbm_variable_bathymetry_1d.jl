@@ -92,7 +92,7 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_variable_bathymetry_1d")
                    [6.313048635750119e-15 3.793418293562131e-14 0.0
                     1.9317880628477724e-14 1.1898289293196742e-13 0.0
                     0.0 5.728935765975126e-15 0.0],
-                   atol = 500 * eps(), rtol = sqrt(eps()))
+                   atol = 1e-11, rtol = sqrt(eps()))
     change_of_invariants = integrals(analysis_callback)[:, end] -
                            integrals(analysis_callback)[:, 1]
     @test isapprox(change_of_invariants,

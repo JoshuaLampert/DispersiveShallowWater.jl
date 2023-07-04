@@ -37,7 +37,7 @@ Copied from [Trixi.jl](https://github.com/trixi-framework/Trixi.jl).
 
 ```jldoctest
 julia> redirect_stdout(devnull) do
-           trixi_include(@__MODULE__, joinpath(examples_dir(), "bbm_bbm_1d_basic.jl"),
+           trixi_include(@__MODULE__, joinpath(examples_dir(), "bbm_bbm_1d", "bbm_bbm_1d_basic.jl"),
                          tspan=(0.0, 0.1))
            sol.t[end]
        end
