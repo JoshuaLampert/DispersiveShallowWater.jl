@@ -3,7 +3,8 @@ module TestUnit
 using Test
 using DispersiveShallowWater
 using SummationByPartsOperators: PeriodicDerivativeOperator, UniformPeriodicCoupledOperator
-using SummationByPartsOperators: derivative_order, legendre_derivative_operator,
+using SummationByPartsOperators: derivative_order,
+                                 legendre_derivative_operator,
                                  UniformPeriodicMesh1D, couple_discontinuously
 using SparseArrays: sparse, SparseMatrixCSC
 
@@ -19,31 +20,54 @@ using SparseArrays: sparse, SparseMatrixCSC
   end
 
   @testset "Solver" begin
-    mesh = Mesh1D(-1, 1, 10)
+    mesh = Mesh1D(-1.0, 1.0, 10)
     p = 3
     solver = @test_nowarn Solver(mesh, p)
-    @test solver.D isa PeriodicDerivativeOperator
+    @test solver.D1 isa PeriodicDerivativeOperator
     @test solver.D2 isa PeriodicDerivativeOperator
-    @test derivative_order(solver.D) == 1
+    @test derivative_order(solver.D1) == 1
     @test derivative_order(solver.D2) == 2
-    @test grid(solver) == grid(solver.D) == grid(solver.D2)
+    @test grid(solver) == grid(solver.D1) == grid(solver.D2)
     @test real(solver) == Float64
     @test_nowarn show(stdout, solver)
 
     Dop = legendre_derivative_operator(-1.0, 1.0, p + 1)
     sbp_mesh = UniformPeriodicMesh1D(-1.0, 1.0, 512 ÷ (p + 1))
-    D = couple_discontinuously(Dop, sbp_mesh)
+    D1 = couple_discontinuously(Dop, sbp_mesh)
     D_pl = couple_discontinuously(Dop, sbp_mesh, Val(:plus))
     D_min = couple_discontinuously(Dop, sbp_mesh, Val(:minus))
     D2 = sparse(D_pl) * sparse(D_min)
-    solver = @test_nowarn Solver(D, D2)
-    @test solver.D isa UniformPeriodicCoupledOperator
+    solver = @test_nowarn Solver(D1, D2)
+    @test solver.D1 isa UniformPeriodicCoupledOperator
     @test solver.D2 isa SparseMatrixCSC
+
+    solver = @test_nowarn UpwindSolver(mesh, p)
+    @test solver.D1 isa UniformPeriodicCoupledOperator
+    @test solver.D_pl isa UniformPeriodicCoupledOperator
+    @test solver.D_min isa UniformPeriodicCoupledOperator
+    @test solver.D2 isa SparseMatrixCSC
+    @test derivative_order(solver.D1) == 1
+    @test derivative_order(solver.D_pl) == 1
+    @test derivative_order(solver.D_min) == 1
+    @test grid(solver) == grid(solver.D1) == grid(solver.D_pl) == grid(solver.D_min)
+    @test real(solver) == Float64
+    @test_nowarn show(stdout, solver)
   end
 
   @testset "BBMBBMEquations1D" begin
     equations = @test_nowarn BBMBBMEquations1D(gravity_constant = 9.81, D = 2.0)
     u = [42.0, 2.0]
+    @test waterheight_total(u, equations) == 42.0
+    @test waterheight(u, equations) == 44.0
+    @test velocity(u, equations) == 2.0
+    @test momentum(u, equations) == 88.0
+    @test isapprox(energy_total(u, equations), 17480.84)
+    @test_nowarn show(stdout, equations)
+  end
+
+  @testset "BBMBBMVariableEquations1D" begin
+    equations = @test_nowarn BBMBBMVariableEquations1D(gravity_constant = 9.81)
+    u = [42.0, 2.0, 2.0]
     @test waterheight_total(u, equations) == 42.0
     @test waterheight(u, equations) == 44.0
     @test velocity(u, equations) == 2.0

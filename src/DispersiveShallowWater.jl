@@ -11,8 +11,12 @@ import SciMLBase: get_tmp_cache, u_modified!
 
 @reexport using StaticArrays: SVector
 using SimpleUnPack: @unpack
-using SparseArrays: sparse
-using SummationByPartsOperators: AbstractDerivativeOperator, periodic_derivative_operator,
+using SparseArrays: sparse, spdiagm
+using SummationByPartsOperators: AbstractDerivativeOperator,
+                                 UniformPeriodicMesh1D,
+                                 periodic_derivative_operator,
+                                 legendre_derivative_operator,
+                                 couple_discontinuously,
                                  derivative_order, integrate
 import SummationByPartsOperators: grid, xmin, xmax
 
@@ -26,19 +30,20 @@ include("callbacks_step/callbacks_step.jl")
 
 export examples_dir, trixi_include
 
-export BBMBBMEquations1D
+export BBMBBMEquations1D, BBMBBMVariableEquations1D
 
-export waterheight_total, waterheight, velocity, momentum, energy_total, entropy
+export waterheight_total, waterheight, velocity, momentum, energy_total, entropy,
+       lake_at_rest_error
 
 export Mesh1D, xmin, xmax, nnodes
 
-export Solver
+export Solver, UpwindSolver
 
 export Semidiscretization, semidiscretize, grid
 
 export boundary_condition_periodic
 
-export initial_condition_convergence_test
+export initial_condition_convergence_test, initial_condition_sin_bathymetry
 
 export AnalysisCallback, RelaxationCallback
 export tstops, errors, integrals, integral_names

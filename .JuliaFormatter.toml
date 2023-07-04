@@ -1,2 +1,5 @@
 style = "sciml"
-indent = 2 
+indent = 2
+
+# Python style alignment. See https://github.com/domluna/JuliaFormatter.jl/pull/732.
+yas_style_nesting = true

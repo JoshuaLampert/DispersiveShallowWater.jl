@@ -26,8 +26,8 @@ struct Semidiscretization{Mesh, Equations, InitialCondition, BoundaryConditions,
                                      cache::Cache) where {Mesh, Equations, InitialCondition,
                                                           BoundaryConditions, Solver, Cache}
     @assert ndims(mesh) == ndims(equations)
-    @assert xmin(mesh) == xmin(solver.D)
-    @assert xmax(mesh) == xmax(solver.D)
+    @assert xmin(mesh) == xmin(solver.D1)
+    @assert xmax(mesh) == xmax(solver.D1)
     @assert nnodes(mesh) == length(grid(solver))
 
     new(mesh, equations, initial_condition, boundary_conditions, solver, cache)
@@ -49,7 +49,9 @@ function Semidiscretization(mesh, equations, initial_condition, solver;
                             # while `uEltype` is used as element type of solutions etc.
                             RealT = real(solver), uEltype = RealT,
                             initial_cache = NamedTuple())
-  cache = (; create_cache(mesh, equations, solver, RealT, uEltype)..., initial_cache...)
+  cache = (;
+           create_cache(mesh, equations, solver, initial_condition, RealT, uEltype)...,
+           initial_cache...)
 
   Semidiscretization{typeof(mesh), typeof(equations), typeof(initial_condition),
                      typeof(boundary_conditions), typeof(solver), typeof(cache)}(mesh,
@@ -110,11 +112,11 @@ function PolynomialBases.integrate(func, u_ode, semi::Semidiscretization; wrap =
     u = wrap_array(u_ode, semi)
     integrals = zeros(real(semi), nvariables(semi))
     for v in eachvariable(semi.equations)
-      integrals[v] = integrate(func, u[v, :], semi.solver.D)
+      integrals[v] = integrate(func, u[v, :], semi.solver.D1)
     end
     return integrals
   else
-    integrate(func, u_ode, semi.solver.D)
+    integrate(func, u_ode, semi.solver.D1)
   end
 end
 function PolynomialBases.integrate(u, semi::Semidiscretization; wrap = true)
@@ -176,6 +178,7 @@ end
 
 """
     semidiscretize(semi::Semidiscretization, tspan)
+
 Wrap the semidiscretization `semi` as an ODE problem in the time interval `tspan`
 that can be passed to `solve` from the [SciML ecosystem](https://diffeq.sciml.ai/latest/).
 """
