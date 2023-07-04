@@ -45,7 +45,7 @@ julia> redirect_stdout(devnull) do
 ```
 """
 function trixi_include(mod::Module, elixir::AbstractString; kwargs...)
-  Base.include(ex -> replace_assignments(insert_maxiters(ex); kwargs...), mod, elixir)
+    Base.include(ex -> replace_assignments(insert_maxiters(ex); kwargs...), mod, elixir)
 end
 
 trixi_include(elixir::AbstractString; kwargs...) = trixi_include(Main, elixir; kwargs...)
@@ -59,73 +59,73 @@ walkexpr(f, x) = f(x)
 # Insert the keyword argument `maxiters` into calls to `solve` and `DispersiveShallowWater.solve`
 # with default value `10^5` if it is not already present.
 function insert_maxiters(expr)
-  maxiters_default = 10^5
+    maxiters_default = 10^5
 
-  expr = walkexpr(expr) do x
-    if x isa Expr
-      is_plain_solve = x.head === Symbol("call") && x.args[1] === Symbol("solve")
-      is_trixi_solve = (x.head === Symbol("call") && x.args[1] isa Expr &&
-                        x.args[1].head === Symbol(".") &&
-                        x.args[1].args[1] === Symbol("DispersiveShallowWater") &&
-                        x.args[1].args[2] isa QuoteNode &&
-                        x.args[1].args[2].value === Symbol("solve"))
+    expr = walkexpr(expr) do x
+        if x isa Expr
+            is_plain_solve = x.head === Symbol("call") && x.args[1] === Symbol("solve")
+            is_trixi_solve = (x.head === Symbol("call") && x.args[1] isa Expr &&
+                              x.args[1].head === Symbol(".") &&
+                              x.args[1].args[1] === Symbol("DispersiveShallowWater") &&
+                              x.args[1].args[2] isa QuoteNode &&
+                              x.args[1].args[2].value === Symbol("solve"))
 
-      if is_plain_solve || is_trixi_solve
-        # Do nothing if `maxiters` is already set as keyword argument...
-        for arg in x.args
-          if arg isa Expr && arg.head === Symbol("kw") &&
-             arg.args[1] === Symbol("maxiters")
-            return x
-          end
+            if is_plain_solve || is_trixi_solve
+                # Do nothing if `maxiters` is already set as keyword argument...
+                for arg in x.args
+                    if arg isa Expr && arg.head === Symbol("kw") &&
+                       arg.args[1] === Symbol("maxiters")
+                        return x
+                    end
+                end
+
+                # ...and insert it otherwise.
+                push!(x.args, Expr(Symbol("kw"), Symbol("maxiters"), maxiters_default))
+            end
         end
-
-        # ...and insert it otherwise.
-        push!(x.args, Expr(Symbol("kw"), Symbol("maxiters"), maxiters_default))
-      end
+        return x
     end
-    return x
-  end
 
-  return expr
+    return expr
 end
 
 # Replace assignments to `key` in `expr` by `key = val` for all `(key,val)` in `kwargs`.
 function replace_assignments(expr; kwargs...)
-  # replace explicit and keyword assignments
-  expr = walkexpr(expr) do x
-    if x isa Expr
-      for (key, val) in kwargs
-        if (x.head === Symbol("=") || x.head === :kw) && x.args[1] === Symbol(key)
-          x.args[2] = :($val)
-          # dump(x)
+    # replace explicit and keyword assignments
+    expr = walkexpr(expr) do x
+        if x isa Expr
+            for (key, val) in kwargs
+                if (x.head === Symbol("=") || x.head === :kw) && x.args[1] === Symbol(key)
+                    x.args[2] = :($val)
+                    # dump(x)
+                end
+            end
         end
-      end
+        return x
     end
-    return x
-  end
 
-  return expr
+    return expr
 end
 
 # find a (keyword or common) assignment to `destination` in `expr`
 # and return the assigned value
 function find_assignment(expr, destination)
-  # declare result to be able to assign to it in the closure
-  local result
+    # declare result to be able to assign to it in the closure
+    local result
 
-  # find explicit and keyword assignments
-  walkexpr(expr) do x
-    if x isa Expr
-      if (x.head === Symbol("=") || x.head === :kw) &&
-         x.args[1] === Symbol(destination)
-        result = x.args[2]
-        # dump(x)
-      end
+    # find explicit and keyword assignments
+    walkexpr(expr) do x
+        if x isa Expr
+            if (x.head === Symbol("=") || x.head === :kw) &&
+               x.args[1] === Symbol(destination)
+                result = x.args[2]
+                # dump(x)
+            end
+        end
+        return x
     end
-    return x
-  end
 
-  result
+    result
 end
 
 """
@@ -151,26 +151,26 @@ See also: [Infiltrator.jl](https://github.com/JuliaDebug/Infiltrator.jl)
     considered a breaking change.
 """
 macro autoinfiltrate(condition = true)
-  pkgid = Base.PkgId(Base.UUID("5903a43b-9cc3-4c30-8d17-598619ec4e9b"), "Infiltrator")
-  if !haskey(Base.loaded_modules, pkgid)
-    try
-      Base.eval(Main, :(using Infiltrator))
-    catch err
-      @error "Cannot load Infiltrator.jl. Make sure it is included in your environment stack."
+    pkgid = Base.PkgId(Base.UUID("5903a43b-9cc3-4c30-8d17-598619ec4e9b"), "Infiltrator")
+    if !haskey(Base.loaded_modules, pkgid)
+        try
+            Base.eval(Main, :(using Infiltrator))
+        catch err
+            @error "Cannot load Infiltrator.jl. Make sure it is included in your environment stack."
+        end
     end
-  end
-  i = get(Base.loaded_modules, pkgid, nothing)
-  lnn = LineNumberNode(__source__.line, __source__.file)
+    i = get(Base.loaded_modules, pkgid, nothing)
+    lnn = LineNumberNode(__source__.line, __source__.file)
 
-  if i === nothing
+    if i === nothing
+        return Expr(:macrocall,
+                    Symbol("@warn"),
+                    lnn,
+                    "Could not load Infiltrator.")
+    end
+
     return Expr(:macrocall,
-                Symbol("@warn"),
+                Expr(:., i, QuoteNode(Symbol("@infiltrate"))),
                 lnn,
-                "Could not load Infiltrator.")
-  end
-
-  return Expr(:macrocall,
-              Expr(:., i, QuoteNode(Symbol("@infiltrate"))),
-              lnn,
-              esc(condition))
+                esc(condition))
 end

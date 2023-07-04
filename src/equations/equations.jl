@@ -80,7 +80,7 @@ Return the momentum of the conserved variables `u` for a given set of
 of the correct length `nvariables(equations)`.
 """
 @inline function momentum(u, equations::AbstractEquations)
-  return waterheight(u, equations) * velocity(u, equations)
+    return waterheight(u, equations) * velocity(u, equations)
 end
 
 """
@@ -107,30 +107,30 @@ function energy_total end
 
 # Add methods to show some information on systems of equations.
 function Base.show(io::IO, equations::AbstractEquations)
-  # Since this is not performance-critical, we can use `@nospecialize` to reduce latency.
-  @nospecialize equations # reduce precompilation time
+    # Since this is not performance-critical, we can use `@nospecialize` to reduce latency.
+    @nospecialize equations # reduce precompilation time
 
-  print(io, get_name(equations), " with ")
-  if nvariables(equations) == 1
-    println(io, "one variable")
-  else
-    println(io, nvariables(equations), " variables")
-  end
+    print(io, get_name(equations), " with ")
+    if nvariables(equations) == 1
+        println(io, "one variable")
+    else
+        println(io, nvariables(equations), " variables")
+    end
 end
 
 function Base.show(io::IO, ::MIME"text/plain", equations::AbstractEquations)
-  # Since this is not performance-critical, we can use `@nospecialize` to reduce latency.
-  @nospecialize equations # reduce precompilation time
+    # Since this is not performance-critical, we can use `@nospecialize` to reduce latency.
+    @nospecialize equations # reduce precompilation time
 
-  if get(io, :compact, false)
-    show(io, equations)
-  else
-    println(io, get_name(equations))
-    println(io, "#variables: ", nvariables(equations))
-    for variable in eachvariable(equations)
-      println("    variable " * string(variable), ": ", varnames(equations)[variable])
+    if get(io, :compact, false)
+        show(io, equations)
+    else
+        println(io, get_name(equations))
+        println(io, "#variables: ", nvariables(equations))
+        for variable in eachvariable(equations)
+            println("    variable " * string(variable), ": ", varnames(equations)[variable])
+        end
     end
-  end
 end
 
 @inline Base.ndims(::AbstractEquations{NDIMS}) where {NDIMS} = NDIMS

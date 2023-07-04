@@ -15,17 +15,17 @@ equations = BBMBBMVariableEquations1D(gravity_constant = 9.81, eta0 = 2.0)
 function initial_condition_discontinuous_well_balancedness(x, t,
                                                            equations::BBMBBMVariableEquations1D,
                                                            mesh)
-  # Set the background values
-  eta = equations.eta0
-  v = 0.0
-  D = -1.0
+    # Set the background values
+    eta = equations.eta0
+    v = 0.0
+    D = -1.0
 
-  # Setup a discontinuous bottom topography
-  if x >= 0.5 && x <= 0.75
-    D = -2.0 - 0.5 * sinpi(2.0 * x)
-  end
+    # Setup a discontinuous bottom topography
+    if x >= 0.5 && x <= 0.75
+        D = -2.0 - 0.5 * sinpi(2.0 * x)
+    end
 
-  return SVector(eta, v, D)
+    return SVector(eta, v, D)
 end
 
 initial_condition = initial_condition_discontinuous_well_balancedness
