@@ -46,6 +46,6 @@ export boundary_condition_periodic
 export initial_condition_convergence_test, initial_condition_sin_bathymetry
 
 export AnalysisCallback, RelaxationCallback
-export tstops, errors, integrals, integral_names
+export tstops, errors, integrals
 
 end

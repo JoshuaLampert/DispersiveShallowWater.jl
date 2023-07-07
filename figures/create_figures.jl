@@ -38,11 +38,9 @@ function plot_gif_invariants(filename; ylims_eta = :auto, ylims_v = :auto, kwarg
     # Plot error in invariants
     tstops = DispersiveShallowWater.tstops(analysis_callback)
     integrals = DispersiveShallowWater.integrals(analysis_callback)
-    labels = integral_names(analysis_callback)
     plot(xlabel = "t", ylabel = "change in invariant")
-    for i in 1:size(integrals, 1)
-        plot!(tstops, view(integrals, i, :) .- view(integrals, i, 1),
-              label = string(labels[i]))
+    for (name, integral) in pairs(integrals)
+        plot!(tstops, integral .- integral[1], label = string(name))
     end
     savefig(joinpath(outdir, "invariants_" * elixirname * ".pdf"))
 end

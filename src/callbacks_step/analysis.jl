@@ -113,7 +113,8 @@ end
 """
     errors(analysis_callback)
     
-Return the computed errors for each timestep. The shape is (nerrors, nvariables, ntimesteps).
+Return the computed errors for each timestep as a named tuple.
+The shape of each entry is (nvariables, ntimesteps).
 """
 function errors(cb::DiscreteCallback{
                                      Condition,
@@ -122,15 +123,18 @@ function errors(cb::DiscreteCallback{
                                                Affect! <:
                                                AnalysisCallback}
     analysis_callback = cb.affect!
-    # reshape to return 3D array of shape (nerrors, nvariables, ntimesteps)
-    return reshape(reduce(hcat, analysis_callback.errors),
-                   size(analysis_callback.errors[1])..., :)
+    names = collect(analysis_callback.analysis_errors)
+    # "transpose" vector of matrices, first write it as 3d array and then convert it back to vector of matrices
+    errors_array = reshape(reduce(hcat, analysis_callback.errors),
+                           size(analysis_callback.errors[1])..., :)
+    errors_vector = [errors_array[i, :, :] for i in 1:size(errors_array)[1]]
+    return (; zip(names, errors_vector)...)
 end
 
 """
     integrals(analysis_callback)
 
-Return the computed integrals for each timestep. The shape is (nintegrals, ntimesteps).
+Return the computed integrals for each timestep as a named tuple.
 """
 function integrals(cb::DiscreteCallback{
                                         Condition,
@@ -139,23 +143,10 @@ function integrals(cb::DiscreteCallback{
                                                   Affect! <:
                                                   AnalysisCallback}
     analysis_callback = cb.affect!
-    # reshape to return Matrix of shape (nintegrals, ntimesteps)
-    return reduce(hcat, analysis_callback.integrals)
-end
-
-"""
-    integral_names(analysis_callback)
-
-Return the names of the computed integrals.
-"""
-function integral_names(cb::DiscreteCallback{
-                                             Condition,
-                                             Affect!
-                                             }) where {Condition,
-                                                       Affect! <:
-                                                       AnalysisCallback}
-    analysis_callback = cb.affect!
-    return nameof.(analysis_callback.analysis_integrals)
+    names = collect(Symbol.(nameof.(analysis_callback.analysis_integrals)))
+    # "transpose" vector of vector
+    integrals = collect(eachrow(reduce(hcat, analysis_callback.integrals)))
+    return (; zip(names, integrals)...)
 end
 
 function initialize!(cb::DiscreteCallback{Condition, Affect!}, u_ode, t,
