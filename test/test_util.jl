@@ -8,7 +8,8 @@ using Test: @test
                                 change_velocity=nothing,
                                 change_entropy=nothing,
                                 lake_at_rest=nothing,
-                                atol=10*eps(), rtol=0.001)
+                                atol=1e-12, rtol=sqrt(eps()),
+                                atol_ints=1e-11, rtol_ints=sqrt(eps()))
 
 Test by calling `trixi_include(elixir; parameters...)`.
 By default, only the absence of error output is checked.
@@ -17,7 +18,7 @@ errors are compared approximately against these reference values, using `atol, r
 as absolute/relative tolerance.
 If `change_waterheight`, `change_velocity`, `change_entropy` or `lake_at_rest` are specified,
 in addition the resulting changes of the waterheight/velocity/entropy/lake-at-rest-error are
-compared approximately against these reference values, using `atol, rtol` as absolute/relative tolerance.
+compared approximately against these reference values, using `atol_ints`, `rtol_ints` as absolute/relative tolerance.
 """
 macro test_trixi_include(elixir, args...)
     local l2 = get_kwarg(args, :l2, nothing)
@@ -27,14 +28,17 @@ macro test_trixi_include(elixir, args...)
     local change_velocity = get_kwarg(args, :change_velocity, nothing)
     local change_entropy = get_kwarg(args, :change_entropy, nothing)
     local lake_at_rest = get_kwarg(args, :lake_at_rest, nothing)
-    local atol = get_kwarg(args, :atol, 500 * eps())
+    local atol = get_kwarg(args, :atol, 1e-12)
     local rtol = get_kwarg(args, :rtol, sqrt(eps()))
+    local atol_ints = get_kwarg(args, :atol, 1e-11)
+    local rtol_ints = get_kwarg(args, :rtol, sqrt(eps()))
 
     local kwargs = Pair{Symbol, Any}[]
     for arg in args
         if (arg.head == :(=) &&
             !(arg.args[1] in (:l2, :linf, :cons_error, :change_waterheight,
-                              :change_velocity, :change_entropy, :atol, :rtol)))
+                              :change_velocity, :change_entropy, :atol, :rtol, :atol_ints,
+                              :rtol_ints)))
             push!(kwargs, Pair(arg.args...))
         end
     end
@@ -85,29 +89,29 @@ macro test_trixi_include(elixir, args...)
                 waterheight_change_measured = ints.waterheight_total[end] -
                                               ints.waterheight_total[1]
                 @test isapprox($change_waterheight, waterheight_change_measured,
-                               atol = $atol, rtol = $rtol)
+                               atol = $atol_ints, rtol = $rtol_ints)
             end
 
             if !isnothing($change_velocity)
                 velocity_change_measured = ints.velocity[end] - ints.velocity[1]
-                @test isapprox($change_velocity, velocity_change_measured, atol = $atol,
-                               rtol = $rtol)
+                @test isapprox($change_velocity, velocity_change_measured,
+                               atol = $atol_ints,
+                               rtol = $rtol_ints)
             end
 
             if !isnothing($change_entropy)
                 entropy_change_measured = ints.entropy[end] - ints.entropy[1]
-                @test isapprox($change_entropy, entropy_change_measured, atol = $atol,
-                               rtol = $rtol)
+                @test isapprox($change_entropy, entropy_change_measured, atol = $atol_ints,
+                               rtol = $rtol_ints)
             end
 
             if !isnothing($lake_at_rest)
                 lake_at_rest_measured = ints.lake_at_rest_error[end]
-                @test isapprox($lake_at_rest, lake_at_rest_measured, atol = $atol,
-                               rtol = $rtol)
+                @test isapprox($lake_at_rest, lake_at_rest_measured, atol = $atol_ints,
+                               rtol = $rtol_ints)
             end
         end
         println("═"^100)
-        println("\n\n")
     end
 end
 
