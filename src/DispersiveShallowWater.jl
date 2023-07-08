@@ -3,10 +3,11 @@ module DispersiveShallowWater
 using DiffEqBase
 using LinearAlgebra: mul!, ldiv!, factorize, I
 using PolynomialBases
+using RecipesBase
 using Reexport: @reexport
 using Roots: AlefeldPotraShi, find_zero
 
-using SciMLBase: CallbackSet, DiscreteCallback, ODEProblem
+using SciMLBase: CallbackSet, DiscreteCallback, ODEProblem, ODESolution
 import SciMLBase: get_tmp_cache, u_modified!
 
 @reexport using StaticArrays: SVector
@@ -27,6 +28,7 @@ include("solver.jl")
 include("semidiscretization.jl")
 include("equations/equations.jl")
 include("callbacks_step/callbacks_step.jl")
+include("visualization.jl")
 
 export examples_dir, trixi_include
 
