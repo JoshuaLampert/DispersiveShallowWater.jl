@@ -4,7 +4,7 @@ struct PlotData{Ylim}
     step::Integer
     # call this yli because ylim, ylimits etc. are already occupied by Plots.jl, but we want a vector
     yli::Ylim
-end 
+end
 
 @recipe function f(plotdata::PlotData)
     @unpack semisol, plot_initial, step, yli = plotdata
@@ -86,7 +86,9 @@ end
 end
 
 # TODO: Only plot change in invariants for now, also plot errors?
-@recipe function f(cb::DiscreteCallback{Condition, Affect!}) where {Condition, Affect! <: AnalysisCallback}
+@recipe function f(cb::DiscreteCallback{Condition, Affect!}) where {Condition,
+                                                                    Affect! <:
+                                                                    AnalysisCallback}
     t = tstops(cb)
     ints = integrals(cb)
     plot_title --> "change in invariants"

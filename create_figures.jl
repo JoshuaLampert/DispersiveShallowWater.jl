@@ -31,7 +31,8 @@ plot_gif_invariants(joinpath(EXAMPLES_DIR_BBMBBM, "bbm_bbm_1d_basic.jl");
 ###############################################################################
 # Travelling wave solution for one-dimensional BBM-BBM equations with periodic boundary conditions
 # using discontinuously coupled Legendre SBP operators
-plot_gif_invariants(joinpath(EXAMPLES_DIR_BBMBBM, "bbm_bbm_1d_dg.jl"); ylims = [(-4, 2), :auto])
+plot_gif_invariants(joinpath(EXAMPLES_DIR_BBMBBM, "bbm_bbm_1d_dg.jl");
+                    ylims = [(-4, 2), :auto])
 
 ###############################################################################
 # Travelling wave solution for one-dimensional BBM-BBM equations with periodic boundary conditions
