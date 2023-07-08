@@ -11,7 +11,7 @@ end
     semi, sol = semisol
     nvars = nvariables(semi)
 
-    # TODO: hardcode this for now, might need to adjuts this in the future
+    # TODO: hardcode this for now, might need to adjust this in the future
     nsubplots = 2
     if isnothing(yli)
         yli = fill(:auto, nsubplots)
