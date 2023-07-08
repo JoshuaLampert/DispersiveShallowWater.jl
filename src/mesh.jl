@@ -42,6 +42,7 @@ end
 
 @inline Base.ndims(mesh::Mesh1D) = 1
 @inline nnodes(mesh::Mesh1D) = mesh.N
+@inline eachnode(mesh::Mesh1D) = Base.OneTo(nnodes(mesh))
 @inline Base.real(mesh::Mesh1D{RealT}) where {RealT} = RealT
 
 xmin(mesh::Mesh1D) = mesh.xmin

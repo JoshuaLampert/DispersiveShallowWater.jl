@@ -98,9 +98,9 @@ function Base.show(io::IO, ::MIME"text/plain", semi::Semidiscretization)
 end
 
 @inline Base.ndims(semi::Semidiscretization) = ndims(semi.mesh)
-
 @inline nvariables(semi::Semidiscretization) = nvariables(semi.equations)
-
+@inline nnodes(semi::Semidiscretization) = nnodes(semi.mesh)
+@inline eachnode(semi::Semidiscretization) = eachnode(semi.mesh)
 @inline Base.real(semi::Semidiscretization) = real(semi.solver)
 
 """
