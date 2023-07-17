@@ -85,28 +85,17 @@ function create_cache(mesh,
         D[i] = initial_condition(x[i], 0.0, equations, mesh)[3]
     end
     K = Diagonal(D .^ 2)
-    invImDKD_D = (I - 1 / 6 * sparse(solver.D1) * K * sparse(solver.D1)) \ Matrix(solver.D1)
-    invImD2K_D = (I - 1 / 6 * sparse(solver.D2) * K) \ Matrix(solver.D1)
-    tmp1 = Array{RealT}(undef, nnodes(mesh))
-    return (invImDKD_D = invImDKD_D, invImD2K_D = invImD2K_D, tmp1 = tmp1)
-end
-
-function create_cache(mesh,
-                      equations::BBMBBMVariableEquations1D,
-                      solver::UpwindSolver,
-                      initial_condition,
-                      RealT,
-                      uEltype)
-    #  Assume D is independent of time and compute D evaluated at mesh points once.
-    D = Array{RealT}(undef, nnodes(mesh))
-    x = grid(solver)
-    for i in eachnode(solver)
-        D[i] = initial_condition(x[i], 0.0, equations, mesh)[3]
+    if solver.D1 isa PeriodicDerivativeOperator
+        invImDKD_D = (I - 1 / 6 * sparse(solver.D1) * K * sparse(solver.D1)) \
+                     Matrix(solver.D1)
+        invImD2K_D = (I - 1 / 6 * sparse(solver.D2) * K) \ Matrix(solver.D1)
+    elseif solver.D1 isa PeriodicUpwindOperators
+        invImDKD_D = (I - 1 / 6 * sparse(solver.D1.minus) * K * sparse(solver.D1.plus)) \
+                     Matrix(solver.D1.minus)
+        invImD2K_D = (I - 1 / 6 * sparse(solver.D2) * K) \ Matrix(solver.D1.plus)
+    else
+        @error "unknown type of first derivative operator"
     end
-    K = Diagonal(D .^ 2)
-    invImDKD_D = (I - 1 / 6 * sparse(solver.D_min) * K * sparse(solver.D_pl)) \
-                 Matrix(solver.D_min)
-    invImD2K_D = (I - 1 / 6 * sparse(solver.D2) * K) \ Matrix(solver.D_pl)
     tmp1 = Array{RealT}(undef, nnodes(mesh))
     return (invImDKD_D = invImDKD_D, invImD2K_D = invImD2K_D, tmp1 = tmp1)
 end
