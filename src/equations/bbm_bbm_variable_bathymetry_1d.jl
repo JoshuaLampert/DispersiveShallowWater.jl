@@ -66,7 +66,7 @@ An initial condition with a gaussion bump as initial water height with still wat
 a sine-shaped bathymetry.
 """
 function initial_condition_sin_bathymetry(x, t, equations::BBMBBMVariableEquations1D, mesh)
-    eta = 1.0 + 2.0 * exp(-12.0 * x^2)
+    eta = 2.0 + 2.0 * exp(-12.0 * x^2)
     v = 0.0
     D = -1.0 + 0.1 * sinpi(2.0 * x)
     return SVector(eta, v, D)
@@ -150,11 +150,11 @@ end
 end
 
 @inline function bathymetry(u, equations::BBMBBMVariableEquations1D)
-    return u[3]
+    return -u[3]
 end
 
 @inline function waterheight(u, equations::BBMBBMVariableEquations1D)
-    return waterheight_total(u, equations) + bathymetry(u, equations)
+    return waterheight_total(u, equations) - bathymetry(u, equations)
 end
 
 @inline function energy_total(u, equations::BBMBBMVariableEquations1D)

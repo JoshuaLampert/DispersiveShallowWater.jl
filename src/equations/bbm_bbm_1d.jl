@@ -99,11 +99,11 @@ end
 end
 
 @inline function bathymetry(u, equations::BBMBBMEquations1D)
-    return equations.D
+    return -equations.D
 end
 
 @inline function waterheight(u, equations::BBMBBMEquations1D)
-    return waterheight_total(u, equations) + bathymetry(u, equations)
+    return waterheight_total(u, equations) - bathymetry(u, equations)
 end
 
 @inline function energy_total(u, equations::BBMBBMEquations1D)
