@@ -1,7 +1,7 @@
 module DispersiveShallowWater
 
 using DiffEqBase
-using LinearAlgebra: mul!, ldiv!, factorize, I
+using LinearAlgebra: mul!, ldiv!, factorize, I, Diagonal
 using PolynomialBases
 using RecipesBase
 using Reexport: @reexport
@@ -12,7 +12,7 @@ import SciMLBase: get_tmp_cache, u_modified!
 
 @reexport using StaticArrays: SVector
 using SimpleUnPack: @unpack
-using SparseArrays: sparse, spdiagm
+using SparseArrays: sparse
 using SummationByPartsOperators: AbstractDerivativeOperator,
                                  UniformPeriodicMesh1D,
                                  periodic_derivative_operator,
