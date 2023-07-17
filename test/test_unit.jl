@@ -2,10 +2,12 @@ module TestUnit
 
 using Test
 using DispersiveShallowWater
-using SummationByPartsOperators: PeriodicDerivativeOperator, UniformPeriodicCoupledOperator
-using SummationByPartsOperators: derivative_order,
+using SummationByPartsOperators: PeriodicDerivativeOperator, UniformPeriodicCoupledOperator,
+                                 PeriodicUpwindOperators
+using SummationByPartsOperators: derivative_order, periodic_derivative_operator,
                                  legendre_derivative_operator,
-                                 UniformPeriodicMesh1D, couple_discontinuously
+                                 UniformPeriodicMesh1D, couple_discontinuously,
+                                 upwind_operators
 using SparseArrays: sparse, SparseMatrixCSC
 
 @testset "Unit tests" begin
@@ -33,25 +35,25 @@ using SparseArrays: sparse, SparseMatrixCSC
 
         Dop = legendre_derivative_operator(-1.0, 1.0, p + 1)
         sbp_mesh = UniformPeriodicMesh1D(-1.0, 1.0, 512 ÷ (p + 1))
-        D1 = couple_discontinuously(Dop, sbp_mesh)
-        D_pl = couple_discontinuously(Dop, sbp_mesh, Val(:plus))
-        D_min = couple_discontinuously(Dop, sbp_mesh, Val(:minus))
-        D2 = sparse(D_pl) * sparse(D_min)
-        solver = @test_nowarn Solver(D1, D2)
+        central = couple_discontinuously(Dop, sbp_mesh)
+        minus = couple_discontinuously(Dop, sbp_mesh, Val(:minus))
+        plus = couple_discontinuously(Dop, sbp_mesh, Val(:plus))
+        D2 = sparse(plus) * sparse(minus)
+        solver = @test_nowarn Solver(central, D2)
         @test solver.D1 isa UniformPeriodicCoupledOperator
+        @test solver.D2 isa SparseMatrixCSC
+        D1 = PeriodicUpwindOperators(minus, central, plus)
+        solver = @test_nowarn Solver(D1, D2)
+        @test solver.D1 isa PeriodicUpwindOperators
         @test solver.D2 isa SparseMatrixCSC
 
-        solver = @test_nowarn UpwindSolver(mesh, p)
-        @test solver.D1 isa UniformPeriodicCoupledOperator
-        @test solver.D_pl isa UniformPeriodicCoupledOperator
-        @test solver.D_min isa UniformPeriodicCoupledOperator
+        D1 = upwind_operators(periodic_derivative_operator; derivative_order = 1,
+                              accuracy_order = p, xmin = -1.0, xmax = 1.0, N = 10)
+        D2 = sparse(D1.plus) * sparse(D1.minus)
+        solver = @test_nowarn Solver(D1, D2)
+        @test solver.D1 isa PeriodicUpwindOperators
         @test solver.D2 isa SparseMatrixCSC
         @test derivative_order(solver.D1) == 1
-        @test derivative_order(solver.D_pl) == 1
-        @test derivative_order(solver.D_min) == 1
-        @test grid(solver) == grid(solver.D1) == grid(solver.D_pl) == grid(solver.D_min)
-        @test real(solver) == Float64
-        @test_nowarn show(stdout, solver)
     end
 
     @testset "BBMBBMEquations1D" begin
