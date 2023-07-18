@@ -22,7 +22,7 @@ function initial_condition_discontinuous_well_balancedness(x, t,
 
     # Setup a discontinuous bottom topography
     if x >= 0.5 && x <= 0.75
-        D = -2.0 - 0.5 * sinpi(2.0 * x)
+        D = -1.5 - 0.5 * sinpi(2.0 * x)
     end
 
     return SVector(eta, v, D)
@@ -55,7 +55,6 @@ analysis_callback = AnalysisCallback(semi; interval = 10,
                                      extra_analysis_integrals = (waterheight_total,
                                                                  velocity, entropy,
                                                                  lake_at_rest_error))
-# Always put relaxation_callback before analysis_callback to guarantee conservation of the invariant
 callbacks = CallbackSet(analysis_callback)
 
 dt = 0.5

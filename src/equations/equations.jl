@@ -149,6 +149,10 @@ Default analysis integrals used by the [`AnalysisCallback`](@ref).
 """
 default_analysis_integrals(::AbstractEquations) = Symbol[]
 
+# Shallow water equations
+abstract type AbstractShallowWaterEquations{NDIMS, NVARS} <: AbstractEquations{NDIMS, NVARS} end
+include("shallow_water_1d.jl")
+
 # BBM-BBM equations
 abstract type AbstractBBMBBMEquations{NDIMS, NVARS} <: AbstractEquations{NDIMS, NVARS} end
 include("bbm_bbm_1d.jl")

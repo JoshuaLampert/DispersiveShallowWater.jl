@@ -41,15 +41,22 @@ end
 # Also allow to pass custom SBP operators (for convenience without explicitly specifying the type)
 """
     Solver(D1, D2)
+    Solver(D1)
 
 Create a solver, where `D1` is an `AbstractDerivativeOperator`  from [SummationByPartsOperators.jl](https://github.com/ranocha/SummationByPartsOperators.jl)
-of first `derivative_order` and `D2` is an `AbstractDerivativeOperator` of second `derivative_order` or an `AbstractMatrix`.
+of first `derivative_order` and `D2` is an `AbstractDerivativeOperator` of second `derivative_order` or an `AbstractMatrix`. If `D2` is not provided
+`D2 = sparse(D1) * sparse(D1)` is used.
 Both summation by parts operators should be associated with the same grid.
 """
 function Solver(D1::AbstractDerivativeOperator{RealT},
                 D2::Union{AbstractDerivativeOperator{RealT}, AbstractMatrix{RealT}}) where {
                                                                                             RealT
                                                                                             }
+    Solver{RealT}(D1, D2)
+end
+
+function Solver(D1::AbstractDerivativeOperator{RealT}) where {RealT}
+    D2 = sparse(D1) * sparse(D1)
     Solver{RealT}(D1, D2)
 end
 
