@@ -77,6 +77,20 @@ using SparseArrays: sparse, SparseMatrixCSC
         @test isapprox(energy_total(u, equations), 17480.84)
         @test_nowarn show(stdout, equations)
     end
+
+    @testset "SvaerdKalischEquations1D" begin
+        equations = @test_nowarn SvaerdKalischEquations1D(gravity_constant = 9.81,
+                                                          alpha = 0.0004040404040404049,
+                                                          beta = 0.49292929292929294,
+                                                          gamma = 0.15707070707070708)
+        u = [42.0, 2.0, 2.0]
+        @test waterheight_total(u, equations) == 42.0
+        @test waterheight(u, equations) == 44.0
+        @test velocity(u, equations) == 2.0
+        @test momentum(u, equations) == 88.0
+        @test isapprox(energy_total(u, equations), 17480.84)
+        @test_nowarn show(stdout, equations)
+    end
 end
 
 end # module

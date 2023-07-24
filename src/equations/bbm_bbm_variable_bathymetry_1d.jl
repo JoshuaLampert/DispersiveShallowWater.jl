@@ -1,5 +1,5 @@
 @doc raw"""
-    BBMBBMVariableEquations1D(gravity, eta0)
+    BBMBBMVariableEquations1D(gravity, eta0 = 0.0)
 
 BBM-BBM (Benjamin–Bona–Mahony) system in one spatial dimension with spatially varying bathymetry. The equations are given by
 ```math
@@ -12,7 +12,7 @@ The unknown quantities of the BBM-BBM equations are the total water height ``\et
 The gravitational constant is denoted by `g` and the bottom topography (bathymetry) ``b = -D > 0``. The water height above the bathymetry is therefore given by
 ``h = \eta + D``.
 
-One reference for the BBM-BBM system with spatially variying bathymetry can be found in
+One reference for the BBM-BBM system with spatially varying bathymetry can be found in
 - Samer Israwi, Henrik Kalisch, Theodoros Katsaounis, Dimitrios Mitsotakis (2022)
   A regularized shallow-water waves system with slip-wall boundary conditions in a basin: theory and numerical analysis
   [DOI: 10.1088/1361-6544/ac3c29](https://doi.org/10.1088/1361-6544/ac3c29)
@@ -62,7 +62,7 @@ end
 """
     initial_condition_sin_bathymetry(x, t, equations::BBMBBMVariableEquations1D, mesh)
 
-An initial condition with a gaussion bump as initial water height with still water and
+An initial condition with a Gaussian bump as initial water height with still water and
 a sine-shaped bathymetry.
 """
 function initial_condition_sin_bathymetry(x, t, equations::BBMBBMVariableEquations1D, mesh)
@@ -100,7 +100,7 @@ function create_cache(mesh,
     return (invImDKD_D = invImDKD_D, invImD2K_D = invImD2K_D, tmp1 = tmp1)
 end
 
-# Discretization that conserves the mass (for eta and u) and the energy for periodic boundary conditions, see
+# Discretization that conserves the mass (for eta and v) and the energy for periodic boundary conditions, see
 # - Hendrik Ranocha, Dimitrios Mitsotakis and David I. Ketcheson (2020)
 #   A Broad Class of Conservative Numerical Methods for Dispersive Wave Equations
 #   [DOI: 10.4208/cicp.OA-2020-0119](https://doi.org/10.4208/cicp.OA-2020-0119)

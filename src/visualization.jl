@@ -6,6 +6,13 @@ struct PlotData{Ylim}
     yli::Ylim
 end
 
+struct PlotDataOverTime{RealT, Ylim}
+    semisol::Pair{<:Semidiscretization, <:ODESolution}
+    x::RealT
+    # call this yli because ylim, ylimits etc. are already occupied by Plots.jl, but we want a vector
+    yli::Ylim
+end
+
 @recipe function f(plotdata::PlotData)
     @unpack semisol, plot_initial, step, yli = plotdata
     semi, sol = semisol
@@ -40,7 +47,10 @@ end
     size --> (1200, 800)
     layout := nsubplots
 
-    for i in 1:nsubplots
+    for i in 1:nvars
+        # Don't plot bathymetry in separate subplot
+        names[i] == "D" && continue
+
         if plot_initial == true
             @series begin
                 subplot := i
@@ -49,8 +59,6 @@ end
             end
         end
 
-        # Don't plot bathymetry in separate subplot
-        names[i] == "D" && continue
         @series begin
             subplot := i
             label := names[i]
@@ -75,6 +83,47 @@ end
     end
 end
 
+@recipe function f(plotdata_over_time::PlotDataOverTime)
+    @unpack semisol, x, yli = plotdata_over_time
+    semi, sol = semisol
+    nvars = nvariables(semi)
+
+    # TODO: hardcode this for now, might need to adjust this in the future
+    nsubplots = 2
+    if isnothing(yli)
+        yli = fill(:auto, nsubplots)
+    end
+    equations = semi.equations
+
+    index = argmin(abs.(grid(semi) .- x))
+    data = zeros(nvars, length(sol.t))
+    for i in 1:nvars
+        for k in 1:length(sol.t)
+            data[i, k] = wrap_array(sol.u[k], semi)[i, index]
+        end
+    end
+
+    names = (varnames(equations))
+    plot_title -->
+    "$(get_name(semi.equations)) at x = $(round(grid(semi)[index], digits=5))"
+    size --> (1200, 800)
+    layout := nsubplots
+
+    for i in 1:nvars
+        # Don't plot bathymetry in separate subplot
+        names[i] == "D" && continue
+        @series begin
+            subplot := i
+            label := names[i]
+            xguide := "t"
+            yguide := names[i]
+            title := names[i]
+            ylim := yli[i]
+            sol.t, data[i, :]
+        end
+    end
+end
+
 @recipe function f(semisol::Pair{<:Semidiscretization, <:ODESolution}; plot_initial = false,
                    step = -1, yli = nothing)
     PlotData(semisol, plot_initial, step, yli)
@@ -83,6 +132,15 @@ end
 @recipe function f(semi::Semidiscretization, sol::ODESolution; plot_initial = false,
                    step = -1, yli = nothing)
     PlotData(semi => sol, plot_initial, step, yli)
+end
+
+@recipe function f(semisol::Pair{<:Semidiscretization, <:ODESolution}, x_value;
+                   yli = nothing)
+    PlotDataOverTime(semisol, x_value, yli)
+end
+
+@recipe function f(semi::Semidiscretization, sol::ODESolution, x_value; yli = nothing)
+    PlotDataOverTime(semi => sol, x_value, yli)
 end
 
 # TODO: Only plot change in invariants for now, also plot errors?

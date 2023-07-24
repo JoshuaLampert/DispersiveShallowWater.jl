@@ -30,7 +30,8 @@ include("visualization.jl")
 
 export examples_dir, trixi_include
 
-export BBMBBMEquations1D, BBMBBMVariableEquations1D
+export BBMBBMEquations1D, BBMBBMVariableEquations1D, SvärdKalischEquations1D,
+       SvaerdKalischEquations1D
 
 export waterheight_total, waterheight, velocity, momentum, energy_total, entropy,
        lake_at_rest_error
@@ -43,7 +44,8 @@ export Semidiscretization, semidiscretize, grid
 
 export boundary_condition_periodic
 
-export initial_condition_convergence_test, initial_condition_sin_bathymetry
+export initial_condition_convergence_test, initial_condition_sin_bathymetry,
+       initial_condition_dingemans
 
 export AnalysisCallback, RelaxationCallback
 export tstops, errors, integrals

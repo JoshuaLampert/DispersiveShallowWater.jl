@@ -16,7 +16,7 @@ By default, only the absence of error output is checked.
 If `l2`, `linf` or `cons_error` are specified, in addition the resulting L2/Linf/conservation
 errors are compared approximately against these reference values, using `atol, rtol`
 as absolute/relative tolerance.
-If `change_waterheight`, `change_velocity`, `change_entropy` or `lake_at_rest` are specified,
+If `change_waterheight`, `change_velocity`, `change_momemtum`, `change_entropy` or `lake_at_rest` are specified,
 in addition the resulting changes of the waterheight/velocity/entropy/lake-at-rest-error are
 compared approximately against these reference values, using `atol_ints`, `rtol_ints` as absolute/relative tolerance.
 """
@@ -26,6 +26,7 @@ macro test_trixi_include(elixir, args...)
     local cons_error = get_kwarg(args, :cons_error, nothing)
     local change_waterheight = get_kwarg(args, :change_waterheight, nothing)
     local change_velocity = get_kwarg(args, :change_velocity, nothing)
+    local change_momentum = get_kwarg(args, :change_momentum, nothing)
     local change_entropy = get_kwarg(args, :change_entropy, nothing)
     local lake_at_rest = get_kwarg(args, :lake_at_rest, nothing)
     local atol = get_kwarg(args, :atol, 1e-12)
@@ -37,7 +38,8 @@ macro test_trixi_include(elixir, args...)
     for arg in args
         if (arg.head == :(=) &&
             !(arg.args[1] in (:l2, :linf, :cons_error, :change_waterheight,
-                              :change_velocity, :change_entropy, :atol, :rtol, :atol_ints,
+                              :change_velocity, :change_momentum, :change_entropy, :atol,
+                              :rtol, :atol_ints,
                               :rtol_ints)))
             push!(kwargs, Pair(arg.args...))
         end
@@ -82,6 +84,7 @@ macro test_trixi_include(elixir, args...)
         end
 
         if !isnothing($change_waterheight) || !isnothing($change_velocity) ||
+           !isnothing($change_momentum) ||
            !isnothing($change_entropy) || !isnothing($lake_at_rest)
             ints = integrals(analysis_callback)
 
@@ -95,6 +98,13 @@ macro test_trixi_include(elixir, args...)
             if !isnothing($change_velocity)
                 velocity_change_measured = ints.velocity[end] - ints.velocity[1]
                 @test isapprox($change_velocity, velocity_change_measured,
+                               atol = $atol_ints,
+                               rtol = $rtol_ints)
+            end
+
+            if !isnothing($change_momentum)
+                momentum_change_measured = ints.momentum[end] - ints.momentum[1]
+                @test isapprox($change_momentum, momentum_change_measured,
                                atol = $atol_ints,
                                rtol = $rtol_ints)
             end
