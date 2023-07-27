@@ -45,15 +45,33 @@ varnames(::SvaerdKalischEquations1D) = ("eta", "v", "D")
 
 # TODO: Initial condition should not get a `mesh`
 """
-    initial_condition_sin_bathymetry(x, t, equations::SvaerdKalischEquations1D, mesh)
+    initial_condition_convergence_test(x, t, equations::SvaerdKalischEquations1D, mesh)
 
-An initial condition with a Gaussian bump as initial water height with still water and
-a sine-shaped bathymetry.
+A travelling-wave solution for the BBM-BBM equations used for convergence tests in a periodic domain.
+The bathymetry is constant.
+
+For details see Example 5 in Section 3 from (here adapted for dimensional equations):
+- Min Chen (1997)
+  Exact Traveling-Wave Solutions to Bidirectional Wave Equations
+  [DOI: 10.1023/A:1026667903256](https://doi.org/10.1023/A:1026667903256)
 """
-function initial_condition_sin_bathymetry(x, t, equations::SvaerdKalischEquations1D, mesh)
-    eta = 2.0 + 2.0 * exp(-12.0 * x^2)
+function initial_condition_convergence_test(x,
+                                            t,
+                                            equations::SvaerdKalischEquations1D,
+                                            mesh)
+#     g = equations.gravity
+#     D = 2.0 # constant bathymetry in this case
+#     c = 5 / 2
+#     rho = 18 / 5 * sqrt(D * g)
+#     x_t = mod(x - c * t - xmin(mesh), xmax(mesh) - xmin(mesh)) + xmin(mesh)
+# 
+#     b = 0.5 * sqrt(rho) * x_t / D
+#     eta = -D + c^2 * rho^2 / (81 * g) +
+#           5 * c^2 * rho^2 / (108 * g) * (2 / cosh(b)^2 - 3 / cosh(b)^4)
+#     v = c * (1 - 5 * rho / 18) + 5 * c * rho / 6 / cosh(b)^2
+    eta = 3.0 + 0.05 * exp(-12.0 * x^2)
     v = 0.0
-    D = -1.0 + 0.1 * sinpi(2.0 * x)
+    D = -1.0
     return SVector(eta, v, D)
 end
 
@@ -107,21 +125,24 @@ function create_cache(mesh,
                       RealT,
                       uEltype)
     hmD1betaD1 = Array{RealT}(undef, nnodes(mesh), nnodes(mesh))
-    alpha_hat = Array{RealT}(undef, nnodes(mesh))
-    beta_hat = similar(alpha_hat)
-    gamma_hat = similar(alpha_hat)
-    tmp1 = similar(alpha_hat)
-    tmp2 = similar(alpha_hat)
-    dbeta_hat = similar(alpha_hat)
-    return (hmD1betaD1 = hmD1betaD1, alpha_hat = alpha_hat, beta_hat = beta_hat,
-            gamma_hat = gamma_hat, tmp1 = tmp1, tmp2 = tmp2, dbeta_hat = dbeta_hat)
+    h = Array{RealT}(undef, nnodes(mesh))
+    hv = similar(h)
+    alpha_hat = similar(h)
+    beta_hat = similar(h)
+    gamma_hat = similar(h)
+    tmp1 = similar(h)
+    tmp2 = similar(h)
+    dbeta_hat = similar(h)
+    sparse_D1 = sparse(solver.D1)
+    return (hmD1betaD1 = hmD1betaD1, h = h, hv = hv, alpha_hat = alpha_hat, beta_hat = beta_hat,
+            gamma_hat = gamma_hat, tmp1 = tmp1, tmp2 = tmp2, dbeta_hat = dbeta_hat, sparse_D1 = sparse_D1)
 end
 
 # Discretization that conserves the mass (for eta and v) and is energy-bounded for periodic boundary conditions
 function rhs!(du_ode, u_ode, t, mesh, equations::SvaerdKalischEquations1D,
               initial_condition,
               ::BoundaryConditionPeriodic, solver, cache)
-    @unpack hmD1betaD1, alpha_hat, beta_hat, gamma_hat, tmp1, tmp2, dbeta_hat = cache
+    @unpack hmD1betaD1, h, hv, alpha_hat, beta_hat, gamma_hat, tmp1, tmp2, dbeta_hat, sparse_D1 = cache
 
     u = wrap_array(u_ode, mesh, equations, solver)
     du = wrap_array(du_ode, mesh, equations, solver)
@@ -134,35 +155,30 @@ function rhs!(du_ode, u_ode, t, mesh, equations::SvaerdKalischEquations1D,
     dD = view(du, 3, :)
     fill!(dD, zero(eltype(dD)))
 
-    #     @show t
-    @. alpha_hat = sqrt(equations.alpha * sqrt(equations.gravity * (eta + D)) *
-                        ((eta + D)^2))
-    @. beta_hat = equations.beta * (eta + D)^3
-    @. gamma_hat = equations.gamma * sqrt(equations.gravity * (eta + D)) * ((eta + D)^3)
+    @. h = eta + D
+    @. alpha_hat = sqrt(equations.alpha * sqrt(equations.gravity * h) * h^2)
+    @. beta_hat = equations.beta * h^3
+    @. gamma_hat = equations.gamma * sqrt(equations.gravity * h) * h^3
 
-    tmp1 = alpha_hat .* (solver.D1 * (alpha_hat .* (solver.D1 * eta)))
-    @. tmp2 = tmp1 - (D * v + eta * v)
+    D1eta = solver.D1 * eta
+    D1v = solver.D1 * v
+    hv = h .* v
+    tmp1 = alpha_hat .* (solver.D1 * (alpha_hat .* D1eta))
+    @. tmp2 = tmp1 - hv
     mul!(deta, solver.D1, tmp2)
 
-    hmD1betaD1 = Diagonal(eta .+ D) -
-                 Matrix(solver.D1) * Diagonal(beta_hat) * Matrix(solver.D1)
-    @. dbeta_hat = 3 * equations.beta * (eta + D)^2 * deta
+    hmD1betaD1 = Diagonal(h) - sparse_D1 * Diagonal(beta_hat) * sparse_D1
+    @. dbeta_hat = 3 * equations.beta * h^2 * deta
     # split form
     tmp2 = -(0.5 *
-             (solver.D1 * ((eta .+ D) .* v .^ 2) + ((eta .+ D) .* v) .* (solver.D1 * v) -
-              v .* (solver.D1 * ((eta .+ D) .* v))) +
-             equations.gravity * (eta .+ D) .* (solver.D1 * eta) +
+             (solver.D1 * (hv .* v) + hv .* D1v - v .* (solver.D1 * hv)) +
+             equations.gravity * h .* D1eta +
              0.5 *
-             (v .* (solver.D1 * tmp1) - solver.D1 * (v .* tmp1) - tmp1 .* (solver.D1 * v)) -
-             solver.D1 * (dbeta_hat .* (solver.D1 * v)) -
+             (v .* (solver.D1 * tmp1) - solver.D1 * (v .* tmp1) - tmp1 .* D1v) -
+             solver.D1 * (dbeta_hat .* D1v) -
              0.5 * solver.D1 * (gamma_hat .* (solver.D2 * v)) -
-             0.5 * solver.D2 * (gamma_hat .* (solver.D1 * v)))
-    #     ldiv!(dv, hmD1betaD1, tmp2)
+             0.5 * solver.D2 * (gamma_hat .* D1v))
     dv[:] = hmD1betaD1 \ tmp2
-    @show t, maximum(abs.((solver.D1 * eta))), maximum(abs.(solver.D2 * v)),
-          maximum(abs.(dv)), maximum(abs.(tmp2))
-    @show maximum(abs.(0.5 * solver.D1 * (gamma_hat .* (solver.D2 * v)) -
-                       0.5 * solver.D2 * (gamma_hat .* (solver.D1 * v))))
 
     return nothing
 end
