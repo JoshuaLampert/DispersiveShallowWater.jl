@@ -45,38 +45,6 @@ varnames(::SvaerdKalischEquations1D) = ("eta", "v", "D")
 
 # TODO: Initial condition should not get a `mesh`
 """
-    initial_condition_convergence_test(x, t, equations::SvaerdKalischEquations1D, mesh)
-
-A travelling-wave solution for the BBM-BBM equations used for convergence tests in a periodic domain.
-The bathymetry is constant.
-
-For details see Example 5 in Section 3 from (here adapted for dimensional equations):
-- Min Chen (1997)
-  Exact Traveling-Wave Solutions to Bidirectional Wave Equations
-  [DOI: 10.1023/A:1026667903256](https://doi.org/10.1023/A:1026667903256)
-"""
-function initial_condition_convergence_test(x,
-                                            t,
-                                            equations::SvaerdKalischEquations1D,
-                                            mesh)
-#     g = equations.gravity
-#     D = 2.0 # constant bathymetry in this case
-#     c = 5 / 2
-#     rho = 18 / 5 * sqrt(D * g)
-#     x_t = mod(x - c * t - xmin(mesh), xmax(mesh) - xmin(mesh)) + xmin(mesh)
-# 
-#     b = 0.5 * sqrt(rho) * x_t / D
-#     eta = -D + c^2 * rho^2 / (81 * g) +
-#           5 * c^2 * rho^2 / (108 * g) * (2 / cosh(b)^2 - 3 / cosh(b)^4)
-#     v = c * (1 - 5 * rho / 18) + 5 * c * rho / 6 / cosh(b)^2
-    eta = 3.0 + 0.05 * exp(-12.0 * x^2)
-    v = 0.0
-    D = -1.0
-    return SVector(eta, v, D)
-end
-
-# TODO: Initial condition should not get a `mesh`
-"""
     initial_condition_dingemans(x, t, equations::SvaerdKalischEquations1D, mesh)
 
 The initial condition that uses the dispersion relation of the Euler equations
@@ -134,8 +102,10 @@ function create_cache(mesh,
     tmp2 = similar(h)
     dbeta_hat = similar(h)
     sparse_D1 = sparse(solver.D1)
-    return (hmD1betaD1 = hmD1betaD1, h = h, hv = hv, alpha_hat = alpha_hat, beta_hat = beta_hat,
-            gamma_hat = gamma_hat, tmp1 = tmp1, tmp2 = tmp2, dbeta_hat = dbeta_hat, sparse_D1 = sparse_D1)
+    return (hmD1betaD1 = hmD1betaD1, h = h, hv = hv, alpha_hat = alpha_hat,
+            beta_hat = beta_hat,
+            gamma_hat = gamma_hat, tmp1 = tmp1, tmp2 = tmp2, dbeta_hat = dbeta_hat,
+            sparse_D1 = sparse_D1)
 end
 
 # Discretization that conserves the mass (for eta and v) and is energy-bounded for periodic boundary conditions

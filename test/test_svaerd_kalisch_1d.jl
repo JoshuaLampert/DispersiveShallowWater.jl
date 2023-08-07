@@ -8,7 +8,6 @@ include("test_util.jl")
 EXAMPLES_DIR = joinpath(examples_dir(), "svaerd_kalisch_1d")
 
 @testset "SvaerdKalisch1D" begin
-
     @trixi_testset "svaerd_kalisch_1d_dingemans" begin
         @test_trixi_include(joinpath(EXAMPLES_DIR,
                                      "svaerd_kalisch_1d_dingemans.jl"),
