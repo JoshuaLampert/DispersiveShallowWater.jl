@@ -153,3 +153,8 @@ default_analysis_integrals(::AbstractEquations) = Symbol[]
 abstract type AbstractBBMBBMEquations{NDIMS, NVARS} <: AbstractEquations{NDIMS, NVARS} end
 include("bbm_bbm_1d.jl")
 include("bbm_bbm_variable_bathymetry_1d.jl")
+
+# Svärd-Kalisch equations
+abstract type AbstractSvaerdKalischEquations{NDIMS, NVARS} <:
+              AbstractEquations{NDIMS, NVARS} end
+include("svaerd_kalisch_1d.jl")

@@ -64,7 +64,7 @@ function create_cache(mesh,
     return (invImD2_D = invImD2_D, tmp1 = tmp1)
 end
 
-# Discretization that conserves the mass (for eta and u) and the energy for periodic boundary conditions, see
+# Discretization that conserves the mass (for eta and v) and the energy for periodic boundary conditions, see
 # - Hendrik Ranocha, Dimitrios Mitsotakis and David I. Ketcheson (2020)
 #   A Broad Class of Conservative Numerical Methods for Dispersive Wave Equations
 #   [DOI: 10.4208/cicp.OA-2020-0119](https://doi.org/10.4208/cicp.OA-2020-0119)
