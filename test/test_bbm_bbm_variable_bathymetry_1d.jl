@@ -68,6 +68,19 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_variable_bathymetry_1d")
                             change_entropy=0.0,
                             lake_at_rest=6.725397799854067e-15)
     end
+
+    @trixi_testset "bbm_bbm_variable_bathymetry_1d_dingemans" begin
+        @test_trixi_include(joinpath(EXAMPLES_DIR,
+                                     "bbm_bbm_variable_bathymetry_1d_dingemans.jl"),
+                            tspan=(0.0, 1.0),
+                            N=512,
+                            l2=[0.23120795192990629 0.7544344847900466 0.0],
+                            linf=[0.03707736413915552 0.12038327721384329 0.0],
+                            cons_error=[1.4210854715202004e-13 3.1478183774857893e-15 0.0],
+                            change_waterheight=-1.4210854715202004e-13,
+                            change_velocity=-3.1478183774857893e-15,
+                            change_entropy=-2.293745637871325e-9)
+    end
 end
 
 end # module
