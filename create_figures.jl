@@ -97,8 +97,8 @@ plot_elixir(joinpath(EXAMPLES_DIR_BBMBBM_VARIABLE,
             tspan = (0.0, 10.0))
 
 ##############################################################################
-One-dimensional BBM-BBM equations with initial condition that models
-a wave make. This setup comes from experiments by W. M. Dingemans.
+# One-dimensional BBM-BBM equations with initial condition that models
+# a wave make. This setup comes from experiments by W. M. Dingemans.
 plot_elixir(joinpath(EXAMPLES_DIR_BBMBBM_VARIABLE,
                      "bbm_bbm_variable_bathymetry_1d_dingemans.jl");
             ylims_gif = [(-0.1, 0.9), (-0.3, 0.3)],
