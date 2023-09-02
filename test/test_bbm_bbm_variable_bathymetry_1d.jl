@@ -12,12 +12,12 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_variable_bathymetry_1d")
         @test_trixi_include(joinpath(EXAMPLES_DIR,
                                      "bbm_bbm_variable_bathymetry_1d_basic.jl"),
                             tspan=(0.0, 1.0),
-                            l2=[0.04346190082228665 0.11171710004736789 0.0],
-                            linf=[0.04283944204214696 0.0953750884645661 0.0],
+                            l2=[0.0024561065856105136 0.005467472679563469 0.0],
+                            linf=[0.0019322426802252934 0.003270790905389731 0.0],
                             cons_error=[1.0394561372181596e-13 3.410605131648481e-13 0.0],
                             change_waterheight=1.0394561372181596e-13,
                             change_velocity=-3.410605131648481e-13,
-                            change_entropy=0.06735422396923241)
+                            change_entropy=0.001227743371600809)
     end
 
     @trixi_testset "bbm_bbm_variable_bathymetry_1d_relaxation" begin
