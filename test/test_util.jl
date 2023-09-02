@@ -31,8 +31,8 @@ macro test_trixi_include(elixir, args...)
     local lake_at_rest = get_kwarg(args, :lake_at_rest, nothing)
     local atol = get_kwarg(args, :atol, 1e-12)
     local rtol = get_kwarg(args, :rtol, sqrt(eps()))
-    local atol_ints = get_kwarg(args, :atol, 1e-11)
-    local rtol_ints = get_kwarg(args, :rtol, sqrt(eps()))
+    local atol_ints = get_kwarg(args, :atol_ints, 1e-11)
+    local rtol_ints = get_kwarg(args, :rtol_ints, sqrt(eps()))
 
     local kwargs = Pair{Symbol, Any}[]
     for arg in args
