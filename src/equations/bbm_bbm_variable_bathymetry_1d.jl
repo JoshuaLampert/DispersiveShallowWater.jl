@@ -47,14 +47,14 @@ function initial_condition_convergence_test(x,
                                             mesh)
     g = equations.gravity
     D = 2.0 # constant bathymetry in this case
-    c = 5 / 2
-    rho = 18 / 5 * sqrt(D * g)
+    c = 5 / 2 * sqrt(D * g)
+    rho = 18 / 5
     x_t = mod(x - c * t - xmin(mesh), xmax(mesh) - xmin(mesh)) + xmin(mesh)
 
-    b = 0.5 * sqrt(rho) * x_t / D
+    theta = 0.5 * sqrt(rho) * x_t / D
     eta = -D + c^2 * rho^2 / (81 * g) +
-          5 * c^2 * rho^2 / (108 * g) * (2 / cosh(b)^2 - 3 / cosh(b)^4)
-    v = c * (1 - 5 * rho / 18) + 5 * c * rho / 6 / cosh(b)^2
+          5 * c^2 * rho^2 / (108 * g) * (2 * sech(theta)^2 - 3 * sech(theta)^4)
+    v = c * (1 - 5 * rho / 18) + 5 * c * rho / 6 * sech(theta)^2
     return SVector(eta, v, D)
 end
 

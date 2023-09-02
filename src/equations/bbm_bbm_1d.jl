@@ -42,14 +42,14 @@ For details see Example 5 in Section 3 from (here adapted for dimensional equati
 """
 function initial_condition_convergence_test(x, t, equations::BBMBBMEquations1D, mesh)
     g = equations.gravity
-    c = 5 / 2
-    rho = 18 / 5 * sqrt(equations.D * g)
+    c = 5 / 2 * sqrt(equations.D * g)
+    rho = 18 / 5
     x_t = mod(x - c * t - xmin(mesh), xmax(mesh) - xmin(mesh)) + xmin(mesh)
 
-    b = 0.5 * sqrt(rho) * x_t / equations.D
+    theta = 0.5 * sqrt(rho) * x_t / equations.D
     eta = -equations.D + c^2 * rho^2 / (81 * g) +
-          5 * c^2 * rho^2 / (108 * g) * (2 / cosh(b)^2 - 3 / cosh(b)^4)
-    v = c * (1 - 5 * rho / 18) + 5 * c * rho / 6 / cosh(b)^2
+          5 * c^2 * rho^2 / (108 * g) * (2 * sech(theta)^2 - 3 * sech(theta)^4)
+    v = c * (1 - 5 * rho / 18) + 5 * c * rho / 6 * sech(theta)^2
     return SVector(eta, v)
 end
 
