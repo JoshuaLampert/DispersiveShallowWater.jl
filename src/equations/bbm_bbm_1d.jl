@@ -9,7 +9,7 @@ BBM-BBM (Benjamin–Bona–Mahony) system in one spatial dimension. The equation
 \end{aligned}
 ```
 The unknown quantities of the BBM-BBM equations are the total water height ``\eta`` and the velocity ``v``.
-The gravitational constant is denoted by `g` and the constant bottom topography (bathymetry) ``b = -D > 0``. The water height above the bathymetry is therefore given by
+The gravitational constant is denoted by `g` and the constant bottom topography (bathymetry) ``b = -D``. The water height above the bathymetry is therefore given by
 ``h = \eta + D``.
 
 One reference for the BBM-BBM system can be found in

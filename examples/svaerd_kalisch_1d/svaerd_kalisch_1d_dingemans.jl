@@ -4,7 +4,7 @@ using DispersiveShallowWater
 ###############################################################################
 # Semidiscretization of the Svärd-Kalisch equations
 
-equations = SvaerdKalischEquations1D(gravity_constant = 9.81, alpha = 0.0,
+equations = SvaerdKalischEquations1D(gravity_constant = 9.81, eta0 = 0.8, alpha = 0.0,
                                      beta = 0.27946992481203003, gamma = 0.0521077694235589)
 
 initial_condition = initial_condition_dingemans

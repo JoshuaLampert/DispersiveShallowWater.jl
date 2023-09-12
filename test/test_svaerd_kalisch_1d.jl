@@ -13,13 +13,13 @@ EXAMPLES_DIR = joinpath(examples_dir(), "svaerd_kalisch_1d")
                                      "svaerd_kalisch_1d_dingemans.jl"),
                             tspan=(0.0, 1.0),
                             N=512,
-                            l2=[0.22650314162825236 0.7326320951882187 0.0],
-                            linf=[0.03627318072294938 0.11690541155100909 0.0],
-                            cons_error=[3.979039320256561e-13 7.020733524160366e-5 0.0],
+                            l2=[0.22647683207160013 0.7325945009751711 0.0],
+                            linf=[0.03634466451241691 0.11720005557202748 0.0],
+                            cons_error=[3.979039320256561e-13 0.00010706168405306206 0.0],
                             change_waterheight=-3.979039320256561e-13,
                             change_momentum=-2.0220130084180887e-9,
-                            change_entropy=-0.0011575500814160478,
-                            change_entropy_modified=-0.0005787808884178958)
+                            change_entropy=-0.001319708553410237,
+                            change_entropy_modified=-0.0007363973352312314)
     end
 
     @trixi_testset "svaerd_kalisch_1d_dingemans_relaxation" begin
@@ -27,11 +27,11 @@ EXAMPLES_DIR = joinpath(examples_dir(), "svaerd_kalisch_1d")
                                      "svaerd_kalisch_1d_dingemans_relaxation.jl"),
                             tspan=(0.0, 1.0),
                             N=512,
-                            l2=[0.22646027715939582 0.7325839439787915 0.0],
-                            linf=[0.03626762302524622 0.11692754047634027 0.0],
-                            cons_error=[3.979039320256561e-13 7.038992525406615e-5 0.0],
+                            l2=[0.22648917549343248 0.7327156628336414 0.0],
+                            linf=[0.03634866178910967 0.117250088972775337 0.0],
+                            cons_error=[3.979039320256561e-13 0.00010728668392322323 0.0],
                             change_waterheight=-3.979039320256561e-13,
-                            change_entropy=-0.0005989344795125362,
+                            change_entropy=-0.0006080247380850778,
                             change_entropy_modified=0.0)
     end
 
