@@ -236,3 +236,8 @@ end
 function analyze(quantity, u_ode, t, semi::Semidiscretization)
     integrate_quantity(u_ode -> quantity(u_ode, semi.equations), u_ode, semi)
 end
+
+# modified entropy from Svärd-Kalisch equations need to take the whole vector `u` for every point in space
+function analyze(quantity::Union{typeof(energy_total_modified), typeof(entropy_modified)}, u_ode, t, semi::Semidiscretization)
+    integrate_quantity(quantity, u_ode, semi)
+end

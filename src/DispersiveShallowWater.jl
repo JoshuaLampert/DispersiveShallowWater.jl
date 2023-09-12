@@ -23,8 +23,8 @@ include("util.jl")
 include("boundary_conditions.jl")
 include("mesh.jl")
 include("solver.jl")
-include("semidiscretization.jl")
 include("equations/equations.jl")
+include("semidiscretization.jl")
 include("callbacks_step/callbacks_step.jl")
 include("visualization.jl")
 
@@ -34,7 +34,7 @@ export BBMBBMEquations1D, BBMBBMVariableEquations1D, SvärdKalischEquations1D,
        SvaerdKalischEquations1D
 
 export waterheight_total, waterheight, velocity, momentum, energy_total, entropy,
-       lake_at_rest_error
+       lake_at_rest_error, energy_total_modified, entropy_modified
 
 export Mesh1D, xmin, xmax, nnodes
 

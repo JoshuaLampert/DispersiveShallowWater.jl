@@ -145,7 +145,7 @@ function rhs!(du_ode, u_ode, t, mesh, equations::SvaerdKalischEquations1D,
              equations.gravity * h .* D1eta +
              0.5 *
              (v .* (solver.D1 * tmp1) - solver.D1 * (v .* tmp1) - tmp1 .* D1v) -
-             solver.D1 * (dbeta_hat .* D1v) -
+             0.5 * solver.D1 * (dbeta_hat .* D1v) -
              0.5 * solver.D1 * (gamma_hat .* (solver.D2 * v)) -
              0.5 * solver.D2 * (gamma_hat .* D1v))
     dv[:] = hmD1betaD1 \ tmp2
@@ -176,6 +176,24 @@ end
 end
 
 @inline entropy(u, equations::SvaerdKalischEquations1D) = energy_total(u, equations)
+
+# The modified entropy/total energy takes the whole `u` for every point in space
+@inline function energy_total_modified(u, equations::SvaerdKalischEquations1D, cache)
+    e_modified = zeros(eltype(u), size(u, 2))
+    # Need to compute new beta_hat, do not use the old one from the `cache`
+    eta = view(u, 1, :)
+    v = view(u, 2, :)
+    D = view(u, 3, :)
+    beta_hat = equations.beta * (eta .+ D) .^ 3
+    tmp = 0.5 * beta_hat .* ((cache.sparse_D1 * v) .^ 2)
+    for i in 1:size(u, 2)
+        e_modified[i] = energy_total(view(u, :, i), equations) + tmp[i]
+    end
+    return e_modified
+end
+
+@inline entropy_modified(u, equations::SvaerdKalischEquations1D, cache) = energy_total_modified(u, equations, cache)
+
 
 # Calculate the error for the "lake-at-rest" test case where eta should
 # be a constant value over time

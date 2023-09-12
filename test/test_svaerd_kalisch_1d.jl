@@ -13,12 +13,26 @@ EXAMPLES_DIR = joinpath(examples_dir(), "svaerd_kalisch_1d")
                                      "svaerd_kalisch_1d_dingemans.jl"),
                             tspan=(0.0, 1.0),
                             N=512,
-                            l2=[0.22648764118076525 0.7326439211101986 0.0],
-                            linf=[0.0362082757564397 0.11671890336409943 0.0],
-                            cons_error=[3.979039320256561e-13 9.325990948843416e-5 0.0],
+                            l2=[0.22650314162825236 0.7326320951882187 0.0],
+                            linf=[0.03627318072294938 0.11690541155100909 0.0],
+                            cons_error=[3.979039320256561e-13 7.020733524160366e-5 0.0],
                             change_waterheight=-3.979039320256561e-13,
-                            change_momentum=-2.0076330528584485e-9,
-                            change_entropy=-0.0012637391412226862)
+                            change_momentum=-2.0220130084180887e-9,
+                            change_entropy=-0.0011575500814160478,
+                            change_entropy_modified=-0.0005787808884178958)
+    end
+
+    @trixi_testset "svaerd_kalisch_1d_dingemans_relaxation" begin
+        @test_trixi_include(joinpath(EXAMPLES_DIR,
+                                     "svaerd_kalisch_1d_dingemans_relaxation.jl"),
+                            tspan=(0.0, 1.0),
+                            N=512,
+                            l2=[0.22646027715939582 0.7325839439787915 0.0],
+                            linf=[0.03626762302524622 0.11692754047634027 0.0],
+                            cons_error=[3.979039320256561e-13 7.038992525406615e-5 0.0],
+                            change_waterheight=-3.979039320256561e-13,
+                            change_entropy=-0.0005989344795125362,
+                            change_entropy_modified=0.0)
     end
 
     @trixi_testset "svaerd_kalisch_1d_well_balanced" begin

@@ -30,9 +30,11 @@ ode = semidiscretize(semi, tspan)
 analysis_callback = AnalysisCallback(semi; interval = 10,
                                      extra_analysis_errors = (:conservation_error,),
                                      extra_analysis_integrals = (waterheight_total,
-                                                                 momentum, entropy,
+                                                                 entropy,
                                                                  entropy_modified))
-callbacks = CallbackSet(analysis_callback)
+relaxation_callback = RelaxationCallback(invariant = entropy_modified)
+# Always put relaxation_callback before analysis_callback to guarantee conservation of the invariant
+callbacks = CallbackSet(relaxation_callback, analysis_callback)
 
 saveat = range(tspan..., length = 500)
 sol = solve(ode, Tsit5(), abstol = 1e-7, reltol = 1e-7,
