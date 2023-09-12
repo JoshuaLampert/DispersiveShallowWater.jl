@@ -9,7 +9,7 @@ BBM-BBM (Benjamin–Bona–Mahony) system in one spatial dimension with spatiall
 \end{aligned}
 ```
 The unknown quantities of the BBM-BBM equations are the total water height ``\eta`` and the velocity ``v``.
-The gravitational constant is denoted by `g` and the bottom topography (bathymetry) ``b = -D > 0``. The water height above the bathymetry is therefore given by
+The gravitational constant is denoted by `g` and the bottom topography (bathymetry) ``b = -D``. The water height above the bathymetry is therefore given by
 ``h = \eta + D``.
 
 One reference for the BBM-BBM system with spatially varying bathymetry can be found in
@@ -23,7 +23,7 @@ struct BBMBBMVariableEquations1D{RealT <: Real} <: AbstractBBMBBMEquations{1, 3}
     eta0::RealT    # constant "lake-at-rest" total water height
 end
 
-function BBMBBMVariableEquations1D(; gravity_constant, eta0 = 0.0)
+function BBMBBMVariableEquations1D(; gravity_constant, eta0 = 1.0)
     BBMBBMVariableEquations1D(gravity_constant, eta0)
 end
 
