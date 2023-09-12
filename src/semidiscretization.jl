@@ -139,6 +139,44 @@ function integrate_quantity(func, u_ode, semi::Semidiscretization; wrap = true)
     integrate(quantity, semi; wrap = false)
 end
 
+function integrate_quantity!(quantity, func, u_ode, semi::Semidiscretization; wrap = true)
+    if wrap == true
+        u = wrap_array(u_ode, semi)
+    else
+        u = u_ode
+    end
+    for i in 1:size(u, 2)
+        quantity[i] = func(view(u, :, i))
+    end
+    integrate(quantity, semi; wrap = false)
+end
+
+# modified entropy from Svärd-Kalisch equations need to take the whole vector `u` for every point in space
+function integrate_quantity(func::Union{typeof(energy_total_modified),
+                                        typeof(entropy_modified)}, u_ode,
+                            semi::Semidiscretization; wrap = true)
+    if wrap == true
+        u = wrap_array(u_ode, semi)
+    else
+        u = u_ode
+    end
+    quantity = func(u, semi.equations, semi.cache)
+    integrate(quantity, semi; wrap = false)
+end
+
+function integrate_quantity!(quantity,
+                             func::Union{typeof(energy_total_modified),
+                                         typeof(entropy_modified)}, u_ode,
+                             semi::Semidiscretization; wrap = true)
+    if wrap == true
+        u = wrap_array(u_ode, semi)
+    else
+        u = u_ode
+    end
+    quantity = func(u, semi.equations, semi.cache)
+    integrate(quantity, semi; wrap = false)
+end
+
 @inline function mesh_equations_solver(semi::Semidiscretization)
     @unpack mesh, equations, solver = semi
     return mesh, equations, solver
