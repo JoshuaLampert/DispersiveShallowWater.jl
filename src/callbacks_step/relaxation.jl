@@ -73,10 +73,15 @@ end
     function relaxation_functional(u, semi)
         @unpack tmp1 = semi.cache
         # modified entropy from Svärd-Kalisch equations need to take the whole vector `u` for every point in space
-        if relaxation_callback.invariant isa Union{typeof(energy_total_modified), typeof(entropy_modified)}
-            return integrate_quantity!(tmp1, relaxation_callback.invariant, u, semi; wrap = false)
+        if relaxation_callback.invariant isa
+           Union{typeof(energy_total_modified), typeof(entropy_modified)}
+            return integrate_quantity!(tmp1, relaxation_callback.invariant, u, semi;
+                                       wrap = false)
         else
-            return integrate_quantity!(tmp1, u_ode -> relaxation_callback.invariant(u_ode, semi.equations), u, semi; wrap = false)
+            return integrate_quantity!(tmp1,
+                                       u_ode -> relaxation_callback.invariant(u_ode,
+                                                                              semi.equations),
+                                       u, semi; wrap = false)
         end
     end
 

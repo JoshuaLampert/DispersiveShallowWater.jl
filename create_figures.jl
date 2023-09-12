@@ -133,6 +133,25 @@ plot_elixir(joinpath(EXAMPLES_DIR_SVAERD_KALISCH,
             tspan = (0.0, 70.0))
 
 ###############################################################################
+# One-dimensional equations from Svärd and Kalisch with initial condition that models
+# a wave make. This setup comes from experiments by W. M. Dingemans. Relaxation is used
+# to preserve the modified entropy.
+plot_elixir(joinpath(EXAMPLES_DIR_SVAERD_KALISCH,
+                     "svaerd_kalisch_1d_dingemans_relaxation.jl");
+            ylims_gif = [(-0.1, 0.9), (-0.3, 0.3)],
+            ylims_x = [:auto, :auto],
+            x_values = [3.04, 9.44, 20.04, 26.04, 30.44, 37.04],
+            tlims = [
+                (15.0, 45.0),
+                (19.0, 48.0),
+                (25.0, 52.0),
+                (30.0, 60.0),
+                (33.0, 61.0),
+                (35.0, 65.0),
+            ],
+            tspan = (0.0, 70.0))
+
+###############################################################################
 # One-dimensional Svärd-Kalisch equations with a constant water height
 # and initially still water. The bathymetry is discontinuous. Relaxation is used, so the solution
 # is energy-conservative. Uses periodic finite difference SBP operators. The solution should be

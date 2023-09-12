@@ -119,8 +119,10 @@ macro test_trixi_include(elixir, args...)
             end
 
             if !isnothing($change_entropy_modified)
-                entropy_modified_change_measured = ints.entropy_modified[end] - ints.entropy_modified[1]
-                @test isapprox($change_entropy_modified, entropy_modified_change_measured, atol = $atol_ints,
+                entropy_modified_change_measured = ints.entropy_modified[end] -
+                                                   ints.entropy_modified[1]
+                @test isapprox($change_entropy_modified, entropy_modified_change_measured,
+                               atol = $atol_ints,
                                rtol = $rtol_ints)
             end
 

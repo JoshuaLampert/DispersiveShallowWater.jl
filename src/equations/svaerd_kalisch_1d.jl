@@ -178,6 +178,20 @@ end
 @inline entropy(u, equations::SvaerdKalischEquations1D) = energy_total(u, equations)
 
 # The modified entropy/total energy takes the whole `u` for every point in space
+"""
+    energy_total_modified(u, equations::SvaerdKalischEquations1D, cache)
+
+Return the modified total energy of the conserved variables `u` for the
+`SvaerdKalischEquations1D`. It contains an additional term containing a
+derivative compared to the usual `energy_total`. The `energy_total_modified`
+is a conserved quantity of the Svärd-Kalisch equations.
+
+`u` is a vector of the conserved variables at ALL nodes, i.e., a matrix
+of the correct length `nvariables(equations)` as first dimension and the
+number of nodes as length of the second dimension.
+`cache` needs to hold the sparse matrix `sparse_D1`, which is the sparse
+representation of a first-derivative SBP operator.
+"""
 @inline function energy_total_modified(u, equations::SvaerdKalischEquations1D, cache)
     e_modified = zeros(eltype(u), size(u, 2))
     # Need to compute new beta_hat, do not use the old one from the `cache`
@@ -192,8 +206,14 @@ end
     return e_modified
 end
 
-@inline entropy_modified(u, equations::SvaerdKalischEquations1D, cache) = energy_total_modified(u, equations, cache)
+"""
+    entropy_modified(u, equations::SvaerdKalischEquations1D, cache)
 
+Alias for [`energy_total_modified`](@ref).
+"""
+@inline function entropy_modified(u, equations::SvaerdKalischEquations1D, cache)
+    energy_total_modified(u, equations, cache)
+end
 
 # Calculate the error for the "lake-at-rest" test case where eta should
 # be a constant value over time
