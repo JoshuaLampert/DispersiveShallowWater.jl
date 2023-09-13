@@ -107,20 +107,18 @@ function create_cache(mesh,
     gamma_hat = equations.gamma * sqrt.(equations.gravity * d) .* d.^3
     tmp1 = similar(h)
     tmp2 = similar(h)
-    dbeta_hat = similar(h)
     hmD1betaD1 = Array{RealT}(undef, nnodes(mesh), nnodes(mesh))
     D1betaD1 = sparse_D1 * Diagonal(beta_hat) * sparse_D1
     return (hmD1betaD1 = hmD1betaD1, D1betaD1 = D1betaD1, d = d, h = h, hv = hv,
             alpha_hat = alpha_hat, beta_hat = beta_hat, gamma_hat = gamma_hat,
-            tmp1 = tmp1, tmp2 = tmp2, dbeta_hat = dbeta_hat,
-            sparse_D1 = sparse_D1)
+            tmp1 = tmp1, tmp2 = tmp2, sparse_D1 = sparse_D1)
 end
 
 # Discretization that conserves the mass (for eta and v) and is energy-bounded for periodic boundary conditions
 function rhs!(du_ode, u_ode, t, mesh, equations::SvaerdKalischEquations1D,
               initial_condition,
               ::BoundaryConditionPeriodic, solver, cache)
-    @unpack hmD1betaD1, D1betaD1, d, h, hv, alpha_hat, beta_hat, gamma_hat, tmp1, tmp2, dbeta_hat, sparse_D1 = cache
+    @unpack hmD1betaD1, D1betaD1, d, h, hv, alpha_hat, beta_hat, gamma_hat, tmp1, tmp2, sparse_D1 = cache
     u = wrap_array(u_ode, mesh, equations, solver)
     du = wrap_array(du_ode, mesh, equations, solver)
 
@@ -142,14 +140,12 @@ function rhs!(du_ode, u_ode, t, mesh, equations::SvaerdKalischEquations1D,
     mul!(deta, solver.D1, tmp2)
 
     hmD1betaD1 = Diagonal(h) - D1betaD1
-    @. dbeta_hat = 3 * equations.beta * d^2 * deta
     # split form
     tmp2 = -(0.5 *
              (solver.D1 * (hv .* v) + hv .* D1v - v .* (solver.D1 * hv)) +
              equations.gravity * h .* D1eta +
              0.5 *
              (v .* (solver.D1 * tmp1) - solver.D1 * (v .* tmp1) - tmp1 .* D1v) -
-             0.5 * solver.D1 * (dbeta_hat .* D1v) -
              0.5 * solver.D1 * (gamma_hat .* (solver.D2 * v)) -
              0.5 * solver.D2 * (gamma_hat .* D1v))
     dv[:] = hmD1betaD1 \ tmp2
