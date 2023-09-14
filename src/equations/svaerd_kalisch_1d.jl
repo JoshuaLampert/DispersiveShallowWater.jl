@@ -99,7 +99,6 @@ function create_cache(mesh,
         D[i] = initial_condition(x[i], 0.0, equations, mesh)[3]
     end
     d = equations.eta0 .+ D
-    sparse_D1 = sparse(solver.D1)
     h = Array{RealT}(undef, nnodes(mesh))
     hv = similar(h)
     alpha_hat = sqrt.(equations.alpha * sqrt.(equations.gravity * d) .* d.^2)
@@ -108,17 +107,26 @@ function create_cache(mesh,
     tmp1 = similar(h)
     tmp2 = similar(h)
     hmD1betaD1 = Array{RealT}(undef, nnodes(mesh), nnodes(mesh))
-    D1betaD1 = sparse_D1 * Diagonal(beta_hat) * sparse_D1
+    if solver.D1 isa PeriodicDerivativeOperator
+        D1_central = solver.D1
+        sparse_D1 = sparse(D1_central)
+        D1betaD1 = sparse_D1 * Diagonal(beta_hat) * sparse_D1
+    elseif solver.D1 isa PeriodicUpwindOperators
+        D1_central = solver.D1.central
+        D1betaD1 = sparse(solver.D1.plus) * Diagonal(beta_hat) * sparse(solver.D1.minus)
+    else
+        @error "unknown type of first-derivative operator"
+    end
     return (hmD1betaD1 = hmD1betaD1, D1betaD1 = D1betaD1, d = d, h = h, hv = hv,
             alpha_hat = alpha_hat, beta_hat = beta_hat, gamma_hat = gamma_hat,
-            tmp1 = tmp1, tmp2 = tmp2, sparse_D1 = sparse_D1)
+            tmp1 = tmp1, tmp2 = tmp2, D1_central = D1_central, D1 = solver.D1)
 end
 
 # Discretization that conserves the mass (for eta and v) and is energy-bounded for periodic boundary conditions
 function rhs!(du_ode, u_ode, t, mesh, equations::SvaerdKalischEquations1D,
               initial_condition,
               ::BoundaryConditionPeriodic, solver, cache)
-    @unpack hmD1betaD1, D1betaD1, d, h, hv, alpha_hat, beta_hat, gamma_hat, tmp1, tmp2, sparse_D1 = cache
+    @unpack hmD1betaD1, D1betaD1, d, h, hv, alpha_hat, beta_hat, gamma_hat, tmp1, tmp2, D1_central = cache
     u = wrap_array(u_ode, mesh, equations, solver)
     du = wrap_array(du_ode, mesh, equations, solver)
 
@@ -131,22 +139,35 @@ function rhs!(du_ode, u_ode, t, mesh, equations::SvaerdKalischEquations1D,
     fill!(dD, zero(eltype(dD)))
 
     @. h = eta + D
-
-    D1eta = solver.D1 * eta
-    D1v = solver.D1 * v
     hv = h .* v
-    tmp1 = alpha_hat .* (solver.D1 * (alpha_hat .* D1eta))
-    @. tmp2 = tmp1 - hv
-    mul!(deta, solver.D1, tmp2)
+
+    if solver.D1 isa PeriodicDerivativeOperator
+        D1eta = D1_central * eta
+        D1v = D1_central * v
+        tmp1 = alpha_hat .* (D1_central * (alpha_hat .* D1eta))
+        vD1y = v .* (D1_central * tmp1)
+        D1vy = D1_central * (v .* tmp1)
+        yD1v = tmp1 .* D1v
+        @. tmp2 = tmp1 - hv
+        mul!(deta, D1_central, tmp2)
+    elseif solver.D1 isa PeriodicUpwindOperators
+        D1eta = D1_central * eta
+        D1v = D1_central * v
+        tmp1 = alpha_hat .* (solver.D1.minus * (alpha_hat .* (solver.D1.plus * eta)))
+        vD1y = v .* (solver.D1.minus * tmp1)
+        D1vy = solver.D1.minus * (v .* tmp1)
+        yD1v = tmp1 .* (solver.D1.plus * v)
+        deta[:] = solver.D1.minus * tmp1 - D1_central * hv
+    else
+        @error "unknown type of first derivative operator"
+    end
 
     hmD1betaD1 = Diagonal(h) - D1betaD1
     # split form
-    tmp2 = -(0.5 *
-             (solver.D1 * (hv .* v) + hv .* D1v - v .* (solver.D1 * hv)) +
+    tmp2 = -(0.5 * (D1_central * (hv .* v) + hv .* D1v - v .* (D1_central * hv)) +
              equations.gravity * h .* D1eta +
-             0.5 *
-             (v .* (solver.D1 * tmp1) - solver.D1 * (v .* tmp1) - tmp1 .* D1v) -
-             0.5 * solver.D1 * (gamma_hat .* (solver.D2 * v)) -
+             0.5 * (vD1y - D1vy - yD1v) -
+             0.5 * D1_central * (gamma_hat .* (solver.D2 * v)) -
              0.5 * solver.D2 * (gamma_hat .* D1v))
     dv[:] = hmD1betaD1 \ tmp2
 
@@ -189,8 +210,7 @@ is a conserved quantity of the Svärd-Kalisch equations.
 `u` is a vector of the conserved variables at ALL nodes, i.e., a matrix
 of the correct length `nvariables(equations)` as first dimension and the
 number of nodes as length of the second dimension.
-`cache` needs to hold the sparse matrix `sparse_D1`, which is the sparse
-representation of a first-derivative SBP operator.
+`cache` needs to hold the first-derivative SBP operator `D1`.
 """
 @inline function energy_total_modified(u, equations::SvaerdKalischEquations1D, cache)
     e_modified = zeros(eltype(u), size(u, 2))
@@ -199,7 +219,13 @@ representation of a first-derivative SBP operator.
     v = view(u, 2, :)
     D = view(u, 3, :)
     beta_hat = equations.beta * (eta .+ D).^3
-    tmp = 0.5 * beta_hat .* ((cache.sparse_D1 * v).^2)
+    if cache.D1 isa PeriodicDerivativeOperator
+        tmp = 0.5 * beta_hat .* ((cache.D1 * v).^2)
+    elseif cache.D1 isa PeriodicUpwindOperators
+        tmp = 0.5 * beta_hat .* ((cache.D1.minus * v).^2)
+    else
+        @error "unknown type of first-derivative operator"
+    end
     for i in 1:size(u, 2)
         e_modified[i] = energy_total(view(u, :, i), equations) + tmp[i]
     end
