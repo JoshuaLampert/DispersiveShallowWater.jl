@@ -100,16 +100,16 @@ end
 function calc_error_norms(u_ode, t, initial_condition, mesh::Mesh1D, equations,
                           solver::AbstractSolver)
     x = grid(solver)
-    u = wrap_array(u_ode, mesh, equations, solver)
-    u_exact = zeros(real(solver), (nvariables(equations), nnodes(mesh)))
+    q = wrap_array(u_ode, mesh, equations, solver)
+    q_exact = zeros(real(solver), (nvariables(equations), nnodes(mesh)))
     for i in eachnode(solver)
-        u_exact[:, i] = initial_condition(x[i], t, equations, mesh)
+        q_exact[:, i] = initial_condition(x[i], t, equations, mesh)
     end
     l2_error = zeros(real(solver), nvariables(equations))
     linf_error = similar(l2_error)
     for v in eachvariable(equations)
-        @views diff = u[v, :] - u_exact[v, :]
-        l2_error[v] = integrate(u -> u^2, diff, solver.D1) |> sqrt
+        @views diff = q[v, :] - q_exact[v, :]
+        l2_error[v] = integrate(q -> q^2, diff, solver.D1) |> sqrt
         linf_error[v] = maximum(abs.(diff))
     end
     return l2_error, linf_error

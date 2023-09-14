@@ -153,15 +153,15 @@ function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMVariableEquations1D,
               ::BoundaryConditionPeriodic, solver, cache)
     @unpack invImDKD_D, invImD2K_D, tmp1 = cache
 
-    u = wrap_array(u_ode, mesh, equations, solver)
-    du = wrap_array(du_ode, mesh, equations, solver)
+    q = wrap_array(u_ode, mesh, equations, solver)
+    dq = wrap_array(du_ode, mesh, equations, solver)
 
-    eta = view(u, 1, :)
-    v = view(u, 2, :)
-    D = view(u, 3, :)
-    deta = view(du, 1, :)
-    dv = view(du, 2, :)
-    dD = view(du, 3, :)
+    eta = view(q, 1, :)
+    v = view(q, 2, :)
+    D = view(q, 3, :)
+    deta = view(dq, 1, :)
+    dv = view(dq, 2, :)
+    dD = view(dq, 3, :)
     fill!(dD, zero(eltype(dD)))
 
     @. tmp1 = -(D * v + eta * v)
@@ -173,33 +173,33 @@ function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMVariableEquations1D,
     return nothing
 end
 
-@inline function waterheight_total(u, equations::BBMBBMVariableEquations1D)
-    return u[1]
+@inline function waterheight_total(q, equations::BBMBBMVariableEquations1D)
+    return q[1]
 end
 
-@inline function velocity(u, equations::BBMBBMVariableEquations1D)
-    return u[2]
+@inline function velocity(q, equations::BBMBBMVariableEquations1D)
+    return q[2]
 end
 
-@inline function bathymetry(u, equations::BBMBBMVariableEquations1D)
-    return -u[3]
+@inline function bathymetry(q, equations::BBMBBMVariableEquations1D)
+    return -q[3]
 end
 
-@inline function waterheight(u, equations::BBMBBMVariableEquations1D)
-    return waterheight_total(u, equations) - bathymetry(u, equations)
+@inline function waterheight(q, equations::BBMBBMVariableEquations1D)
+    return waterheight_total(q, equations) - bathymetry(q, equations)
 end
 
-@inline function energy_total(u, equations::BBMBBMVariableEquations1D)
-    eta, v, D = u
+@inline function energy_total(q, equations::BBMBBMVariableEquations1D)
+    eta, v, D = q
     e = equations.gravity * eta^2 + (D + eta) * v^2
     return e
 end
 
-@inline entropy(u, equations::BBMBBMVariableEquations1D) = energy_total(u, equations)
+@inline entropy(q, equations::BBMBBMVariableEquations1D) = energy_total(q, equations)
 
 # Calculate the error for the "lake-at-rest" test case where eta should
 # be a constant value over time
-@inline function lake_at_rest_error(u, equations::BBMBBMVariableEquations1D)
-    eta, _, _ = u
+@inline function lake_at_rest_error(q, equations::BBMBBMVariableEquations1D)
+    eta, _, _ = q
     return abs(equations.eta0 - eta)
 end

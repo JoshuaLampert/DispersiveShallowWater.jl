@@ -72,13 +72,13 @@ function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMEquations1D, initial_cond
               ::BoundaryConditionPeriodic, solver, cache)
     @unpack invImD2_D, tmp1 = cache
 
-    u = wrap_array(u_ode, mesh, equations, solver)
-    du = wrap_array(du_ode, mesh, equations, solver)
+    q = wrap_array(u_ode, mesh, equations, solver)
+    dq = wrap_array(du_ode, mesh, equations, solver)
 
-    eta = view(u, 1, :)
-    v = view(u, 2, :)
-    deta = view(du, 1, :)
-    dv = view(du, 2, :)
+    eta = view(q, 1, :)
+    v = view(q, 2, :)
+    deta = view(dq, 1, :)
+    dv = view(dq, 2, :)
 
     # energy and mass conservative semidiscretization
     @. tmp1 = -(equations.D * v + eta * v)
@@ -90,26 +90,26 @@ function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMEquations1D, initial_cond
     return nothing
 end
 
-@inline function waterheight_total(u, equations::BBMBBMEquations1D)
-    return u[1]
+@inline function waterheight_total(q, equations::BBMBBMEquations1D)
+    return q[1]
 end
 
-@inline function velocity(u, equations::BBMBBMEquations1D)
-    return u[2]
+@inline function velocity(q, equations::BBMBBMEquations1D)
+    return q[2]
 end
 
-@inline function bathymetry(u, equations::BBMBBMEquations1D)
+@inline function bathymetry(q, equations::BBMBBMEquations1D)
     return -equations.D
 end
 
-@inline function waterheight(u, equations::BBMBBMEquations1D)
-    return waterheight_total(u, equations) - bathymetry(u, equations)
+@inline function waterheight(q, equations::BBMBBMEquations1D)
+    return waterheight_total(q, equations) - bathymetry(q, equations)
 end
 
-@inline function energy_total(u, equations::BBMBBMEquations1D)
-    eta, v = u
+@inline function energy_total(q, equations::BBMBBMEquations1D)
+    eta, v = q
     e = equations.gravity * eta^2 + (equations.D + eta) * v^2
     return e
 end
 
-@inline entropy(u, equations::BBMBBMEquations1D) = energy_total(u, equations)
+@inline entropy(q, equations::BBMBBMEquations1D) = energy_total(q, equations)

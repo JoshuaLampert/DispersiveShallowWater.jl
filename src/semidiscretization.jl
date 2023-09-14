@@ -112,41 +112,41 @@ grid(semi::Semidiscretization) = grid(semi.solver)
 
 function PolynomialBases.integrate(func, u_ode, semi::Semidiscretization; wrap = true)
     if wrap == true
-        u = wrap_array(u_ode, semi)
+        q = wrap_array(u_ode, semi)
         integrals = zeros(real(semi), nvariables(semi))
         for v in eachvariable(semi.equations)
-            integrals[v] = integrate(func, u[v, :], semi.solver.D1)
+            integrals[v] = integrate(func, q[v, :], semi.solver.D1)
         end
         return integrals
     else
         integrate(func, u_ode, semi.solver.D1)
     end
 end
-function PolynomialBases.integrate(u, semi::Semidiscretization; wrap = true)
-    integrate(identity, u, semi; wrap = wrap)
+function PolynomialBases.integrate(u_ode, semi::Semidiscretization; wrap = true)
+    integrate(identity, u_ode, semi; wrap = wrap)
 end
 
 function integrate_quantity(func, u_ode, semi::Semidiscretization; wrap = true)
     if wrap == true
-        u = wrap_array(u_ode, semi)
+        q = wrap_array(u_ode, semi)
     else
-        u = u_ode
+        q = u_ode
     end
-    quantity = zeros(eltype(u), size(u, 2))
-    for i in 1:size(u, 2)
-        quantity[i] = func(view(u, :, i))
+    quantity = zeros(eltype(q), size(q, 2))
+    for i in 1:size(q, 2)
+        quantity[i] = func(view(q, :, i))
     end
     integrate(quantity, semi; wrap = false)
 end
 
 function integrate_quantity!(quantity, func, u_ode, semi::Semidiscretization; wrap = true)
     if wrap == true
-        u = wrap_array(u_ode, semi)
+        q = wrap_array(u_ode, semi)
     else
-        u = u_ode
+        q = u_ode
     end
-    for i in 1:size(u, 2)
-        quantity[i] = func(view(u, :, i))
+    for i in 1:size(q, 2)
+        quantity[i] = func(view(q, :, i))
     end
     integrate(quantity, semi; wrap = false)
 end
@@ -156,11 +156,11 @@ function integrate_quantity(func::Union{typeof(energy_total_modified),
                                         typeof(entropy_modified)}, u_ode,
                             semi::Semidiscretization; wrap = true)
     if wrap == true
-        u = wrap_array(u_ode, semi)
+        q = wrap_array(u_ode, semi)
     else
-        u = u_ode
+        q = u_ode
     end
-    quantity = func(u, semi.equations, semi.cache)
+    quantity = func(q, semi.equations, semi.cache)
     integrate(quantity, semi; wrap = false)
 end
 
@@ -169,11 +169,11 @@ function integrate_quantity!(quantity,
                                          typeof(entropy_modified)}, u_ode,
                              semi::Semidiscretization; wrap = true)
     if wrap == true
-        u = wrap_array(u_ode, semi)
+        q = wrap_array(u_ode, semi)
     else
-        u = u_ode
+        q = u_ode
     end
-    quantity = func(u, semi.equations, semi.cache)
+    quantity = func(q, semi.equations, semi.cache)
     integrate(quantity, semi; wrap = false)
 end
 
@@ -212,9 +212,9 @@ function compute_coefficients(func, t, semi::Semidiscretization)
 end
 
 function compute_coefficients!(u_ode, func, t, semi::Semidiscretization)
-    u = wrap_array(u_ode, semi)
+    q = wrap_array(u_ode, semi)
     # Call `compute_coefficients` defined by the solver
-    compute_coefficients!(u, func, t, mesh_equations_solver(semi)...)
+    compute_coefficients!(q, func, t, mesh_equations_solver(semi)...)
 end
 
 """

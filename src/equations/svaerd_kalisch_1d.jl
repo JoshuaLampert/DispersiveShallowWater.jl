@@ -127,15 +127,15 @@ function rhs!(du_ode, u_ode, t, mesh, equations::SvaerdKalischEquations1D,
               initial_condition,
               ::BoundaryConditionPeriodic, solver, cache)
     @unpack hmD1betaD1, D1betaD1, d, h, hv, alpha_hat, beta_hat, gamma_hat, tmp1, tmp2, D1_central = cache
-    u = wrap_array(u_ode, mesh, equations, solver)
-    du = wrap_array(du_ode, mesh, equations, solver)
+    q = wrap_array(u_ode, mesh, equations, solver)
+    dq = wrap_array(du_ode, mesh, equations, solver)
 
-    eta = view(u, 1, :)
-    v = view(u, 2, :)
-    D = view(u, 3, :)
-    deta = view(du, 1, :)
-    dv = view(du, 2, :)
-    dD = view(du, 3, :)
+    eta = view(q, 1, :)
+    v = view(q, 2, :)
+    D = view(q, 3, :)
+    deta = view(dq, 1, :)
+    dv = view(dq, 2, :)
+    dD = view(dq, 3, :)
     fill!(dD, zero(eltype(dD)))
 
     @. h = eta + D

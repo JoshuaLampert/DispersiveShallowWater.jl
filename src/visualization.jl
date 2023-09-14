@@ -33,7 +33,7 @@ end
     t = sol.t[step]
 
     if plot_initial == true
-        u_exact = wrap_array(compute_coefficients(initial_condition, t, semi), semi)
+        q_exact = wrap_array(compute_coefficients(initial_condition, t, semi), semi)
     end
 
     data = wrap_array(sol.u[step], semi)
@@ -42,7 +42,7 @@ end
         bathy[j] = bathymetry(view(data, :, j), equations)
     end
 
-    names = (varnames(equations))
+    names = varnames(equations)
     plot_title --> "$(get_name(semi.equations)) at t = $(round(t, digits=5))"
     size --> (1200, 800)
     layout := nsubplots
@@ -55,7 +55,7 @@ end
             @series begin
                 subplot := i
                 label := "initial $(names[i])"
-                grid(semi), u_exact[i, :]
+                grid(semi), q_exact[i, :]
             end
         end
 

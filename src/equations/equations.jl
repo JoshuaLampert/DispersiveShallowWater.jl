@@ -38,69 +38,76 @@ Return the list of variable names of `equations`.
 function varnames end
 
 """
-    waterheight_total(u, equations)
+    waterheight_total(q, equations)
 
-Return the total waterheight of the conserved variables `u` for a given set of
+Return the total waterheight of the primitive variables `q` for a given set of
 `equations`, i.e. the waterheight plus the bathymetry.
 
-`u` is a vector of the conserved variables at a single node, i.e., a vector
+`q` is a vector of the primitive variables at a single node, i.e., a vector
 of the correct length `nvariables(equations)`.
 """
 function waterheight_total end
 
 """
-    waterheight(u, equations)
+    waterheight(q, equations)
 
-Return the waterheight of the conserved variables `u` for a given set of
+Return the waterheight of the primitive variables `q` for a given set of
 `equations`, i.e. the waterheight above the bathymetry.
 
-`u` is a vector of the conserved variables at a single node, i.e., a vector
+`q` is a vector of the primitive variables at a single node, i.e., a vector
 of the correct length `nvariables(equations)`.
 """
 function waterheight end
 
 """
-    velocity(u, equations)
+    velocity(q, equations)
 
-Return the velocity of the conserved variables `u` for a given set of
+Return the velocity of the primitive variables `q` for a given set of
 `equations`.
 
-`u` is a vector of the conserved variables at a single node, i.e., a vector
+`q` is a vector of the primitive variables at a single node, i.e., a vector
 of the correct length `nvariables(equations)`.
 """
 function velocity end
 
 """
-    momentum(u, equations)
+    momentum(q, equations)
 
-Return the momentum of the conserved variables `u` for a given set of
+Return the momentum of the primitive variables `q` for a given set of
 `equations`, i.e. the waterheight times the velocity.
 
-`u` is a vector of the conserved variables at a single node, i.e., a vector
+`q` is a vector of the primitive variables at a single node, i.e., a vector
 of the correct length `nvariables(equations)`.
 """
-@inline function momentum(u, equations::AbstractEquations)
-    return waterheight(u, equations) * velocity(u, equations)
+@inline function momentum(q, equations::AbstractEquations)
+    return waterheight(q, equations) * velocity(q, equations)
 end
 
 """
-    entropy(u, equations)
+    discharge(q, equations)
 
-Return the chosen entropy of the conserved variables `u` for a given set of
+See [`momentum`](@ref).
+"""
+@inline discharge(q, equations::AbstractEquations) = momentum(q, equations)
+
+"""
+    entropy(q, equations)
+
+Return the entropy of the primitive variables `q` for a given set of
 `equations`.
 
-`u` is a vector of the conserved variables at a single node, i.e., a vector
+`q` is a vector of the primitive variables at a single node, i.e., a vector
 of the correct length `nvariables(equations)`.
 """
 function entropy end
 
 """
-    energy_total(u, equations)
+    energy_total(q, equations)
 
-Return the total energy of the conserved variables `u` for a given set of
+Return the total energy of the primitive variables `q` for a given set of
 `equations`.
 
-`u` is a vector of the conserved variables at a single node, i.e., a vector
+`q` is a vector of the primitive variables at a single node, i.e., a vector
 of the correct length `nvariables(equations)`.
 """
 function energy_total end
