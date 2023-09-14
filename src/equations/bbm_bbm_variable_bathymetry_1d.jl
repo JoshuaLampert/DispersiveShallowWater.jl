@@ -191,7 +191,7 @@ end
 
 @inline function energy_total(q, equations::BBMBBMVariableEquations1D)
     eta, v, D = q
-    e = equations.gravity * eta^2 + (D + eta) * v^2
+    e = 0.5 * (equations.gravity * eta^2 + (D + eta) * v^2)
     return e
 end
 

@@ -192,7 +192,7 @@ end
 
 @inline function energy_total(u, equations::SvaerdKalischEquations1D)
     eta, v, D = u
-    e = equations.gravity * eta^2 + (D + eta) * v^2
+    e = 0.5 * (equations.gravity * eta^2 + (D + eta) * v^2)
     return e
 end
 

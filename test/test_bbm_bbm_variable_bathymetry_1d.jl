@@ -17,7 +17,7 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_variable_bathymetry_1d")
                             cons_error=[1.0394561372181596e-13 3.410605131648481e-13 0.0],
                             change_waterheight=1.0394561372181596e-13,
                             change_velocity=-3.410605131648481e-13,
-                            change_entropy=0.001227743371600809)
+                            change_entropy=0.0006138716858004045)
     end
 
     @trixi_testset "bbm_bbm_variable_bathymetry_1d_relaxation" begin
@@ -79,7 +79,7 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_variable_bathymetry_1d")
                             cons_error=[1.4210854715202004e-13 3.1478183774857893e-15 0.0],
                             change_waterheight=-1.4210854715202004e-13,
                             change_velocity=-3.1478183774857893e-15,
-                            change_entropy=-2.293745637871325e-9)
+                            change_entropy=-1.1468728189356625e-9)
     end
 end
 

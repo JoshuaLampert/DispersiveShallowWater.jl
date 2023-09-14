@@ -16,7 +16,7 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_1d")
                             cons_error=[2.234687408354354e-13 5.684341886080801e-13],
                             change_waterheight=2.2222469560301384e-13,
                             change_velocity=-5.684341886080801e-13,
-                            change_entropy=0.0003910017421731027,
+                            change_entropy=0.00019550087108655134,
                             atol_ints=1e-10) # in order to make CI pass
     end
 
@@ -28,7 +28,7 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_1d")
                             cons_error=[1.0543424823256011e-14 3.552713678800501e-15],
                             change_waterheight=1.0543424823256011e-14,
                             change_velocity=-3.552713678800501e-15,
-                            change_entropy=-0.043687254604591885)
+                            change_entropy=-0.021843627302246205)
     end
 
     @trixi_testset "bbm_bbm_1d_relaxation" begin

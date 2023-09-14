@@ -63,7 +63,8 @@ using SparseArrays: sparse, SparseMatrixCSC
         @test waterheight(u, equations) == 44.0
         @test velocity(u, equations) == 2.0
         @test momentum(u, equations) == 88.0
-        @test isapprox(energy_total(u, equations), 17480.84)
+        @test discharge(u, equations) == 88.0
+        @test isapprox(energy_total(u, equations), 8740.42)
         @test_nowarn show(stdout, equations)
     end
 
@@ -74,7 +75,8 @@ using SparseArrays: sparse, SparseMatrixCSC
         @test waterheight(u, equations) == 44.0
         @test velocity(u, equations) == 2.0
         @test momentum(u, equations) == 88.0
-        @test isapprox(energy_total(u, equations), 17480.84)
+        @test discharge(u, equations) == 88.0
+        @test isapprox(energy_total(u, equations), 8740.42)
         @test_nowarn show(stdout, equations)
     end
 
@@ -88,7 +90,8 @@ using SparseArrays: sparse, SparseMatrixCSC
         @test waterheight(u, equations) == 44.0
         @test velocity(u, equations) == 2.0
         @test momentum(u, equations) == 88.0
-        @test isapprox(energy_total(u, equations), 17480.84)
+        @test discharge(u, equations) == 88.0
+        @test isapprox(energy_total(u, equations), 8740.42)
         @test_nowarn show(stdout, equations)
     end
 end
