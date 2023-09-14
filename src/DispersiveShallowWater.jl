@@ -3,6 +3,7 @@ module DispersiveShallowWater
 using DiffEqBase
 using LinearAlgebra: mul!, ldiv!, factorize, I, Diagonal
 using PolynomialBases
+using Printf: @printf, @sprintf
 using RecipesBase
 using Reexport: @reexport
 using Roots: AlefeldPotraShi, find_zero

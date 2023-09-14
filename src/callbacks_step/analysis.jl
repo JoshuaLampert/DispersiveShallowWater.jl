@@ -16,6 +16,8 @@ The computed errors and intergrals are saved for each timestep and can be obtain
 [`errors`](@ref) and [`integrals`](@ref).
 """
 mutable struct AnalysisCallback{T, AnalysisIntegrals, InitialStateIntegrals}
+    start_time::Float64
+    start_gc_time::Float64
     interval::Int
     analysis_errors::Vector{Symbol}
     analysis_integrals::AnalysisIntegrals
@@ -82,7 +84,7 @@ function AnalysisCallback(mesh, equations::AbstractEquations, solver;
             @warn "Extra analysis error $extra_analysis_error is not supported and will be ignored."
         end
     end
-    analysis_callback = AnalysisCallback(interval, analysis_errors,
+    analysis_callback = AnalysisCallback(0.0, 0.0, interval, analysis_errors,
                                          Tuple(analysis_integrals),
                                          SVector(ntuple(_ -> zero(real(solver)),
                                                         Val(nvariables(equations)))),
@@ -157,6 +159,13 @@ function initialize!(cb::DiscreteCallback{Condition, Affect!}, u_ode, t,
     analysis_callback = cb.affect!
     analysis_callback.initial_state_integrals = initial_state_integrals
 
+    # Record current time using a high-resolution clock
+    analysis_callback.start_time = time_ns()
+
+    # Record total time spent in garbage collection so far using a high-resolution clock
+    # Note: For details see the actual callback function below
+    analysis_callback.start_gc_time = Base.gc_time_ns()
+
     analysis_callback(integrator)
     return nothing
 end
@@ -164,16 +173,8 @@ end
 function (analysis_callback::AnalysisCallback)(integrator)
     semi = integrator.p
     mesh, equations, solver = mesh_equations_solver(semi)
-    @unpack t = integrator
 
-    # Calculate current time derivative (needed for semidiscrete entropy time derivative, residual, etc.)
-    du_ode = first(get_tmp_cache(integrator))
-    # `integrator.f` is usually just a call to `rhs!`
-    # However, we want to allow users to modify the ODE RHS outside of Trixi.jl
-    # and allow us to pass a combined ODE RHS to OrdinaryDiffEq, e.g., for
-    # hyperbolic-parabolic systems.
-    integrator.f(du_ode, integrator.u, semi, t)
-    l2_error, linf_error = analysis_callback(integrator.u, t, semi)
+    l2_error, linf_error = analysis_callback(integrator.u, integrator, semi)
 
     # avoid re-evaluating possible FSAL stages
     u_modified!(integrator, false)
@@ -184,30 +185,98 @@ end
 
 # This method is just called internally from `(analysis_callback::AnalysisCallback)(integrator)`
 # and serves as a function barrier. Additionally, it makes the code easier to profile and optimize.
-function (analysis_callback::AnalysisCallback)(u_ode, t, semi)
+function (analysis_callback::AnalysisCallback)(u_ode, integrator, semi)
     _, equations, solver = mesh_equations_solver(semi)
     @unpack analysis_errors, analysis_integrals, tstops, errors, integrals = analysis_callback
-
+    @unpack t, dt = integrator
     push!(tstops, t)
+    iter = integrator.stats.naccept
+
+    # Compute the total runtime since the analysis callback has been initialized, in seconds
+    runtime_absolute = 1.0e-9 * (time_ns() - analysis_callback.start_time)
+
+    # Compute the total time spent in garbage collection since the analysis callback has been
+    # initialized, in seconds
+    # Note: `Base.gc_time_ns()` is not part of the public Julia API but has been available at least
+    #        since Julia 1.6. Should this function be removed without replacement in a future Julia
+    #        release, just delete this analysis quantity from the callback.
+    # Source: https://github.com/JuliaLang/julia/blob/b540315cb4bd91e6f3a3e4ab8129a58556947628/base/timing.jl#L83-L84
+    gc_time_absolute = 1.0e-9 * (Base.gc_time_ns() - analysis_callback.start_gc_time)
+
+    # Compute the percentage of total time that was spent in garbage collection
+    gc_time_percentage = gc_time_absolute / runtime_absolute * 10
+
+    # Obtain the current memory usage of the Julia garbage collector, in MiB, i.e., the total size of
+    # objects in memory that have been allocated by the JIT compiler or the user code.
+    # Note: `Base.gc_live_bytes()` is not part of the public Julia API but has been available at least
+    #        since Julia 1.6. Should this function be removed without replacement in a future Julia
+    #        release, just delete this analysis quantity from the callback.
+    # Source: https://github.com/JuliaLang/julia/blob/b540315cb4bd91e6f3a3e4ab8129a58556947628/base/timing.jl#L86-L97
+    memory_use = Base.gc_live_bytes() / 2^20 # bytes -> MiB
+
+    println()
+    println("─"^100)
+    println("Simulation running '", get_name(equations), "'")
+    println("─"^100)
+    println(" #timesteps:     " * @sprintf("% 14d", iter) *
+            "               " *
+            " run time:       " * @sprintf("%10.8e s", runtime_absolute))
+    println(" Δt:             " * @sprintf("%10.8e", dt) *
+            "               " *
+            " └── GC time:    " *
+            @sprintf("%10.8e s (%5.3f%%)", gc_time_absolute, gc_time_percentage))
+    println(" sim. time:      " * @sprintf("%10.8e", t))
+    println(" #DOF:           " * @sprintf("% 14d", nnodes(semi)) *
+            "               " *
+            " alloc'd memory: " * @sprintf("%14.3f MiB", memory_use))
+    println()
+
+    print(" Variable:    ")
+    for v in eachvariable(equations)
+        @printf("   %-14s", varnames(prim2prim, equations)[v])
+    end
+    println()
+
     # Calculate L2/Linf errors, which are also returned
     l2_error, linf_error = calc_error_norms(u_ode, t, semi)
     current_errors = zeros(real(semi), (length(analysis_errors), nvariables(equations)))
     current_errors[1, :] = l2_error
     current_errors[2, :] = linf_error
+    print(" L2 error:    ")
+    for v in eachvariable(equations)
+        @printf("  % 10.8e", l2_error[v])
+    end
+    println()
+
+    print(" Linf error:  ")
+    for v in eachvariable(equations)
+        @printf("  % 10.8e", linf_error[v])
+    end
+    println()
 
     # Conservation error
     if :conservation_error in analysis_errors
         @unpack initial_state_integrals = analysis_callback
         state_integrals = integrate(u_ode, semi)
         current_errors[3, :] = abs.(state_integrals - initial_state_integrals)
+        print(" |∑q - ∑q₀|:  ")
+        for v in eachvariable(equations)
+            @printf("  % 10.8e", current_errors[3, v])
+        end
+        println()
     end
     push!(errors, current_errors)
 
     # additional integrals
+    if length(analysis_integrals) > 0
+        println()
+        println(" Integrals:    ")
+    end
     current_integrals = zeros(real(semi), length(analysis_integrals))
     analyze_integrals!(current_integrals, 1, analysis_integrals, u_ode, t, semi)
     push!(integrals, current_integrals)
 
+    println("─"^100)
     return l2_error, linf_error
 end
 
@@ -221,6 +290,9 @@ function analyze_integrals!(current_integrals, i, analysis_integrals::NTuple{N, 
 
     res = analyze(quantity, u_ode, t, semi)
     current_integrals[i] = res
+    @printf(" %-12s:", pretty_form_utf(quantity))
+    @printf("  % 10.8e", res)
+    println()
 
     # Recursively call this method with the unprocessed integrals
     analyze_integrals!(current_integrals, i + 1, remaining_quantities, u_ode, t, semi)
@@ -242,3 +314,13 @@ function analyze(quantity::Union{typeof(energy_total_modified), typeof(entropy_m
                  u_ode, t, semi::Semidiscretization)
     integrate_quantity(quantity, u_ode, semi)
 end
+
+pretty_form_utf(::typeof(waterheight_total)) = "∑η"
+pretty_form_utf(::typeof(velocity)) = "∑v"
+pretty_form_utf(::typeof(momentum)) = "∑P"
+pretty_form_utf(::typeof(discharge)) = "∑P"
+pretty_form_utf(::typeof(entropy)) = "∑U"
+pretty_form_utf(::typeof(energy_total)) = "∑e_total"
+pretty_form_utf(::typeof(entropy_modified)) = "∑U_modified"
+pretty_form_utf(::typeof(energy_total_modified)) = "∑e_modified"
+pretty_form_utf(::typeof(lake_at_rest_error)) = "∑|η-η₀|"
