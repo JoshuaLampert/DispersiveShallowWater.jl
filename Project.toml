@@ -4,9 +4,7 @@ authors = ["Joshua Lampert <joshua.lampert@tuhh.de>"]
 version = "0.1.0-pre"
 
 [deps]
-ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
 DiffEqBase = "2b5f629d-d688-5b77-993f-72d75c75574e"
-ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 PolynomialBases = "c74db56a-226d-5e98-8bb0-a6049094aeea"
 RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
@@ -19,8 +17,11 @@ StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 SummationByPartsOperators = "9f78cca6-572e-554e-b819-917d2f1cf240"
 
 [compat]
-ForwardDiff = "0.10.18"
+DiffEqBase = "6.121"
+PolynomialBases = "0.4.15"
+RecipesBase = "1.1"
 Reexport = "1.0"
+Roots = "2.0.17"
 SciMLBase = "1.90"
 SimpleUnPack = "1.1"
 StaticArrays = "1"

@@ -1,10 +1,11 @@
 [deps]
-ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
+Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
 OrdinaryDiffEq = "1dea7af3-3e70-54e6-95c3-0bf5283fa5ed"
-SummationByPartsOperators = "9f78cca6-572e-554e-b819-917d2f1cf240"
 SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
+SummationByPartsOperators = "9f78cca6-572e-554e-b819-917d2f1cf240"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [compat]
-ForwardDiff = "0.10.18"
+Aqua = "0.7"
 OrdinaryDiffEq = "6.49.1"
+SummationByPartsOperators = "0.5.41"
