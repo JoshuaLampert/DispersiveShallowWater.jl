@@ -41,7 +41,8 @@ function SvaerdKalischEquations1D(; gravity_constant, eta0 = 1.0, alpha = 0.0,
     SvaerdKalischEquations1D(gravity_constant, eta0, alpha, beta, gamma)
 end
 
-varnames(::SvaerdKalischEquations1D) = ("eta", "v", "D")
+varnames(::typeof(prim2prim), ::SvaerdKalischEquations1D) = ("eta", "v", "D")
+varnames(::typeof(prim2cons), ::SvaerdKalischEquations1D) = ("h", "hv", "b")
 
 # TODO: Initial condition should not get a `mesh`
 """
@@ -172,6 +173,24 @@ function rhs!(du_ode, u_ode, t, mesh, equations::SvaerdKalischEquations1D,
     dv[:] = hmD1betaD1 \ tmp2
 
     return nothing
+end
+
+@inline function prim2cons(q, equations::SvaerdKalischEquations1D)
+    eta, v, D = q
+
+    h = eta + D
+    hv = h * v
+    b = -D
+    return SVector(h, hv, b)
+end
+
+@inline function cons2prim(u, equations::SvaerdKalischEquations1D)
+    h, hv, b = u
+
+    eta = h + b
+    v = hv / h
+    D = -b
+    return SVector(eta, v, D)
 end
 
 @inline function waterheight_total(u, equations::SvaerdKalischEquations1D)

@@ -58,25 +58,29 @@ using SparseArrays: sparse, SparseMatrixCSC
 
     @testset "BBMBBMEquations1D" begin
         equations = @test_nowarn BBMBBMEquations1D(gravity_constant = 9.81, D = 2.0)
-        u = [42.0, 2.0]
-        @test waterheight_total(u, equations) == 42.0
-        @test waterheight(u, equations) == 44.0
-        @test velocity(u, equations) == 2.0
-        @test momentum(u, equations) == 88.0
-        @test discharge(u, equations) == 88.0
-        @test isapprox(energy_total(u, equations), 8740.42)
+        q = [42.0, 2.0]
+        @test prim2prim(q, equations) == q
+        @test isapprox(cons2prim(prim2cons(q, equations), equations), q)
+        @test waterheight_total(q, equations) == 42.0
+        @test waterheight(q, equations) == 44.0
+        @test velocity(q, equations) == 2.0
+        @test momentum(q, equations) == 88.0
+        @test discharge(q, equations) == 88.0
+        @test isapprox(energy_total(q, equations), 8740.42)
         @test_nowarn show(stdout, equations)
     end
 
     @testset "BBMBBMVariableEquations1D" begin
         equations = @test_nowarn BBMBBMVariableEquations1D(gravity_constant = 9.81)
-        u = [42.0, 2.0, 2.0]
-        @test waterheight_total(u, equations) == 42.0
-        @test waterheight(u, equations) == 44.0
-        @test velocity(u, equations) == 2.0
-        @test momentum(u, equations) == 88.0
-        @test discharge(u, equations) == 88.0
-        @test isapprox(energy_total(u, equations), 8740.42)
+        q = [42.0, 2.0, 2.0]
+        @test prim2prim(q, equations) == q
+        @test isapprox(cons2prim(prim2cons(q, equations), equations), q)
+        @test waterheight_total(q, equations) == 42.0
+        @test waterheight(q, equations) == 44.0
+        @test velocity(q, equations) == 2.0
+        @test momentum(q, equations) == 88.0
+        @test discharge(q, equations) == 88.0
+        @test isapprox(energy_total(q, equations), 8740.42)
         @test_nowarn show(stdout, equations)
     end
 
@@ -85,13 +89,15 @@ using SparseArrays: sparse, SparseMatrixCSC
                                                           alpha = 0.0004040404040404049,
                                                           beta = 0.49292929292929294,
                                                           gamma = 0.15707070707070708)
-        u = [42.0, 2.0, 2.0]
-        @test waterheight_total(u, equations) == 42.0
-        @test waterheight(u, equations) == 44.0
-        @test velocity(u, equations) == 2.0
-        @test momentum(u, equations) == 88.0
-        @test discharge(u, equations) == 88.0
-        @test isapprox(energy_total(u, equations), 8740.42)
+        q = [42.0, 2.0, 2.0]
+        @test prim2prim(q, equations) == q
+        @test isapprox(cons2prim(prim2cons(q, equations), equations), q)
+        @test waterheight_total(q, equations) == 42.0
+        @test waterheight(q, equations) == 44.0
+        @test velocity(q, equations) == 2.0
+        @test momentum(q, equations) == 88.0
+        @test discharge(q, equations) == 88.0
+        @test isapprox(energy_total(q, equations), 8740.42)
         @test_nowarn show(stdout, equations)
     end
 end

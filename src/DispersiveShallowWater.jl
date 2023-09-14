@@ -33,8 +33,9 @@ export examples_dir, trixi_include
 export BBMBBMEquations1D, BBMBBMVariableEquations1D, SvärdKalischEquations1D,
        SvaerdKalischEquations1D
 
-export waterheight_total, waterheight, velocity, momentum, discharge, energy_total, entropy,
-       lake_at_rest_error, energy_total_modified, entropy_modified
+export prim2prim, prim2cons, cons2prim, waterheight_total, waterheight,
+       velocity, momentum, discharge, energy_total, entropy, lake_at_rest_error,
+       energy_total_modified, entropy_modified
 
 export Mesh1D, xmin, xmax, nnodes
 

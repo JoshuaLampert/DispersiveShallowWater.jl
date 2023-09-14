@@ -1,20 +1,23 @@
-struct PlotData{Ylim}
+struct PlotData{Ylim, Conversion}
     semisol::Pair{<:Semidiscretization, <:ODESolution}
     plot_initial::Bool
+    plot_bathymetry::Bool
+    conversion::Conversion
     step::Integer
     # call this yli because ylim, ylimits etc. are already occupied by Plots.jl, but we want a vector
     yli::Ylim
 end
 
-struct PlotDataOverTime{RealT, Ylim}
+struct PlotDataOverTime{RealT, Ylim, Conversion}
     semisol::Pair{<:Semidiscretization, <:ODESolution}
     x::RealT
+    conversion::Conversion
     # call this yli because ylim, ylimits etc. are already occupied by Plots.jl, but we want a vector
     yli::Ylim
 end
 
 @recipe function f(plotdata::PlotData)
-    @unpack semisol, plot_initial, step, yli = plotdata
+    @unpack semisol, plot_initial, plot_bathymetry, conversion, step, yli = plotdata
     semi, sol = semisol
     nvars = nvariables(semi)
 
@@ -36,20 +39,29 @@ end
         q_exact = wrap_array(compute_coefficients(initial_condition, t, semi), semi)
     end
 
-    data = wrap_array(sol.u[step], semi)
-    bathy = zeros(nnodes(semi))
+    q = wrap_array(sol.u[step], semi)
+    data = similar(q)
+    if conversion == prim2prim && plot_bathymetry == true
+        bathy = zeros(nnodes(semi))
+    end
     for j in eachnode(semi)
-        bathy[j] = bathymetry(view(data, :, j), equations)
+        if conversion == prim2prim && plot_bathymetry == true
+            bathy[j] = bathymetry(view(q, :, j), equations)
+        end
+        if plot_initial == true
+            q_exact[:, j] = conversion(view(q_exact, :, j), equations)
+        end
+        data[:, j] = conversion(view(q, :, j), equations)
     end
 
-    names = varnames(equations)
+    names = varnames(conversion, equations)
     plot_title --> "$(get_name(semi.equations)) at t = $(round(t, digits=5))"
     size --> (1200, 800)
     layout := nsubplots
 
     for i in 1:nvars
         # Don't plot bathymetry in separate subplot
-        names[i] == "D" && continue
+        names[i] in ["D", "b"] && continue
 
         if plot_initial == true
             @series begin
@@ -61,7 +73,7 @@ end
 
         @series begin
             subplot := i
-            label := names[i]
+            label --> names[i]
             xguide := "x"
             yguide := names[i]
             title := names[i]
@@ -70,21 +82,23 @@ end
         end
     end
 
-    # Plot the bathymetry
-    @series begin
-        subplot := 1
-        label := "bathymetry"
-        xguide := "x"
-        yguide := names[1]
-        title := names[1]
-        ylim := yli[1]
-        color := :black
-        grid(semi), bathy
+    # Plot the bathymetry if primitive variables are plotted
+    if conversion == prim2prim && plot_bathymetry == true
+        @series begin
+            subplot := 1
+            label := "bathymetry"
+            xguide := "x"
+            yguide := names[1]
+            title := names[1]
+            ylim := yli[1]
+            color := :black
+            grid(semi), bathy
+        end
     end
 end
 
 @recipe function f(plotdata_over_time::PlotDataOverTime)
-    @unpack semisol, x, yli = plotdata_over_time
+    @unpack semisol, x, conversion, yli = plotdata_over_time
     semi, sol = semisol
     nvars = nvariables(semi)
 
@@ -103,7 +117,11 @@ end
         end
     end
 
-    names = (varnames(equations))
+    for k in 1:length(sol.t)
+        data[:, k] = conversion(view(data, :, k), equations)
+    end
+
+    names = varnames(conversion, equations)
     plot_title -->
     "$(get_name(semi.equations)) at x = $(round(grid(semi)[index], digits=5))"
     size --> (1200, 800)
@@ -111,7 +129,7 @@ end
 
     for i in 1:nvars
         # Don't plot bathymetry in separate subplot
-        names[i] == "D" && continue
+        names[i] in ["D", "b"] && continue
         @series begin
             subplot := i
             label := names[i]
@@ -125,22 +143,23 @@ end
 end
 
 @recipe function f(semisol::Pair{<:Semidiscretization, <:ODESolution}; plot_initial = false,
-                   step = -1, yli = nothing)
-    PlotData(semisol, plot_initial, step, yli)
+                   plot_bathymetry = true, conversion = prim2prim, step = -1, yli = nothing)
+    PlotData(semisol, plot_initial, plot_bathymetry, conversion, step, yli)
 end
 
 @recipe function f(semi::Semidiscretization, sol::ODESolution; plot_initial = false,
-                   step = -1, yli = nothing)
-    PlotData(semi => sol, plot_initial, step, yli)
+                   plot_bathymetry = true, conversion = prim2prim, step = -1, yli = nothing)
+    PlotData(semi => sol, plot_initial, plot_bathymetry, conversion, step, yli)
 end
 
 @recipe function f(semisol::Pair{<:Semidiscretization, <:ODESolution}, x_value;
-                   yli = nothing)
-    PlotDataOverTime(semisol, x_value, yli)
+                   conversion = prim2prim, yli = nothing)
+    PlotDataOverTime(semisol, x_value, conversion, yli)
 end
 
-@recipe function f(semi::Semidiscretization, sol::ODESolution, x_value; yli = nothing)
-    PlotDataOverTime(semi => sol, x_value, yli)
+@recipe function f(semi::Semidiscretization, sol::ODESolution, x_value;
+                   conversion = prim2prim, yli = nothing)
+    PlotDataOverTime(semi => sol, x_value, conversion, yli)
 end
 
 # TODO: Only plot change in invariants for now, also plot errors?

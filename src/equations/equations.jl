@@ -31,11 +31,44 @@ julia> DispersiveShallowWater.get_name(BBMBBMEquations1D(gravity_constant=1.0))
 get_name(equations::AbstractEquations) = equations |> typeof |> nameof |> string
 
 """
-    varnames(equations)
+    varnames(conversion_function, equations)
 
-Return the list of variable names of `equations`.
+Return the list of variable names when applying `conversion_function` to the
+conserved variables associated to `equations`.
+Common choices of the `conversion_function` are [`prim2prim`](@ref) and
+[`prim2cons`](@ref).
 """
 function varnames end
+
+"""
+    prim2prim(q, equations)
+
+Return the primitive variables `q`. While this function is as trivial as `identity`,
+it is also as useful.
+"""
+@inline prim2prim(q, ::AbstractEquations) = q
+
+"""
+    prim2cons(q, equations)
+
+Convert the primitive variables `q` to the conserved variables for a given set of
+`equations`. `q` is a vector type of the correct length `nvariables(equations)`.
+Notice the function doesn't include any error checks for the purpose of efficiency,
+so please make sure your input is correct.
+The inverse conversion is performed by [`cons2prim`](@ref).
+"""
+function prim2cons end
+
+"""
+    cons2prim(u, equations)
+
+Convert the conserved variables `u` to the primitive variables for a given set of
+`equations`. `u` is a vector type of the correct length `nvariables(equations)`.
+Notice the function doesn't include any error checks for the purpose of efficiency,
+so please make sure your input is correct.
+The inverse conversion is performed by [`prim2cons`](@ref).
+"""
+function cons2prim end
 
 """
     waterheight_total(q, equations)
@@ -135,7 +168,8 @@ function Base.show(io::IO, ::MIME"text/plain", equations::AbstractEquations)
         println(io, get_name(equations))
         println(io, "#variables: ", nvariables(equations))
         for variable in eachvariable(equations)
-            println("    variable " * string(variable), ": ", varnames(equations)[variable])
+            println("    variable " * string(variable), ": ",
+                    varnames(prim2prim, equations)[variable])
         end
     end
 end

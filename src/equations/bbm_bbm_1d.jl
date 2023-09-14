@@ -27,7 +27,8 @@ function BBMBBMEquations1D(; gravity_constant, D = 1.0)
     BBMBBMEquations1D(gravity_constant, D)
 end
 
-varnames(::BBMBBMEquations1D) = ("eta", "v")
+varnames(::typeof(prim2prim), ::BBMBBMEquations1D) = ("eta", "v")
+varnames(::typeof(prim2cons), ::BBMBBMEquations1D) = ("h", "hv")
 
 # TODO: Initial condition should not get a `mesh`
 """
@@ -88,6 +89,22 @@ function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMEquations1D, initial_cond
     mul!(dv, invImD2_D, tmp1)
 
     return nothing
+end
+
+@inline function prim2cons(q, equations::BBMBBMEquations1D)
+    eta, v = q
+
+    h = eta + equations.D
+    hv = h * v
+    return SVector(h, hv)
+end
+
+@inline function cons2prim(u, equations::BBMBBMEquations1D)
+    h, hv = u
+
+    eta = h - equations.D
+    v = hv / h
+    return SVector(eta, v)
 end
 
 @inline function waterheight_total(q, equations::BBMBBMEquations1D)
