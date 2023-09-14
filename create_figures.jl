@@ -1,5 +1,4 @@
 using DispersiveShallowWater
-using LaTeXStrings
 using Plots
 
 function plot_elixir(filename; ylims_gif = nothing, ylims_x = nothing, x_values = [],
@@ -119,6 +118,24 @@ plot_elixir(joinpath(EXAMPLES_DIR_BBMBBM_VARIABLE,
 # a wave make. This setup comes from experiments by W. M. Dingemans.
 plot_elixir(joinpath(EXAMPLES_DIR_SVAERD_KALISCH,
                      "svaerd_kalisch_1d_dingemans.jl");
+            ylims_gif = [(-0.1, 0.9), (-0.3, 0.3)],
+            ylims_x = [:auto, :auto],
+            x_values = [3.04, 9.44, 20.04, 26.04, 30.44, 37.04],
+            tlims = [
+                (15.0, 45.0),
+                (19.0, 48.0),
+                (25.0, 52.0),
+                (30.0, 60.0),
+                (33.0, 61.0),
+                (35.0, 65.0),
+            ],
+            tspan = (0.0, 70.0))
+
+###############################################################################
+# One-dimensional equations from Svärd and Kalisch with initial condition that models
+# a wave make. This setup comes from experiments by W. M. Dingemans.
+plot_elixir(joinpath(EXAMPLES_DIR_SVAERD_KALISCH,
+                     "svaerd_kalisch_1d_dingemans_upwind.jl");
             ylims_gif = [(-0.1, 0.9), (-0.3, 0.3)],
             ylims_x = [:auto, :auto],
             x_values = [3.04, 9.44, 20.04, 26.04, 30.44, 37.04],

@@ -137,7 +137,7 @@ function create_cache(mesh,
                      Matrix(solver.D1.minus)
         invImD2K_D = (I - 1 / 6 * sparse(solver.D2) * K) \ Matrix(solver.D1.plus)
     else
-        @error "unknown type of first derivative operator"
+        @error "unknown type of first-derivative operator"
     end
     tmp1 = Array{RealT}(undef, nnodes(mesh))
     return (invImDKD_D = invImDKD_D, invImD2K_D = invImD2K_D, tmp1 = tmp1)
