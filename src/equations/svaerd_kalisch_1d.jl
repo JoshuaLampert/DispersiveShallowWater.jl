@@ -101,9 +101,9 @@ function create_cache(mesh,
     d = equations.eta0 .+ D
     h = Array{RealT}(undef, nnodes(mesh))
     hv = similar(h)
-    alpha_hat = sqrt.(equations.alpha * sqrt.(equations.gravity * d) .* d.^2)
-    beta_hat = equations.beta * d.^3
-    gamma_hat = equations.gamma * sqrt.(equations.gravity * d) .* d.^3
+    alpha_hat = sqrt.(equations.alpha * sqrt.(equations.gravity * d) .* d .^ 2)
+    beta_hat = equations.beta * d .^ 3
+    gamma_hat = equations.gamma * sqrt.(equations.gravity * d) .* d .^ 3
     tmp1 = similar(h)
     tmp2 = similar(h)
     hmD1betaD1 = Array{RealT}(undef, nnodes(mesh), nnodes(mesh))
@@ -218,11 +218,11 @@ number of nodes as length of the second dimension.
     eta = view(u, 1, :)
     v = view(u, 2, :)
     D = view(u, 3, :)
-    beta_hat = equations.beta * (eta .+ D).^3
+    beta_hat = equations.beta * (eta .+ D) .^ 3
     if cache.D1 isa PeriodicDerivativeOperator
-        tmp = 0.5 * beta_hat .* ((cache.D1 * v).^2)
+        tmp = 0.5 * beta_hat .* ((cache.D1 * v) .^ 2)
     elseif cache.D1 isa PeriodicUpwindOperators
-        tmp = 0.5 * beta_hat .* ((cache.D1.minus * v).^2)
+        tmp = 0.5 * beta_hat .* ((cache.D1.minus * v) .^ 2)
     else
         @error "unknown type of first-derivative operator"
     end
