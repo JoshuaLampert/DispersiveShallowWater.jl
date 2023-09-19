@@ -1,12 +1,12 @@
 # DispersiveShallowWater.jl
 
-[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://JoshuaLampert/DispersiveShallowWater.jl/stable/)
-[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://JoshuaLampert/DispersiveShallowWater.jl/dev/)
+[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://JoshuaLampert.github.io./DispersiveShallowWater.jl/stable/)
+[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://JoshuaLampert.github.io./DispersiveShallowWater.jl/dev/)
 [![Build Status](https://github.com/JoshuaLampert/DispersiveShallowWater.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/JoshuaLampert/DispersiveShallowWater.jl/actions/workflows/CI.yml?query=branch%3Amain)
 [![Aqua QA](https://raw.githubusercontent.com/JuliaTesting/Aqua.jl/master/badge.svg)](https://github.com/JuliaTesting/Aqua.jl)
 [![License: MIT](https://img.shields.io/badge/License-MIT-success.svg)](https://opensource.org/licenses/MIT)
 
-**DispersiveShallowWater.jl** is a [Julia](https://julialang.org/) package that implements structure-preserving numerical methods for dispersive shallow water models. To date, it provides provably conservative, entropy-conserving and well-balanced numerical schemes of the [BBM-BBM equations with varying bottom topography](https://iopscience.iop.org/article/10.1088/1361-6544/ac3c29), and the [dispersive shallow water model proposed by Magnus Svärd and Henrik Kalisch](https://arxiv.org/abs/2302.09924). The semidiscretizations are based on summation by parts (SBP) operators, which are implemented in [SummationByPartsOperators.jl](https://github.com/ranocha/SummationByPartsOperators.jl/). In order to obtain fully discrete schemes, the time integration methods from [OrdinaryDiffEq.jl](https://github.com/SciML/OrdinaryDiffEq.jl) are used to solve the resulting ordinary differential equations. Fully discrete entropy-conservative methods can be obtained by using the [relaxation method](https://epubs.siam.org/doi/10.1137/19M1263662) provided by DispersiveShallowWater.jl. A more detailed documentation can be found [online](https://JoshuaLampert/DispersiveShallowWater.jl/stable/).
+**DispersiveShallowWater.jl** is a [Julia](https://julialang.org/) package that implements structure-preserving numerical methods for dispersive shallow water models. To date, it provides provably conservative, entropy-conserving and well-balanced numerical schemes of the [BBM-BBM equations with varying bottom topography](https://iopscience.iop.org/article/10.1088/1361-6544/ac3c29), and the [dispersive shallow water model proposed by Magnus Svärd and Henrik Kalisch](https://arxiv.org/abs/2302.09924). The semidiscretizations are based on summation by parts (SBP) operators, which are implemented in [SummationByPartsOperators.jl](https://github.com/ranocha/SummationByPartsOperators.jl/). In order to obtain fully discrete schemes, the time integration methods from [OrdinaryDiffEq.jl](https://github.com/SciML/OrdinaryDiffEq.jl) are used to solve the resulting ordinary differential equations. Fully discrete entropy-conservative methods can be obtained by using the [relaxation method](https://epubs.siam.org/doi/10.1137/19M1263662) provided by DispersiveShallowWater.jl. A more detailed documentation can be found [online](https://JoshuaLampert.github.io./DispersiveShallowWater.jl/stable/).
 
 # Installation
 
@@ -39,7 +39,7 @@ The result can be visualized by using the package Plots.jl
 julia> using Plots
 julia> plot(semi => sol)
 ```
-The command `plot` expects a `Pair` consisting of a `Semidiscretization` and an `ODESolution`. The visualization can also be customized, see the [documentation](https://JoshuaLampert/DispersiveShallowWater.jl/stable/) for more details. Other examples can be found in the subdirectory [examples/](https://github.com/JoshuaLampert/DispersiveShallowWater.jl/examples/). A list of all examples is returned by running `get_examples()`. You can pass the filename of one of the examples or your own simulation file to `include` in order to run it, e.g., `include(joinpath(examples_dir(), "svaerd_kalisch_1d", "svaerd_kalisch_1d_dingemans_relaxation.jl"))`.
+The command `plot` expects a `Pair` consisting of a `Semidiscretization` and an `ODESolution`. The visualization can also be customized, see the [documentation](https://JoshuaLampert.github.io./DispersiveShallowWater.jl/stable/) for more details. Other examples can be found in the subdirectory [examples/](https://github.com/JoshuaLampert/DispersiveShallowWater.jl/tree/main/examples). A list of all examples is returned by running `get_examples()`. You can pass the filename of one of the examples or your own simulation file to `include` in order to run it, e.g., `include(joinpath(examples_dir(), "svaerd_kalisch_1d", "svaerd_kalisch_1d_dingemans_relaxation.jl"))`.
 
 # Authors
 
