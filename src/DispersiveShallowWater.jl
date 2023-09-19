@@ -29,7 +29,7 @@ include("semidiscretization.jl")
 include("callbacks_step/callbacks_step.jl")
 include("visualization.jl")
 
-export examples_dir, trixi_include
+export examples_dir, get_examples, default_example, trixi_include
 
 export BBMBBMEquations1D, BBMBBMVariableEquations1D, SvärdKalischEquations1D,
        SvaerdKalischEquations1D

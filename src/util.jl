@@ -14,6 +14,39 @@ readdir(examples_dir())
 """
 examples_dir() = pkgdir(DispersiveShallowWater, "examples")
 
+"""
+    get_examples()
+
+Return a list of all example elixirs that are provided by DispersiveShallowWater.jl. See also
+[`examples_dir`](@ref) and [`default_example`](@ref).
+
+Copied from [Trixi.jl](https://github.com/trixi-framework/Trixi.jl).
+"""
+function get_examples()
+    examples = String[]
+    for (root, dirs, files) in walkdir(examples_dir())
+        for f in files
+            if endswith(f, ".jl")
+                push!(examples, joinpath(root, f))
+            end
+        end
+    end
+
+    return examples
+end
+
+"""
+    default_example()
+
+Return the path to an example elixir that can be used to quickly see DispersiveShallowWater.jl in action.
+See also [`examples_dir`](@ref) and [`get_examples`](@ref).
+
+Copied from [Trixi.jl](https://github.com/trixi-framework/Trixi.jl).
+"""
+function default_example()
+    joinpath(examples_dir(), "bbm_bbm_variable_bathymetry_1d", "bbm_bbm_variable_bathymetry_1d_basic.jl")
+end
+
 # Note: We can't call the method below `DispersiveShallowWater.include` since that is created automatically
 # inside `module DispersiveShallowWater` to `include` source files and evaluate them within the global scope
 # of `DispersiveShallowWater`. However, users will want to evaluate in the global scope of `Main` or something
