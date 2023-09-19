@@ -25,7 +25,7 @@ julia> Pkg.add("SummationByPartsOperators")
 
 # Usage
 
-In the Julia REPL, first load the package Trixi.jl
+In the Julia REPL, first load the package DispersiveShallowWater.jl
 ```julia
 julia> using DispersiveShallowWater
 ```
