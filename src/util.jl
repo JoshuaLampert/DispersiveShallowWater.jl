@@ -17,7 +17,7 @@ examples_dir() = pkgdir(DispersiveShallowWater, "examples")
 """
     get_examples()
 
-Return a list of all example elixirs that are provided by DispersiveShallowWater.jl. See also
+Return a list of all examples that are provided by DispersiveShallowWater.jl. See also
 [`examples_dir`](@ref) and [`default_example`](@ref).
 
 Copied from [Trixi.jl](https://github.com/trixi-framework/Trixi.jl).
@@ -38,7 +38,7 @@ end
 """
     default_example()
 
-Return the path to an example elixir that can be used to quickly see DispersiveShallowWater.jl in action.
+Return the path to an example that can be used to quickly see DispersiveShallowWater.jl in action.
 See also [`examples_dir`](@ref) and [`get_examples`](@ref).
 
 Copied from [Trixi.jl](https://github.com/trixi-framework/Trixi.jl).

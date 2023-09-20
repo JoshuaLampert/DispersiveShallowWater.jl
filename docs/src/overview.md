@@ -48,7 +48,7 @@ N = 512
 mesh = Mesh1D(coordinates_min, coordinates_max, N + 1)
 ```
 
-The first line specifies that we want to solve the BBM-BBM equations with variable bathymetry using a gravitaional acceleration ``g = 9.81``. Afterwards, we define the initial condition, which is described as a function with the spatial variable `x`, the time `t`, the `equations` and a `mesh` as parameters. If an analytical solution is available, the time variable `t` can be used, and the initial condition can serve as an analytical to compare the numerical solution with. An initial condition in DispersiveShallowWater.jl is supposed to return an `SVector` holding the values for each of the unknown variables. Since the bathymetry is treated as a variable (with time derivative 0) for convenience, we need to provide the value for the primitive variables `eta` and `v` as well as for `D`. Otherwise, you can just keep the time variable unused. In this case, the initial condition describes a travelling wave that moves towards a beach, which is modeled by a linearly increasing bathymetry.
+The first line specifies that we want to solve the BBM-BBM equations with variable bathymetry using a gravitational acceleration ``g = 9.81``. Afterwards, we define the initial condition, which is described as a function with the spatial variable `x`, the time `t`, the `equations` and a `mesh` as parameters. If an analytical solution is available, the time variable `t` can be used, and the initial condition can serve as an analytical solution to be compared with the numerical solution. Otherwise, you can just keep the time variable unused. An initial condition in DispersiveShallowWater.jl is supposed to return an `SVector` holding the values for each of the unknown variables. Since the bathymetry is treated as a variable (with time derivative 0) for convenience, we need to provide the value for the primitive variables `eta` and `v` as well as for `D`. In this case, the initial condition describes a travelling wave that moves towards a beach, which is modeled by a linearly increasing bathymetry.
 
 Next, we choose periodic boundary conditions since, up to now, DispersiveShallowWater.jl only provides support for this type of boundary conditions. Lastly, we define the physical domain as the interval from -130 to 20 and we choose 512 intermediate nodes. The mesh is homogeneous, i.e. the distance between each two nodes is constant. We choose the left boundary very far to the left in order to avoid an interaction of the left- and right-travelling waves.
 
@@ -66,7 +66,7 @@ Finally, we put the `mesh`, the `equations`, the `initial_condition`, the `solve
 
 ## Solve system of ordinary differential equations
 
-Once we have obtained a semidiscretization, we can solve the resulting system of ordinary differential equations. To do so, we specify the time interval that we want to simulate and obtain an `ODEProblem` from the [SciML ecosystem for ordinary differential equations](https://diffeq.sciml.ai/latest/) by calling [`semidiscretize`](@ref) on the semidiscretization and the time span. Additionally, we can analyze the numerical solution using an [`AnalysisCallback`](@ref). The analysis includes computing the ``L_2`` and ``L_\infty`` errors of the different variables of the solution compared to the initial condition (or, if available, at the same time analytical solution) and potentially additional errors and quantities. Additional errors can be passed by the keyword argument `extra_analysis_errors` and additional integral quantities that should be analyzed can be passed by keyword argument `extra_analysis_integrals`. In this example we pass the `conservation_error`, which computes the temporal change of the total amount (i.e. integral) of the different variables over time. In addition, the integrals of the total waterheight ``\eta`` [`waterheight_total`](@ref), the [`velocity`](@ref) and the [`entropy`](@ref) are computed and saved for each time step. The total waterheight and the total velocity are linear invariants of the BBM-BBM equations, i.e. they do not change over time. The total entropy
+Once we have obtained a semidiscretization, we can solve the resulting system of ordinary differential equations. To do so, we specify the time interval that we want to simulate and obtain an `ODEProblem` from the [SciML ecosystem for ordinary differential equations](https://diffeq.sciml.ai/latest/) by calling [`semidiscretize`](@ref) on the semidiscretization and the time span. Additionally, we can analyze the numerical solution using an [`AnalysisCallback`](@ref). The analysis includes computing the ``L^2`` error and ``L^\infty`` error of the different variables of the solution compared to the initial condition (or, if available, at the same time analytical solution) and potentially additional errors and quantities. Additional errors can be passed by the keyword argument `extra_analysis_errors` and additional integral quantities that should be analyzed can be passed by keyword argument `extra_analysis_integrals`. In this example we pass the `conservation_error`, which computes the temporal change of the total amount (i.e. integral) of the different variables over time. In addition, the integrals of the total waterheight ``\eta`` [`waterheight_total`](@ref), the [`velocity`](@ref) and the [`entropy`](@ref) are computed and saved for each time step. The total waterheight and the total velocity are linear invariants of the BBM-BBM equations, i.e. they do not change over time. The total entropy
 
 ```math
 \mathcal E(t; \eta, v) = \frac{1}{2}\int_\Omega g\eta^2 + (\eta + D)v^2\textrm{d}x
@@ -116,22 +116,22 @@ gif(anim, "shoaling_solution.gif", fps = 25)
 
 It is also possible to plot the solution variables at a fixed spatial point over time by calling `plot(semi => sol, x)` for some `x`-value, see [create_figures.jl](https://github.com/JoshuaLampert/DispersiveShallowWater.jl/blob/main/create_figures.jl) for some examples.
 
-Often, it is interesting to have a look at how the quantities that are recorded by the `AnalysisCallback` evolve in time. To do this end, you can `plot` the `AnalysisCallback` by
+Often, it is interesting to have a look at how the quantities that are recorded by the `AnalysisCallback` evolve in time. To this end, you can `plot` the `AnalysisCallback` by
 
 ```@example overview
 plot(analysis_callback)
 savefig("analysis_callback.png")
 ```
 
-This creates the following figure.
+This creates the following figure:
 
 ![](analysis_callback.png)
 
-You can see that the linear invariants ``\int_\Omega\eta\textrm{d}x`` and ``\int_\Omega v\textrm{d}x`` are indeed conserved exactly. The entropy, however, starts growing at around ``t = 17`` up to approximately 5e-5. This is because of the fact that, during the time integration, a nonlinear invariant is not necessarily conserved, even if the semidiscretization conserves the quantity exactly. How to obtain a fully-discrete structure-preserving numerical scheme is explained in the following section.
+You can see that the linear invariants ``\int_\Omega\eta\textrm{d}x`` and ``\int_\Omega v\textrm{d}x`` are indeed conserved exactly. The entropy, however, starts growing at around ``t = 17``  and rises up to approximately ``5e-5``. This is because of the fact that, during the time integration, a nonlinear invariant is not necessarily conserved, even if the semidiscretization conserves the quantity exactly. How to obtain a fully-discrete structure-preserving numerical scheme is explained in the following section.
 
 ## Use entropy-conserving time integration
 
-Two obtain entropy-conserving time-stepping schemes DispersiveShallowWater.jl uses the relaxation method introduced in [^Ketcheson2019] and further developed in [^RanochaSayyariDalcinParsaniKetcheson2020]. The relaxation method is implemented as a [`RelaxationCallback`](@ref), which takes a function representing the conserved quantity as the keyword argument `invariant`. Therefore, we can run the same example as above, but using relaxation on the entropy by simply adding another callback to the `CallbackSet`:
+To obtain entropy-conserving time-stepping schemes DispersiveShallowWater.jl uses the relaxation method introduced in [^Ketcheson2019] and further developed in [^RanochaSayyariDalcinParsaniKetcheson2020]. The relaxation method is implemented as a [`RelaxationCallback`](@ref), which takes a function representing the conserved quantity as the keyword argument `invariant`. Therefore, we can run the same example as above, but using relaxation on the entropy by simply adding another callback to the `CallbackSet`:
 
 ```@example overview
 analysis_callback = AnalysisCallback(semi; interval = 10,
@@ -219,7 +219,7 @@ For more details see also the [documentation of SummationByPartsOperators.jl](ht
 
 Some more examples sorted by the simulated equations can be found in the [examples/](https://github.com/JoshuaLampert/DispersiveShallowWater.jl/tree/main/examples) subdirectory. Especially, in [examples/svaerd\_kalisch\_1d/](https://github.com/JoshuaLampert/DispersiveShallowWater.jl/tree/main/examples/svaerd_kalisch_1d) you can find Julia scripts that solve the [`SvaerdKalischEquations1D`](@ref) that were not covered in this tutorial. The same steps as described above, however, apply in the same way also to these equations. Attention must be taken for these equations because they do not conserve the classical total entropy ``\mathcal E``, but a modified entropy ``\hat{\mathcal E}``, available as [`entropy_modified`](@ref).
 
-More examples, especially focussing on plotting can be found in the script [create_figures.jl](https://github.com/JoshuaLampert/DispersiveShallowWater.jl/blob/main/create_figures.jl).
+More examples, especially focussing on plotting, can be found in the script [create_figures.jl](https://github.com/JoshuaLampert/DispersiveShallowWater.jl/blob/main/create_figures.jl).
 
 ## References
 

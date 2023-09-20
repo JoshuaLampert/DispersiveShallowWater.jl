@@ -2,7 +2,7 @@
 """
     Semidiscretization
 
-A struct containing everything needed to describe a spatial semidiscretization
+A `struct` containing everything needed to describe a spatial semidiscretization
 of an equation.
 """
 struct Semidiscretization{Mesh, Equations, InitialCondition, BoundaryConditions,

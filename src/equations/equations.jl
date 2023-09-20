@@ -21,7 +21,7 @@ for the variables in `equations`. In particular, not the variables themselves ar
 """
     get_name(equations::AbstractEquations)
 
-Returns the canonical, human-readable name for the given system of equations.
+Return the canonical, human-readable name for the given system of equations.
 # Examples
 ```jldoctest
 julia> DispersiveShallowWater.get_name(BBMBBMEquations1D(gravity_constant=1.0))
