@@ -1,20 +1,20 @@
 @doc raw"""
-    SvärdKalischEquations1D(gravity, eta0 = 0.0, alpha = 0.0, beta = 0.2308939393939394, gamma = 0.04034343434343434)
+    SvärdKalischEquations1D(gravity, eta0 = 1.0, alpha = 0.0, beta = 0.2308939393939394, gamma = 0.04034343434343434)
 
 Dispersive system by Svärd and Kalisch in one spatial dimension with spatially varying bathymetry. The equations are given in conservative variables by
 ```math
 \begin{aligned}
   h_t + (hv)_x &= (\hat\alpha(\hat\alpha(h + b)_x)_x)_x,\\
-  (hv)_t + (hv^2)_x + gh(h + b)_x &= (\hat\alpha v(\hat\alpha(h + b)_x)_x)_x + (\hat\beta v_x)_{xt} + \frac{1]{2}(\hat\gamma v_x)_{xx} + \frac{1}{2}(\hat\gamma v_{xx})_x
-\end{aligned},
-``
-where ``\hat\alpha^2 = \alpha\sqrt(gd)d^2``, ``\hat\beta = \beta d^3``, ``\hat\gamma = \gamma\sqrt(gd)d^3``. The coefficients ``\alpha``, ``\beta`` and ``\gamma`` are provided in dimensionless form and ``d = \eta_0 - b`` is the still-water depth and `eta0` is the still-water surface (lake-at-rest).
+  (hv)_t + (hv^2)_x + gh(h + b)_x &= (\hat\alpha v(\hat\alpha(h + b)_x)_x)_x + (\hat\beta v_x)_{xt} + \frac{1}{2}(\hat\gamma v_x)_{xx} + \frac{1}{2}(\hat\gamma v_{xx})_x,
+\end{aligned}
+```
+where ``\hat\alpha^2 = \alpha\sqrt{gd}d^2``, ``\hat\beta = \beta d^3``, ``\hat\gamma = \gamma\sqrt{gd}d^3``. The coefficients ``\alpha``, ``\beta`` and ``\gamma`` are provided in dimensionless form and ``d = \eta_0 - b`` is the still-water depth and `eta0` is the still-water surface (lake-at-rest).
 The equations can be rewritten in primitive variables as
 ```math
 \begin{aligned}
   \eta_t + ((\eta + D)v)_x = (\hat\alpha(\hat\alpha\eta_x)_x)_x,\\
-  v_t(\eta + D) - v((\eta + D)v)_x + ((\eta + D)v^2)_x + g(\eta + D)\eta_x &= (\hat\alpha v(\hat\alpha\eta_x)_x)_x - v(\hat\alpha(\hat\alpha\eta_x)_x)_x + (\hat\beta v_x)_{xt} + \frac{1]{2}(\hat\gamma v_x)_{xx} + \frac{1}{2}(\hat\gamma v_{xx})_x
-\end{aligned}.
+  v_t(\eta + D) - v((\eta + D)v)_x + ((\eta + D)v^2)_x + g(\eta + D)\eta_x &= (\hat\alpha v(\hat\alpha\eta_x)_x)_x - v(\hat\alpha(\hat\alpha\eta_x)_x)_x + (\hat\beta v_x)_{xt} + \frac{1}{2}(\hat\gamma v_x)_{xx} + \frac{1}{2}(\hat\gamma v_{xx})_x.
+\end{aligned}
 ```
 The unknown quantities of the Svärd-Kalisch equations are the total water height ``\eta`` and the velocity ``v``.
 The gravitational constant is denoted by `g` and the bottom topography (bathymetry) ``b = -D``. The water height above the bathymetry is therefore given by
@@ -193,50 +193,50 @@ end
     return SVector(eta, v, D)
 end
 
-@inline function waterheight_total(u, equations::SvaerdKalischEquations1D)
-    return u[1]
+@inline function waterheight_total(q, equations::SvaerdKalischEquations1D)
+    return q[1]
 end
 
-@inline function velocity(u, equations::SvaerdKalischEquations1D)
-    return u[2]
+@inline function velocity(q, equations::SvaerdKalischEquations1D)
+    return q[2]
 end
 
-@inline function bathymetry(u, equations::SvaerdKalischEquations1D)
-    return -u[3]
+@inline function bathymetry(q, equations::SvaerdKalischEquations1D)
+    return -q[3]
 end
 
-@inline function waterheight(u, equations::SvaerdKalischEquations1D)
-    return waterheight_total(u, equations) - bathymetry(u, equations)
+@inline function waterheight(q, equations::SvaerdKalischEquations1D)
+    return waterheight_total(q, equations) - bathymetry(q, equations)
 end
 
-@inline function energy_total(u, equations::SvaerdKalischEquations1D)
-    eta, v, D = u
+@inline function energy_total(q, equations::SvaerdKalischEquations1D)
+    eta, v, D = q
     e = 0.5 * (equations.gravity * eta^2 + (D + eta) * v^2)
     return e
 end
 
 @inline entropy(u, equations::SvaerdKalischEquations1D) = energy_total(u, equations)
 
-# The modified entropy/total energy takes the whole `u` for every point in space
+# The modified entropy/total energy takes the whole `q` for every point in space
 """
-    energy_total_modified(u, equations::SvaerdKalischEquations1D, cache)
+    energy_total_modified(q, equations::SvaerdKalischEquations1D, cache)
 
-Return the modified total energy of the conserved variables `u` for the
+Return the modified total energy of the primitive variables `q` for the
 `SvaerdKalischEquations1D`. It contains an additional term containing a
 derivative compared to the usual `energy_total`. The `energy_total_modified`
 is a conserved quantity of the Svärd-Kalisch equations.
 
-`u` is a vector of the conserved variables at ALL nodes, i.e., a matrix
+`q` is a vector of the primitive variables at ALL nodes, i.e., a matrix
 of the correct length `nvariables(equations)` as first dimension and the
 number of nodes as length of the second dimension.
 `cache` needs to hold the first-derivative SBP operator `D1`.
 """
-@inline function energy_total_modified(u, equations::SvaerdKalischEquations1D, cache)
-    e_modified = zeros(eltype(u), size(u, 2))
+@inline function energy_total_modified(q, equations::SvaerdKalischEquations1D, cache)
+    e_modified = zeros(eltype(q), size(q, 2))
     # Need to compute new beta_hat, do not use the old one from the `cache`
-    eta = view(u, 1, :)
-    v = view(u, 2, :)
-    D = view(u, 3, :)
+    eta = view(q, 1, :)
+    v = view(q, 2, :)
+    D = view(q, 3, :)
     beta_hat = equations.beta * (eta .+ D) .^ 3
     if cache.D1 isa PeriodicDerivativeOperator
         tmp = 0.5 * beta_hat .* ((cache.D1 * v) .^ 2)
@@ -245,20 +245,24 @@ number of nodes as length of the second dimension.
     else
         @error "unknown type of first-derivative operator"
     end
-    for i in 1:size(u, 2)
-        e_modified[i] = energy_total(view(u, :, i), equations) + tmp[i]
+    for i in 1:size(q, 2)
+        e_modified[i] = energy_total(view(q, :, i), equations) + tmp[i]
     end
     return e_modified
 end
 
+varnames(::typeof(energy_total_modified), equations) = ("e_modified",)
+
 """
-    entropy_modified(u, equations::SvaerdKalischEquations1D, cache)
+    entropy_modified(q, equations::SvaerdKalischEquations1D, cache)
 
 Alias for [`energy_total_modified`](@ref).
 """
-@inline function entropy_modified(u, equations::SvaerdKalischEquations1D, cache)
-    energy_total_modified(u, equations, cache)
+@inline function entropy_modified(q, equations::SvaerdKalischEquations1D, cache)
+    energy_total_modified(q, equations, cache)
 end
+
+varnames(::typeof(entropy_modified), equations) = ("U_modified",)
 
 # Calculate the error for the "lake-at-rest" test case where eta should
 # be a constant value over time

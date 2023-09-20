@@ -47,6 +47,22 @@ function default_example()
     joinpath(examples_dir(), "bbm_bbm_variable_bathymetry_1d", "bbm_bbm_variable_bathymetry_1d_basic.jl")
 end
 
+"""
+    path_create_figures()
+
+Return the path to the file that creates all figures used in the master thesis "Structure-preserving
+Numerical Methods for Dispersive Shallow Water Model" (2023). Executing this julia script may take a
+while.
+
+# Examples
+```@example
+include(DispersiveShallowWater.path_create_figures())
+```
+"""
+function path_create_figures()
+    pkgdir(DispersiveShallowWater, "create_figures.jl")
+end
+
 # Note: We can't call the method below `DispersiveShallowWater.include` since that is created automatically
 # inside `module DispersiveShallowWater` to `include` source files and evaluate them within the global scope
 # of `DispersiveShallowWater`. However, users will want to evaluate in the global scope of `Main` or something
@@ -62,7 +78,8 @@ providing examples with sensible default values for users.
 
 Before replacing assignments in `example`, the keyword argument `maxiters` is inserted
 into calls to `solve` and `DispersiveShallowWater.solve` with it's default value used in the SciML ecosystem
-for ODEs, see https://diffeq.sciml.ai/stable/basics/common_solver_opts/#Miscellaneous.
+for ODEs, see the "Miscellaneous" section of the
+[documentation](https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/).
 
 Copied from [Trixi.jl](https://github.com/trixi-framework/Trixi.jl).
 

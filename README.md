@@ -39,8 +39,12 @@ The result can be visualized by using the package Plots.jl
 julia> using Plots
 julia> plot(semi => sol)
 ```
-The command `plot` expects a `Pair` consisting of a `Semidiscretization` and an `ODESolution`. The visualization can also be customized, see the [documentation](https://JoshuaLampert.github.io./DispersiveShallowWater.jl/stable/) for more details. Other examples can be found in the subdirectory [examples/](https://github.com/JoshuaLampert/DispersiveShallowWater.jl/tree/main/examples). A list of all examples is returned by running `get_examples()`. You can pass the filename of one of the examples or your own simulation file to `include` in order to run it, e.g., `include(joinpath(examples_dir(), "svaerd_kalisch_1d", "svaerd_kalisch_1d_dingemans_relaxation.jl"))`.
+The command `plot` expects a `Pair` consisting of a `Semidiscretization` and an `ODESolution`. The visualization can also be customized, see the [documentation](https://JoshuaLampert.github.io./DispersiveShallowWater.jl/stable/overview.html#Visualize-results) for more details. Other examples can be found in the subdirectory [examples/](https://github.com/JoshuaLampert/DispersiveShallowWater.jl/tree/main/examples). A list of all examples is returned by running `get_examples()`. You can pass the filename of one of the examples or your own simulation file to `include` in order to run it, e.g., `include(joinpath(examples_dir(), "svaerd_kalisch_1d", "svaerd_kalisch_1d_dingemans_relaxation.jl"))`.
 
 # Authors
 
 The package is developed and maintained by Joshua Lampert and was initiated as part of the master thesis "Structure-preserving Numerical Methods for Dispersive Shallow Water Models" (2023). Some parts of this repository are based on parts of [Dispersive-wave-schemes-notebooks. A Broad Class of Conservative Numerical Methods for Dispersive Wave Equations](https://github.com/ranocha/Dispersive-wave-schemes-notebooks) by Hendrik Ranocha, Dimitrios Mitsotakis and David Ketcheson. The code structure is inspired by [Trixi.jl](https://github.com/trixi-framework/Trixi.jl/).
+
+# License and contributing
+
+DispersiveShallowWater.jl is published under the MIT license (see [License](https://github.com/JoshuaLampert/DispersiveShallowWater.jl/blob/main/LICENSE)). We are pleased to accept contributions from everyone, preferably in the form of a PR.
