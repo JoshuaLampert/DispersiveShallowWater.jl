@@ -44,7 +44,8 @@ See also [`examples_dir`](@ref) and [`get_examples`](@ref).
 Copied from [Trixi.jl](https://github.com/trixi-framework/Trixi.jl).
 """
 function default_example()
-    joinpath(examples_dir(), "bbm_bbm_variable_bathymetry_1d", "bbm_bbm_variable_bathymetry_1d_basic.jl")
+    joinpath(examples_dir(), "bbm_bbm_variable_bathymetry_1d",
+             "bbm_bbm_variable_bathymetry_1d_basic.jl")
 end
 
 """
