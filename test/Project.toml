@@ -1,5 +1,11 @@
 [deps]
-HDF5_jll = "0234f1f7-429e-5d53-9886-15a909be8d59"
-MPIPreferences = "3da0fdf6-3ccc-4f1b-acd9-58baa6c99267"
-P4est_jll = "6b5a15aa-cf52-5330-8376-5e5d90283449"
-t8code_jll = "4ee9bed8-4011-53f7-90c2-22363c2f500d"
+Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
+OrdinaryDiffEq = "1dea7af3-3e70-54e6-95c3-0bf5283fa5ed"
+SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
+SummationByPartsOperators = "9f78cca6-572e-554e-b819-917d2f1cf240"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[compat]
+Aqua = "0.7"
+OrdinaryDiffEq = "6.49.1"
+SummationByPartsOperators = "0.5.41"
