@@ -61,6 +61,7 @@ jobs:
           flag-name: run-${{ matrix.os }}-${{ matrix.version }}-${{ matrix.arch }}-${{ github.run_id }}
           parallel: true
           path-to-lcov: ./lcov.info
+
     finish:
       needs: test
       runs-on: ubuntu-latest
