@@ -1,11 +1,11 @@
 @doc raw"""
-    BBMBBMVariableEquations1D(gravity, eta0 = 0.0)
+    BBMBBMVariableEquations1D(gravity, eta0 = 1.0)
 
 BBM-BBM (Benjamin–Bona–Mahony) system in one spatial dimension with spatially varying bathymetry. The equations are given by
 ```math
 \begin{aligned}
-  \frac{\partial\eta}{\partial t} + \frac{\partial}{\partial x}((\eta + D)v) - \frac{1}{6}\frac{\partial}{\partial x}(D^2\frac{\partial}{\partial t}\frac{\partial}{\partial x}\eta) &= 0,\\
-  \frac{\partial v}{\partial t} + g\frac{\partial\eta}{\partial x} + \frac{\partial}{\partial x}\left(\frac{1}{2}v^2\right) - \frac{1}{6}\frac{\partial^2}{\partial x^2}(D^2\frac{\partial}{\partial t}v) &= 0.
+  \eta_t + ((\eta + D)v)_x - \frac{1}{6}(D^2\eta_{xt})_x &= 0,\\
+  v_t + g\eta_x + \left(\frac{1}{2}v^2\right)_x - \frac{1}{6}(D^2v_t)_{xx} &= 0.
 \end{aligned}
 ```
 The unknown quantities of the BBM-BBM equations are the total water height ``\eta`` and the velocity ``v``.

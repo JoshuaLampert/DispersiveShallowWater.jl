@@ -21,8 +21,8 @@ mesh = Mesh1D(coordinates_min, coordinates_max, N)
 
 # create solver
 accuracy_order = 4
-Dop = legendre_derivative_operator(mesh.xmin, mesh.xmax, accuracy_order)
-sbp_mesh = UniformPeriodicMesh1D(-1.0, 1.0, div(mesh.N, accuracy_order))
+Dop = legendre_derivative_operator(-1.0, 1.0, accuracy_order)
+sbp_mesh = UniformPeriodicMesh1D(mesh.xmin, mesh.xmax, div(mesh.N, accuracy_order))
 central = couple_discontinuously(Dop, sbp_mesh)
 minus = couple_discontinuously(Dop, sbp_mesh, Val(:minus))
 plus = couple_discontinuously(Dop, sbp_mesh, Val(:plus))
