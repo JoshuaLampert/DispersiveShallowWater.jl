@@ -216,7 +216,7 @@ function (analysis_callback::AnalysisCallback)(u_ode, integrator, semi)
 
     println()
     println("─"^100)
-    println("Simulation running '", get_name(equations), "'")
+    println("Simulation running '", get_name(equations), "' with '", semi.initial_condition, "'")
     println("─"^100)
     println(" #timesteps:     " * @sprintf("% 14d", iter) *
             "               " *
