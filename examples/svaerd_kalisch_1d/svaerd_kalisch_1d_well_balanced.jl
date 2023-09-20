@@ -57,7 +57,7 @@ analysis_callback = AnalysisCallback(semi; interval = 10,
 callbacks = CallbackSet(analysis_callback)
 
 # Need a very small time step for stability
-dt = 0.0001
+dt = 0.0002
 saveat = range(tspan..., length = 100)
 sol = solve(ode, Tsit5(), dt = dt, adaptive = false, save_everystep = false,
             callback = callbacks, saveat = saveat)

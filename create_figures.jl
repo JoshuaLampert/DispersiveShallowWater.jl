@@ -7,7 +7,7 @@ macro plot_elixir(filename, args...)
     local ylims_gif = get_kwarg(args, :ylims_gif, nothing)
     local ylims_x = get_kwarg(args, :ylims_x, nothing)
     local x_values = get_kwarg(args, :x_values, [])
-    local tlims = get_kwarg(args, :tlims, fill(:auto, length(x_values)))
+    local tlims = get_kwarg(args, :tlims, [])
 
     local kwargs = Pair{Symbol, Any}[]
     for arg in args
@@ -77,7 +77,7 @@ EXAMPLES_DIR_SVAERD_KALISCH = "svaerd_kalisch_1d"
              ylims_gif=[(-8, 4), (-10, 30)],
              tspan=(0.0, 30.0))
 
-##############################################################################
+###############################################################################
 # Travelling wave solution for one-dimensional BBM-BBM equations with periodic boundary conditions
 # using periodic SBP operators. Uses the BBM-BBM equations with variable bathymetry, but sets the bathymetry
 # as a constant. Should give the same result as "bbm_bbm_1d_basic.jl"
@@ -123,7 +123,7 @@ EXAMPLES_DIR_SVAERD_KALISCH = "svaerd_kalisch_1d"
              ylims_gif=[(2.0 - 1e-3, 2.0 + 1e-3), (-1e-3, 1e-3)],
              tspan=(0.0, 10.0))
 
-##############################################################################
+###############################################################################
 # One-dimensional BBM-BBM equations with initial condition that models
 # a wave make. This setup comes from experiments by W. M. Dingemans.
 @plot_elixir(joinpath(EXAMPLES_DIR_BBMBBM_VARIABLE,

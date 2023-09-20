@@ -81,6 +81,8 @@ of the correct length `nvariables(equations)`.
 """
 function waterheight_total end
 
+varnames(::typeof(waterheight_total), equations) = ("eta",)
+
 """
     waterheight(q, equations)
 
@@ -92,6 +94,8 @@ of the correct length `nvariables(equations)`.
 """
 function waterheight end
 
+varnames(::typeof(waterheight), equations) = ("h",)
+
 """
     velocity(q, equations)
 
@@ -102,6 +106,8 @@ Return the velocity of the primitive variables `q` for a given set of
 of the correct length `nvariables(equations)`.
 """
 function velocity end
+
+varnames(::typeof(velocity), equations) = ("v",)
 
 """
     momentum(q, equations)
@@ -116,12 +122,16 @@ of the correct length `nvariables(equations)`.
     return waterheight(q, equations) * velocity(q, equations)
 end
 
+varnames(::typeof(momentum), equations) = ("P",)
+
 """
     discharge(q, equations)
 
 See [`momentum`](@ref).
 """
 @inline discharge(q, equations::AbstractEquations) = momentum(q, equations)
+
+varnames(::typeof(discharge), equations) = ("P",)
 
 """
     entropy(q, equations)
@@ -134,6 +144,8 @@ of the correct length `nvariables(equations)`.
 """
 function entropy end
 
+varnames(::typeof(entropy), equations) = ("U",)
+
 """
     energy_total(q, equations)
 
@@ -144,6 +156,8 @@ Return the total energy of the primitive variables `q` for a given set of
 of the correct length `nvariables(equations)`.
 """
 function energy_total end
+
+varnames(::typeof(energy_total), equations) = ("e_total",)
 
 # Add methods to show some information on systems of equations.
 function Base.show(io::IO, equations::AbstractEquations)
