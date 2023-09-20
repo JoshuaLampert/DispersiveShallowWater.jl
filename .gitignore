@@ -1,5 +1,4 @@
 *.pdf
-*.png
 *.jl.*.cov
 *.jl.cov
 *.jl.mem
