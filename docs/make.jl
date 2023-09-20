@@ -24,7 +24,7 @@ makedocs(;
     ],
 )
 
-#deploydocs(;
-#    repo="github.com/JoshuaLampert/DispersiveShallowWater.jl",
-#    devbranch="main",
-#)
+deploydocs(;
+   repo="github.com/JoshuaLampert/DispersiveShallowWater.jl",
+   devbranch="main",
+)
