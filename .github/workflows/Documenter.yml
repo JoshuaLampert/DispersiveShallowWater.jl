@@ -6,14 +6,13 @@ on:
       - 'main'
     tags: '*'
     paths-ignore:
-      - '.zenodo.json'
-      - '.github/workflows/ci.yml'
+      - '.github/workflows/CI.yml'
       - '.github/workflows/CompatHelper.yml'
       - '.github/workflows/TagBot.yml'
   pull_request:
     paths-ignore:
       - '.zenodo.json'
-      - '.github/workflows/ci.yml'
+      - '.github/workflows/CI.yml'
       - '.github/workflows/CompatHelper.yml'
       - '.github/workflows/TagBot.yml'
   workflow_dispatch:
@@ -31,23 +30,16 @@ jobs:
       - uses: actions/checkout@v4
       - uses: julia-actions/setup-julia@v1
         with:
-          version: '1'
+          version: '1.9'
           show-versioninfo: true
       - uses: julia-actions/julia-buildpkg@v1
         env:
           PYTHON: ""
       - name: Install dependencies
         run: julia --project=docs/ -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate()'
-      #- name: Build and deploy
-      #  uses: julia-actions/julia-docdeploy@v1
-      #  env:
-      #    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #    DOCUMENTER_KEY: ${{ secrets.DOCUMENTER_KEY }} # For authentication with SSH deploy key
-      #    GKSwstype: 100 # To make GitHub Action work, disable showing a plot window with the GR backend of the Plots package
-      - name: Run doctests
-        run: |
-          julia --project=docs --color=yes -e '
-            using Documenter: DocMeta, doctest
-            using DispersiveShallowWater
-            DocMeta.setdocmeta!(DispersiveShallowWater, :DocTestSetup, :(using DispersiveShallowWater); recursive=true)
-            doctest(DispersiveShallowWater)' 
+      - name: Build and deploy
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DOCUMENTER_KEY: ${{ secrets.DOCUMENTER_KEY }} # For authentication with SSH deploy key
+          GKSwstype: 100 # To make GitHub Action work, disable showing a plot window with the GR backend of the Plots package
+        run: julia --project=docs --color=yes docs/make.jl
