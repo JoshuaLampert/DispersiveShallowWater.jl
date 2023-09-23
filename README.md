@@ -6,11 +6,16 @@
 [![Aqua QA](https://raw.githubusercontent.com/JuliaTesting/Aqua.jl/master/badge.svg)](https://github.com/JuliaTesting/Aqua.jl)
 [![License: MIT](https://img.shields.io/badge/License-MIT-success.svg)](https://opensource.org/licenses/MIT)
 
-**DispersiveShallowWater.jl** is a [Julia](https://julialang.org/) package that implements structure-preserving numerical methods for dispersive shallow water models. To date, it provides provably conservative, entropy-conserving and well-balanced numerical schemes of the [BBM-BBM equations with varying bottom topography](https://iopscience.iop.org/article/10.1088/1361-6544/ac3c29), and the [dispersive shallow water model proposed by Magnus Svärd and Henrik Kalisch](https://arxiv.org/abs/2302.09924). The semidiscretizations are based on summation by parts (SBP) operators, which are implemented in [SummationByPartsOperators.jl](https://github.com/ranocha/SummationByPartsOperators.jl/). In order to obtain fully discrete schemes, the time integration methods from [OrdinaryDiffEq.jl](https://github.com/SciML/OrdinaryDiffEq.jl) are used to solve the resulting ordinary differential equations. Fully discrete entropy-conservative methods can be obtained by using the [relaxation method](https://epubs.siam.org/doi/10.1137/19M1263662) provided by DispersiveShallowWater.jl. A more detailed documentation can be found [online](https://JoshuaLampert.github.io./DispersiveShallowWater.jl/stable/).
+**DispersiveShallowWater.jl** is a [Julia](https://julialang.org/) package that implements structure-preserving numerical methods for dispersive shallow water models. To date, it provides provably conservative, entropy-conserving and well-balanced numerical schemes for two dispersive shallow water models:
+
+* the [BBM-BBM equations with varying bottom topography](https://iopscience.iop.org/article/10.1088/1361-6544/ac3c29),
+* the [dispersive shallow water model proposed by Magnus Svärd and Henrik Kalisch](https://arxiv.org/abs/2302.09924).
+
+The semidiscretizations are based on summation by parts (SBP) operators, which are implemented in [SummationByPartsOperators.jl](https://github.com/ranocha/SummationByPartsOperators.jl/). In order to obtain fully discrete schemes, the time integration methods from [OrdinaryDiffEq.jl](https://github.com/SciML/OrdinaryDiffEq.jl) are used to solve the resulting ordinary differential equations. Fully discrete entropy-conservative methods can be obtained by using the [relaxation method](https://epubs.siam.org/doi/10.1137/19M1263662) provided by DispersiveShallowWater.jl. A more detailed documentation can be found [online](https://JoshuaLampert.github.io./DispersiveShallowWater.jl/dev/).
 
 # Installation
 
-If you have not yet installed Julia, you first need to [download Julia](https://julialang.org/downloads/). Please [follow the instructions for your operating system](https://julialang.org/downloads/platform/). DispersiveShallowWater.jl works with Julia v1.8 and newer. You can install DispersiveShallowWater.jl by executing the following commands from the Julia REPL
+If you have not yet installed Julia, then you first need to [download Julia](https://julialang.org/downloads/). Please [follow the instructions for your operating system](https://julialang.org/downloads/platform/). DispersiveShallowWater.jl works with Julia v1.8 and newer. You can install DispersiveShallowWater.jl by executing the following commands from the Julia REPL
 ```julia
 julia> using Pkg
 
@@ -18,7 +23,7 @@ julia> Pkg.add(url="https://github.com/JoshuaLampert/DispersiveShallowWater.jl")
 
 julia> Pkg.add(["OrdinaryDiffEq", "Plots"])
 ```
-The last command installs also the package "OrdinaryDiffEq.jl" used for time-integration and "Plots.jl" to visualize the results. If you want to use other SBP operators than the default operators that DispersiveShallowWater.jl uses, you also need SummationByPartsOperators.jl, which can be installed running
+The last command installs also the package "OrdinaryDiffEq.jl" used for time-integration and "Plots.jl" to visualize the results. If you want to use other SBP operators than the default operators that DispersiveShallowWater.jl uses, then you also need SummationByPartsOperators.jl, which can be installed running
 ```julia
 julia> Pkg.add("SummationByPartsOperators")
 ```
