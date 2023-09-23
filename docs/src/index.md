@@ -1,6 +1,5 @@
 # DispersiveShallowWater.jl
 
-[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://JoshuaLampert.github.io/DispersiveShallowWater.jl/stable/)
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://JoshuaLampert.github.io/DispersiveShallowWater.jl/dev/)
 [![Build Status](https://github.com/JoshuaLampert/DispersiveShallowWater.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/JoshuaLampert/DispersiveShallowWater.jl/actions/workflows/CI.yml?query=branch%3Amain)
 [![Aqua QA](https://raw.githubusercontent.com/JuliaTesting/Aqua.jl/master/badge.svg)](https://github.com/JuliaTesting/Aqua.jl)
@@ -18,7 +17,7 @@ julia> Pkg.add(url="https://github.com/JoshuaLampert/DispersiveShallowWater.jl")
 
 julia> Pkg.add(["OrdinaryDiffEq", "Plots"])
 ```
-The last command installs also the package "OrdinaryDiffEq.jl" used for time-integration and "Plots.jl" to visualize the results. If you want to use other SBP operators than the default operators that DispersiveShallowWater.jl uses, you also need SummationByPartsOperators.jl, which can be installed running
+The last command installs also the package "OrdinaryDiffEq.jl" used for time-integration and "Plots.jl" to visualize the results. If you want to use other SBP operators than the default operators that DispersiveShallowWater.jl uses, then you also need SummationByPartsOperators.jl, which can be installed running
 ```julia
 julia> Pkg.add("SummationByPartsOperators")
 ```
@@ -43,7 +42,7 @@ The command `plot` expects a `Pair` consisting of a [`Semidiscretization`](@ref)
 
 # Authors
 
-The package is developed and maintained by Joshua Lampert and was initiated as part of the master thesis "Structure-preserving Numerical Methods for Dispersive Shallow Water Models" (2023). Some parts of this repository are based on parts of [Dispersive-wave-schemes-notebooks. A Broad Class of Conservative Numerical Methods for Dispersive Wave Equations](https://github.com/ranocha/Dispersive-wave-schemes-notebooks) by Hendrik Ranocha, Dimitrios Mitsotakis and David Ketcheson. The code structure is inspired by [Trixi.jl](https://github.com/trixi-framework/Trixi.jl/).
+The package is developed and maintained by Joshua Lampert and was initiated as part of the master thesis "Structure-Preserving Numerical Methods for Dispersive Shallow Water Models" (2023). Some parts of this repository are based on parts of [Dispersive-wave-schemes-notebooks. A Broad Class of Conservative Numerical Methods for Dispersive Wave Equations](https://github.com/ranocha/Dispersive-wave-schemes-notebooks) by Hendrik Ranocha, Dimitrios Mitsotakis and David Ketcheson. The code structure is inspired by [Trixi.jl](https://github.com/trixi-framework/Trixi.jl/).
 
 # License and contributing
 
