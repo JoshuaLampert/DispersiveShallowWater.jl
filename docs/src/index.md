@@ -42,7 +42,7 @@ The command `plot` expects a `Pair` consisting of a [`Semidiscretization`](@ref)
 
 # Authors
 
-The package is developed and maintained by Joshua Lampert and was initiated as part of the master thesis "Structure-preserving Numerical Methods for Dispersive Shallow Water Models" (2023). Some parts of this repository are based on parts of [Dispersive-wave-schemes-notebooks. A Broad Class of Conservative Numerical Methods for Dispersive Wave Equations](https://github.com/ranocha/Dispersive-wave-schemes-notebooks) by Hendrik Ranocha, Dimitrios Mitsotakis and David Ketcheson. The code structure is inspired by [Trixi.jl](https://github.com/trixi-framework/Trixi.jl/).
+The package is developed and maintained by Joshua Lampert and was initiated as part of the master thesis "Structure-Preserving Numerical Methods for Dispersive Shallow Water Models" (2023). Some parts of this repository are based on parts of [Dispersive-wave-schemes-notebooks. A Broad Class of Conservative Numerical Methods for Dispersive Wave Equations](https://github.com/ranocha/Dispersive-wave-schemes-notebooks) by Hendrik Ranocha, Dimitrios Mitsotakis and David Ketcheson. The code structure is inspired by [Trixi.jl](https://github.com/trixi-framework/Trixi.jl/).
 
 # License and contributing
 

@@ -1,6 +1,6 @@
 # How to reproduce the figures
 
-In order to reproduce all figures used in the master thesis "Structure-preserving Numerical Methods for Dispersive Shallow Water Models" (2023) by Joshua Lampert execute the file located at the path [`DispersiveShallowWater.path_create_figures()`](@ref). From the Julia REPL, this can be done by:
+In order to reproduce all figures used in the master thesis "Structure-Preserving Numerical Methods for Dispersive Shallow Water Models" (2023) by Joshua Lampert execute the file located at the path [`DispersiveShallowWater.path_create_figures()`](@ref). From the Julia REPL, this can be done by:
 
 ```julia
 julia> using DispersiveShallowWater
