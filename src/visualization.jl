@@ -86,10 +86,11 @@ end
         end
     end
 
-    # Plot the bathymetry if primitive variables are plotted
+    # Plot the bathymetry
     if plot_bathymetry == true
         @series begin
             subplot := 1
+            linestyle := :solid
             label := "bathymetry"
             xguide := "x"
             yguide := names[1]
@@ -172,19 +173,36 @@ end
     PlotDataOverTime(semi => sol, x_value, conversion, yli)
 end
 
-# TODO: Only plot change in invariants for now, also plot errors?
-@recipe function f(cb::DiscreteCallback{Condition, Affect!}) where {Condition,
-                                                                    Affect! <:
-                                                                    AnalysisCallback}
+@recipe function f(cb::DiscreteCallback{Condition, Affect!}; what = (:integrals,),
+                   label_extension = "") where {Condition, Affect! <: AnalysisCallback}
     t = tstops(cb)
-    ints = integrals(cb)
-    plot_title --> "change of invariants"
-    for (name, integral) in pairs(ints)
-        @series begin
-            label := string(name)
-            xguide --> "t"
-            yguide --> "change of invariants"
-            t, integral .- integral[1]
+    subplot = 1
+    layout := length(what)
+    if :integrals in what
+        ints = integrals(cb)
+        plot_title --> "change of invariants"
+        for (name, integral) in pairs(ints)
+            @series begin
+                subplot := subplot
+                label := string(name) * " " * label_extension
+                xguide --> "t"
+                yguide --> "change of invariants"
+                t, integral .- integral[1]
+            end
+        end
+        subplot += 1
+    end
+    if :errors in what
+        errs = errors(cb)
+        plot_title --> "errors"
+        for (name, err) in pairs(errs)
+            @series begin
+                subplot := subplot
+                label := string(name) * " " * label_extension
+                xguide --> "t"
+                yguide --> "sum of errors"
+                t, dropdims(sum(err, dims = 1), dims = 1)
+            end
         end
     end
 end
