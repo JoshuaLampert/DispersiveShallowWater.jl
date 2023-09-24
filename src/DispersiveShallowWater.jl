@@ -20,7 +20,6 @@ using SummationByPartsOperators: AbstractDerivativeOperator,
                                  derivative_order, integrate
 import SummationByPartsOperators: grid, xmin, xmax
 
-include("util.jl")
 include("boundary_conditions.jl")
 include("mesh.jl")
 include("solver.jl")
@@ -28,8 +27,9 @@ include("equations/equations.jl")
 include("semidiscretization.jl")
 include("callbacks_step/callbacks_step.jl")
 include("visualization.jl")
+include("util.jl")
 
-export examples_dir, get_examples, default_example, trixi_include
+export examples_dir, get_examples, default_example, trixi_include, convergence_test
 
 export BBMBBMEquations1D, BBMBBMVariableEquations1D, SvärdKalischEquations1D,
        SvaerdKalischEquations1D
