@@ -190,6 +190,7 @@ function (analysis_callback::AnalysisCallback)(u_ode, integrator, semi)
     @unpack analysis_errors, analysis_integrals, tstops, errors, integrals = analysis_callback
     @unpack t, dt = integrator
     push!(tstops, t)
+    t_final = integrator.sol.prob.tspan[2]
     iter = integrator.stats.naccept
 
     # Compute the total runtime since the analysis callback has been initialized, in seconds
@@ -204,7 +205,7 @@ function (analysis_callback::AnalysisCallback)(u_ode, integrator, semi)
     gc_time_absolute = 1.0e-9 * (Base.gc_time_ns() - analysis_callback.start_gc_time)
 
     # Compute the percentage of total time that was spent in garbage collection
-    gc_time_percentage = gc_time_absolute / runtime_absolute * 10
+    gc_time_percentage = gc_time_absolute / runtime_absolute * 100
 
     # Obtain the current memory usage of the Julia garbage collector, in MiB, i.e., the total size of
     # objects in memory that have been allocated by the JIT compiler or the user code.
@@ -226,7 +227,7 @@ function (analysis_callback::AnalysisCallback)(u_ode, integrator, semi)
             "               " *
             " └── GC time:    " *
             @sprintf("%10.8e s (%5.3f%%)", gc_time_absolute, gc_time_percentage))
-    println(" sim. time:      " * @sprintf("%10.8e", t))
+    println(" sim. time:      " * @sprintf("%10.8e (%5.3f%%)", t, t / t_final * 100))
     println(" #DOF:           " * @sprintf("% 14d", nnodes(semi)) *
             "               " *
             " alloc'd memory: " * @sprintf("%14.3f MiB", memory_use))
