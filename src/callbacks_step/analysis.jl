@@ -307,6 +307,18 @@ function analyze_integrals!(current_integrals, i, analysis_integrals::Tuple{}, u
     nothing
 end
 
+# used for error checks and EOC analysis
+function (cb::DiscreteCallback{Condition, Affect!})(sol) where {Condition,
+                                                                Affect! <:
+                                                                AnalysisCallback}
+    analysis_callback = cb.affect!
+    semi = sol.prob.p
+
+    l2_error, linf_error = calc_error_norms(sol.u[end], sol.t[end], semi)
+
+    return (; l2 = l2_error, linf = linf_error)
+end
+
 function analyze(quantity, u_ode, t, semi::Semidiscretization)
     integrate_quantity(u_ode -> quantity(u_ode, semi.equations), u_ode, semi)
 end

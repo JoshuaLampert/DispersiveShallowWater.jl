@@ -1,9 +1,9 @@
 using Test: @test
 
 # Use a macro to avoid world age issues when defining new initial conditions etc.
-# inside an elixir.
+# inside an example.
 """
-    @test_trixi_include(elixir; l2=nothing, linf=nothing, cons_error=nothing
+    @test_trixi_include(example; l2=nothing, linf=nothing, cons_error=nothing
                                 change_waterheight=nothing,
                                 change_velocity=nothing,
                                 change_entropy=nothing,
@@ -12,7 +12,7 @@ using Test: @test
                                 atol=1e-12, rtol=sqrt(eps()),
                                 atol_ints=1e-11, rtol_ints=sqrt(eps()))
 
-Test by calling `trixi_include(elixir; parameters...)`.
+Test by calling `trixi_include(example; parameters...)`.
 By default, only the absence of error output is checked.
 If `l2`, `linf` or `cons_error` are specified, in addition the resulting L2/Linf/conservation
 errors are compared approximately against these reference values, using `atol, rtol`
@@ -21,7 +21,7 @@ If `change_waterheight`, `change_velocity`, `change_momemtum`, `change_entropy`,
 or `lake_at_rest` are specified, in addition the resulting changes of the different errors are
 compared approximately against these reference values, using `atol_ints`, `rtol_ints` as absolute/relative tolerance.
 """
-macro test_trixi_include(elixir, args...)
+macro test_trixi_include(example, args...)
     local l2 = get_kwarg(args, :l2, nothing)
     local linf = get_kwarg(args, :linf, nothing)
     local cons_error = get_kwarg(args, :cons_error, nothing)
@@ -49,10 +49,10 @@ macro test_trixi_include(elixir, args...)
 
     quote
         println("═"^100)
-        println($elixir)
+        println($example)
 
         # evaluate examples in the scope of the module they're called from
-        @test_nowarn trixi_include(@__MODULE__, $elixir; $kwargs...)
+        @test_nowarn trixi_include(@__MODULE__, $example; $kwargs...)
 
         # if present, compare l2, linf and conservation errors against reference values
         if !isnothing($l2) || !isnothing($linf) || !isnothing($cons_error)
@@ -173,7 +173,7 @@ macro trixi_testset(name, expr)
         using DispersiveShallowWater
         include(@__FILE__)
         # We define `EXAMPLES_DIR` in (nearly) all test modules and use it to
-        # get the path to the elixirs to be tested. However, that's not required
+        # get the path to the examples to be tested. However, that's not required
         # and we want to fail gracefully if it's not defined.
         try
             import ..EXAMPLES_DIR
