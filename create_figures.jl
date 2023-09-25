@@ -1,207 +1,142 @@
 using DispersiveShallowWater
 using Plots
+using LaTeXStrings
 
-# Use a macro to avoid world age issues when defining new initial conditions etc.
-# inside an example.
-macro plot_example(filename, args...)
-    local ylims_gif = get_kwarg(args, :ylims_gif, nothing)
-    local ylims_x = get_kwarg(args, :ylims_x, nothing)
-    local x_values = get_kwarg(args, :x_values, [])
-    local tlims = get_kwarg(args, :tlims, [])
-
-    local kwargs = Pair{Symbol, Any}[]
-    for arg in args
-        if (arg.head == :(=) && !(arg.args[1] in (:ylims_gif, :ylims_x, :x_values, :tlims)))
-            push!(kwargs, Pair(arg.args...))
-        end
-    end
-
-    quote
-        trixi_include(joinpath(examples_dir(), $filename); $kwargs...)
-        elixirname = splitext(basename($filename))[1]
-        outdir = joinpath("out", dirname($filename), elixirname)
-        ispath(outdir) || mkpath(outdir)
-
-        # Plot solution
-        anim = @animate for step in 1:length(sol.u)
-            plot(semi => sol, plot_initial = true, step = step, yli = $ylims_gif)
-        end
-        gif(anim, joinpath(outdir, "solution.gif"), fps = 25)
-
-        # Plot error in invariants
-        plot(analysis_callback)
-        savefig(joinpath(outdir, "invariants.pdf"))
-
-        # Plot at different x values over time
-        @assert size($x_values) == size($tlims)
-        for (i, x) in enumerate($x_values)
-            plot(semi => sol, x, xlim = $tlims[i], yli = $ylims_x)
-            savefig(joinpath(outdir, "solution_at_x_" * string(x) * ".pdf"))
-        end
-    end
-end
-
-# Get the first value assigned to `keyword` in `args` and return `default_value`
-# if there are no assignments to `keyword` in `args`.
-function get_kwarg(args, keyword, default_value)
-    val = default_value
-    for arg in args
-        if arg.head == :(=) && arg.args[1] == keyword
-            val = arg.args[2]
-            break
-        end
-    end
-    return val
-end
-
+const OUT = "out/"
+ispath(OUT) || mkpath(OUT)
 const EXAMPLES_DIR_BBMBBM = "bbm_bbm_1d"
-const EXAMPLES_DIR_BBMBBM_VARIABLE = "bbm_bbm_variable_bathymetry_1d"
-const EXAMPLES_DIR_SVAERD_KALISCH = "svaerd_kalisch_1d"
 
-###############################################################################
-# Travelling wave solution for one-dimensional BBM-BBM equations with periodic boundary conditions
-# using periodic SBP operators
-@plot_example(joinpath(EXAMPLES_DIR_BBMBBM, "bbm_bbm_1d_basic.jl"),
-              ylims_gif=[(-8, 4), :auto], tspan=(0.0, 50.0))
+# Plot of bathymetry and waterheight
+function fig_1()
+    L = 1.0
+    n = 100
+    x = LinRange(0.0, L, n)
+    fontsize = 20
 
-###############################################################################
-# Travelling wave solution for one-dimensional BBM-BBM equations with periodic boundary conditions
-# using discontinuously coupled Legendre SBP operators
-@plot_example(joinpath(EXAMPLES_DIR_BBMBBM, "bbm_bbm_1d_dg.jl"),
-              ylims_gif=[(-4, 2), :auto])
+    # just pick some function for b and eta that look nice
+    H = 1.012
 
-###############################################################################
-# Travelling wave solution for one-dimensional BBM-BBM equations with periodic boundary conditions
-# using periodic SBP operators and relaxation, is energy-conservative
-@plot_example(joinpath(EXAMPLES_DIR_BBMBBM, "bbm_bbm_1d_relaxation.jl"),
-              ylims_gif=[(-8, 4), (-10, 30)],
-              tspan=(0.0, 30.0))
+    b(x) = x * cos.(3 * pi * x) + H
+    plot(x, b, color = :gray, fill = (0, 0.8, :gray), fillstyle = :/, linewidth = 3, legend = nothing, ticks = nothing, border = :none)
 
-###############################################################################
-# Travelling wave solution for one-dimensional BBM-BBM equations with periodic boundary conditions
-# using periodic SBP operators. Uses the BBM-BBM equations with variable bathymetry, but sets the bathymetry
-# as a constant. Should give the same result as "bbm_bbm_1d_basic.jl"
-@plot_example(joinpath(EXAMPLES_DIR_BBMBBM_VARIABLE,
-                       "bbm_bbm_variable_bathymetry_1d_basic.jl"),
-              ylims_gif=[(-8, 4), :auto],
-              tspan=(0.0, 50.0))
+    eta(x) = x / (x^2 + 1) * sin(2 * pi * x) + H + 1.5
+    plot!(x, eta, color = :blue, fill = (b.(x), 0.4, :blue), linewidth = 3)
 
-###############################################################################
-# One-dimensional BBM-BBM equations with a Gaussian bump as initial condition for the water height
-# and initially still water. The bathymetry is a sine function. Relaxation is used, so the solution
-# is energy-conservative. Uses periodic finite difference SBP operators.
-@plot_example(joinpath(EXAMPLES_DIR_BBMBBM_VARIABLE,
-                       "bbm_bbm_variable_bathymetry_1d_relaxation.jl"),
-              ylims_gif=[(-1.5, 6.0), (-10.0, 10.0)],
-              tspan=(0.0, 10.0))
+    x1 = 0.2
+    plot!([x1, x1], [b(x1), eta(x1)], line = (Plots.Arrow(:open, :both, 2.5, 2.0), :black), annotation = (x1 - 0.08, (eta(x1) + b(x1))/ 2, text(L"h(t, x)", fontsize)), linewidth = 2)
+    x2 = 0.4
+    plot!([x2, x2], [0.0, b(x2)], line = (Plots.Arrow(:open, :both, 2.5, 2.0), :black), annotation = (x2 + 0.06, b(x2) / 2, text(L"b(x)", fontsize)), linewidth = 2)
+    x3 = 0.8
+    plot!([x3, x3], [0.0, eta(x3)], line = (Plots.Arrow(:open, :both, 2.5, 2.0), :black), annotation = (x3 - 0.08, eta(x3) / 2, text(L"\eta(t, x)", fontsize)), linewidth = 2)
 
-###############################################################################
-# One-dimensional BBM-BBM equations with a Gaussian bump as initial condition for the water height
-# and initially still water. The bathymetry is a sine function. Relaxation is used, so the solution
-# is energy-conservative. Uses upwind discontinuously coupled SBP operators.
-@plot_elixir(joinpath(EXAMPLES_DIR_BBMBBM_VARIABLE,
-                      "bbm_bbm_variable_bathymetry_1d_dg_upwind_relaxation.jl"),
-             ylims_gif=[(-1.5, 6.0), (-10.0, 10.0)],
-             tspan=(0.0, 10.0))
+    savefig(joinpath(OUT, "bathymetry.pdf"))
+end
 
-###############################################################################
-# One-dimensional BBM-BBM equations with a Gaussian bump as initial condition for the water height
-# and initially still water. The bathymetry is a sine function. Relaxation is used, so the solution
-# is energy-conservative. Uses periodic finite difference discontinuously coupled SBP operators.
-@plot_example(joinpath(EXAMPLES_DIR_BBMBBM_VARIABLE,
-                       "bbm_bbm_variable_bathymetry_1d_upwind_relaxation.jl"),
-              ylims_gif=[(-1.5, 6.0), (-10.0, 10.0)],
-              tspan=(0.0, 10.0))
+# Plot of diserpersion relations
+function fig_2()
+    linewidth = 2
+    markersize = 5
 
-###############################################################################
-# One-dimensional BBM-BBM equations with a constant water height
-# and initially still water. The bathymetry is discontinuous. Relaxation is used, so the solution
-# is energy-conservative. Uses periodic finite difference SBP operators. The solution should be
-# (exactly) constant in time.
-@plot_example(joinpath(EXAMPLES_DIR_BBMBBM_VARIABLE,
-                       "bbm_bbm_variable_bathymetry_1d_well_balanced.jl"),
-              ylims_gif=[(2.0 - 1e-3, 2.0 + 1e-3), (-1e-3, 1e-3)],
-              tspan=(0.0, 10.0))
+    h0 = 1.0
+    g = 1.0
+    c0 = sqrt(g * h0)
 
-###############################################################################
-# One-dimensional BBM-BBM equations with initial condition that models
-# a wave make. This setup comes from experiments by W. M. Dingemans.
-@plot_example(joinpath(EXAMPLES_DIR_BBMBBM_VARIABLE,
-                       "bbm_bbm_variable_bathymetry_1d_dingemans.jl"),
-              ylims_gif=[(-0.1, 0.9), (-0.3, 0.3)],
-              ylims_x=[:auto, :auto],
-              x_values=[3.04, 9.44, 20.04, 26.04, 30.44, 37.04],
-              tlims=[
-                  (15.0, 45.0),
-                  (19.0, 48.0),
-                  (25.0, 52.0),
-                  (30.0, 60.0),
-                  (33.0, 61.0),
-                  (35.0, 65.0),
-              ],
-              tspan=(0.0, 70.0))
+    k = 0.01:0.5:(8*pi)
+    k_zoom = 0.01:0.3:pi
+    ylim = (0.0, 1.1)
 
-###############################################################################
-# One-dimensional equations from Svärd and Kalisch with initial condition that models
-# a wave make. This setup comes from experiments by W. M. Dingemans.
-@plot_example(joinpath(EXAMPLES_DIR_SVAERD_KALISCH,
-                       "svaerd_kalisch_1d_dingemans.jl"),
-              ylims_gif=[(-0.1, 0.9), (-0.3, 0.3)],
-              ylims_x=[:auto, :auto],
-              x_values=[3.04, 9.44, 20.04, 26.04, 30.44, 37.04],
-              tlims=[
-                  (15.0, 45.0),
-                  (19.0, 48.0),
-                  (25.0, 52.0),
-                  (30.0, 60.0),
-                  (33.0, 61.0),
-                  (35.0, 65.0),
-              ],
-              tspan=(0.0, 70.0))
 
-###############################################################################
-# One-dimensional equations from Svärd and Kalisch with initial condition that models
-# a wave make. This setup comes from experiments by W. M. Dingemans.
-@plot_example(joinpath(EXAMPLES_DIR_SVAERD_KALISCH,
-                       "svaerd_kalisch_1d_dingemans_upwind.jl"),
-              ylims_gif=[(-0.1, 0.9), (-0.3, 0.3)],
-              ylims_x=[:auto, :auto],
-              x_values=[3.04, 9.44, 20.04, 26.04, 30.44, 37.04],
-              tlims=[
-                  (15.0, 45.0),
-                  (19.0, 48.0),
-                  (25.0, 52.0),
-                  (30.0, 60.0),
-                  (33.0, 61.0),
-                  (35.0, 65.0),
-              ],
-              tspan=(0.0, 70.0))
+    omega_euler(k) = sqrt(g * k) * sqrt(tanh(h0 * k))
+    c_euler(k) = omega_euler(k) / k
+    plot(k, c_euler.(k) ./ c0, label = "Euler", ylim = ylim, xguide = L"k", yguide = L"c/c_0", linewidth = linewidth, markershape = :circle, markersize = markersize)
+    plot!(k_zoom, c_euler.(k_zoom) ./ c0, ylims = (0.54, 1.0), inset = bbox(0.35, 0.1, 0.35, 0.3), subplot = 2, legend = nothing, linewidth = linewidth, markershape = :circle, markersize = markersize)
 
-###############################################################################
-# One-dimensional equations from Svärd and Kalisch with initial condition that models
-# a wave make. This setup comes from experiments by W. M. Dingemans. Relaxation is used
-# to preserve the modified entropy.
-@plot_example(joinpath(EXAMPLES_DIR_SVAERD_KALISCH,
-                       "svaerd_kalisch_1d_dingemans_relaxation.jl"),
-              ylims_gif=[(-0.1, 0.9), (-0.3, 0.3)],
-              ylims_x=[:auto, :auto],
-              x_values=[3.04, 9.44, 20.04, 26.04, 30.44, 37.04],
-              tlims=[
-                  (15.0, 45.0),
-                  (19.0, 48.0),
-                  (25.0, 52.0),
-                  (30.0, 60.0),
-                  (33.0, 61.0),
-                  (35.0, 65.0),
-              ],
-              tspan=(0.0, 70.0))
+    function plot_dispersion_relation(omega, label, markershape)
+        c(k) = omega(k) / k
+        plot!(k, c.(k) ./ c0, label = label, linewidth = linewidth, markershape = markershape, markersize = markersize)
+        plot!(k_zoom, c.(k_zoom) ./ c0, subplot = 2, linewidth = linewidth, markershape = markershape, markersize = markersize)
+    end
 
-###############################################################################
-# One-dimensional Svärd-Kalisch equations with a constant water height
-# and initially still water. The bathymetry is discontinuous. Relaxation is used, so the solution
-# is energy-conservative. Uses periodic finite difference SBP operators. The solution should be
-# (exactly) constant in time.
-@plot_example(joinpath(EXAMPLES_DIR_SVAERD_KALISCH,
-                       "svaerd_kalisch_1d_well_balanced.jl"),
-              ylims=[(2.0 - 1e-3, 2.0 + 1e-3), (-1e-3, 1e-3)],
-              tspan=(0.0, 10.0))
+    omega_bbmbbm_(k, d0) = sqrt(g * h0) * k / (1 + 1/6*(d0 * k)^2)
+    omega_bbmbbm(k) = omega_bbmbbm_(k, h0)
+    plot_dispersion_relation(omega_bbmbbm, "BBM-BBM", :cross)
+
+
+    alpha_set1 = -1/3 * c0 * h0^2
+    beta_set1 = 0.0 * h0^3
+    gamma_set1 = 0.0 * c0 * h0^3
+
+    alpha_set2 = 0.0004040404040404049 * c0 * h0^2
+    beta_set2 = 0.49292929292929294 * h0^3
+    gamma_set2 = 0.15707070707070708 * c0 * h0^3
+
+    alpha_set3 = 0.0 * c0 * h0^2
+    beta_set3 = 0.27946992481203003 * h0^3
+    gamma_set3 = 0.0521077694235589 * c0 * h0^3
+
+    alpha_set4 = 0.0 * c0 * h0^2
+    beta_set4 = 0.2308939393939394 * h0^3
+    gamma_set4 = 0.04034343434343434 * c0 * h0^3
+
+    function char_equation(alpha, beta, gamma, k)
+        a = (1 + beta/h0*k^2)
+        b = (-alpha - beta*alpha/h0*k^2 - gamma/h0)*k^3
+        c = -g*h0*k^2 + gamma*alpha/h0*k^6
+        omega1 = (-b + sqrt(b^2 - 4*a*c))/(2*a)
+#         omega2 = (-b - sqrt(b^2 - 4*a*c))/(2*a)
+        return omega1
+    end
+
+    omega_set1(k) = char_equation(alpha_set1, beta_set1, gamma_set1, k)
+    plot_dispersion_relation(omega_set1, "S.-K. set 1", :rtriangle)
+
+    omega_set2(k) = char_equation(alpha_set2, beta_set2, gamma_set2, k)
+    plot_dispersion_relation(omega_set2, "S.-K. set 2", :star5)
+
+    omega_set3(k) = char_equation(alpha_set3, beta_set3, gamma_set3, k)
+    plot_dispersion_relation(omega_set3, "S.-K. set 3", :star8)
+
+    omega_set4(k) = char_equation(alpha_set4, beta_set4, gamma_set4, k)
+    plot_dispersion_relation(omega_set4, "S.-K. set 4", :diamond)
+
+    savefig(joinpath(OUT, "dispersion_relations.pdf"))
+end
+
+# Plot convergence orders for baseline and relaxation
+function fig_3()
+    tspan = (0.0, 10.0)
+    accuracy_orders = [2, 4, 6, 8]
+    styles = [:dash, :dot, :dashdot, :dashdotdot]
+    iters = [4, 4, 4, 3]
+    initial_Ns = [128, 128, 128, 128]
+
+    all_Ns = minimum(initial_Ns) * 2 .^ (0:(maximum(iters) - 1))
+
+    plot([], label = :none, xscale = :log2, yscale = :log10, xticks = all_Ns, xlabel = "N", ylabel = L"||\eta - \eta_{ana}||_2 + ||v - v_{ana}||_2")
+    for i in 1:length(accuracy_orders)
+        Ns = initial_Ns[i] * 2 .^ (0:(iters[i] - 1))
+        _, errormatrix = convergence_test("examples/bbm_bbm_1d/bbm_bbm_1d_basic.jl", iters[i]; N = initial_Ns[i], tspan = tspan, accuracy_order = accuracy_orders[i])
+        # Use sum over all L^2-errors for all variables, i.e. ||η - η_ana||_2 + ||v - v_ana||_2
+        l2_err = sum(errormatrix[:l2], dims=2)
+        eocs = log.(l2_err[2:end] ./ l2_err[1:(end - 1)]) ./ log(0.5)
+        eoc_mean = round(sum(eocs) / length(eocs), digits = 2)
+        plot!(Ns, l2_err, style = styles[i], label = "p = $accuracy_order, EOC: $eoc_mean")
+    end
+    savefig(joinpath(OUT, "orders.pdf"))
+
+    plot([], label = :none, xscale = :log2, yscale = :log10, xticks = all_Ns, xlabel = "N", ylabel = L"||\eta - \eta_{ana}||_2 + ||v - v_{ana}||_2")
+    for i in 1:length(accuracy_orders)
+        Ns = initial_Ns[i] * 2 .^ (0:(iters[i] - 1))
+        _, errormatrix = convergence_test("examples/bbm_bbm_1d/bbm_bbm_1d_relaxation.jl", iters[i]; N = initial_Ns[i], tspan = tspan, accuracy_order = accuracy_orders[i])
+        # Use sum over all L^2-errors for all variables, i.e. ||η - η_ana||_2 + ||v - v_ana||_2
+        l2_err = sum(errormatrix[:l2], dims=2)
+        eocs = log.(l2_err[2:end] ./ l2_err[1:(end - 1)]) ./ log(0.5)
+        eoc_mean = round(sum(eocs) / length(eocs), digits = 2)
+        plot!(Ns, l2_err, style = styles[i], label = "p = $accuracy_order, EOC: $eoc_mean")
+    end
+    savefig(joinpath(OUT, "orders_relaxation.pdf"))
+end
+
+fig_1()
+fig_2()
+fig_3()
