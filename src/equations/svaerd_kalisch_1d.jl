@@ -41,7 +41,7 @@ function SvaerdKalischEquations1D(; gravity_constant, eta0 = 1.0, alpha = 0.0,
     SvaerdKalischEquations1D(gravity_constant, eta0, alpha, beta, gamma)
 end
 
-varnames(::typeof(prim2prim), ::SvaerdKalischEquations1D) = ("eta", "v", "D")
+varnames(::typeof(prim2prim), ::SvaerdKalischEquations1D) = ("η", "v", "D")
 varnames(::typeof(prim2cons), ::SvaerdKalischEquations1D) = ("h", "hv", "b")
 
 # TODO: Initial condition should not get a `mesh`

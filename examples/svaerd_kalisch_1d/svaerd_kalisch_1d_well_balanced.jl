@@ -36,7 +36,7 @@ boundary_conditions = boundary_condition_periodic
 coordinates_min = -1.0
 coordinates_max = 1.0
 N = 200
-mesh = Mesh1D(coordinates_min, coordinates_max, N + 1)
+mesh = Mesh1D(coordinates_min, coordinates_max, N)
 
 # create solver with periodic SBP operators of accuracy order 4
 solver = Solver(mesh, 4)

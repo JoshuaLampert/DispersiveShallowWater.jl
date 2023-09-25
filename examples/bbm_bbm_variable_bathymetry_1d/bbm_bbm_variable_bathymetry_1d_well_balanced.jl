@@ -35,7 +35,7 @@ boundary_conditions = boundary_condition_periodic
 coordinates_min = -1.0
 coordinates_max = 1.0
 N = 512
-mesh = Mesh1D(coordinates_min, coordinates_max, N + 1)
+mesh = Mesh1D(coordinates_min, coordinates_max, N)
 
 # create solver with periodic SBP operators
 D1 = periodic_derivative_operator(1, 4, mesh.xmin, mesh.xmax, mesh.N)

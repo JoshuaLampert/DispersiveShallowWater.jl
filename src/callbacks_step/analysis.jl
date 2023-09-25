@@ -329,12 +329,12 @@ function analyze(quantity::Union{typeof(energy_total_modified), typeof(entropy_m
     integrate_quantity(quantity, u_ode, semi)
 end
 
-pretty_form_utf(::typeof(waterheight_total)) = "∑η"
-pretty_form_utf(::typeof(velocity)) = "∑v"
-pretty_form_utf(::typeof(momentum)) = "∑P"
-pretty_form_utf(::typeof(discharge)) = "∑P"
-pretty_form_utf(::typeof(entropy)) = "∑U"
-pretty_form_utf(::typeof(energy_total)) = "∑e_total"
-pretty_form_utf(::typeof(entropy_modified)) = "∑U_modified"
-pretty_form_utf(::typeof(energy_total_modified)) = "∑e_modified"
-pretty_form_utf(::typeof(lake_at_rest_error)) = "∑|η-η₀|"
+pretty_form_utf(::typeof(waterheight_total)) = "∫η"
+pretty_form_utf(::typeof(velocity)) = "∫v"
+pretty_form_utf(::typeof(momentum)) = "∫P"
+pretty_form_utf(::typeof(discharge)) = "∫P"
+pretty_form_utf(::typeof(entropy)) = "∫U"
+pretty_form_utf(::typeof(energy_total)) = "∫e_total"
+pretty_form_utf(::typeof(entropy_modified)) = "∫U_modified"
+pretty_form_utf(::typeof(energy_total_modified)) = "∫e_modified"
+pretty_form_utf(::typeof(lake_at_rest_error)) = "∫|η-η₀|"

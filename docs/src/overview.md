@@ -105,16 +105,13 @@ savefig("shoaling_solution.png")
 
 ![](shoaling_solution.png)
 
-By default, this will plot the bathymetry, but not the initial (analytical) solution. You can adjust this by passing the boolean values `plot_bathymetry` (if `true` always plot to first subplot) and `plot_initial`. You can also provide a `conversion` function that converts the solution. A conversion function should take the values of the primitive variables `q` at one node, and the `equations` as input and should return an `SVector` of any length as output. For a user defined conversion function, there should also exist a function `varnames(conversion, equations)` that returns a `Tuple` of the variable names used for labelling. The conversion function can, e.g., be [`prim2cons`](@ref) or [`waterheight_total`](@ref) if one only wants to plot the total waterheight. The resulting plot will have one subplot for each of the returned variables of the conversion variable. By default, the conversion function is just [`prim2prim`](@ref), i.e. the identity. The limits of the y-axis can be set by the keyword argument `yli`, which should be given as a vector of `Tuple`s with the same length as there are subplots.
-
-!!! note "Setting y limits"
-    `ylim` and similar arguments are already occupied by Plots.jl and do not work with different y limits for multiple subplots.
+By default, this will plot the bathymetry, but not the initial (analytical) solution. You can adjust this by passing the boolean values `plot_bathymetry` (if `true` always plot to first subplot) and `plot_initial`. You can also provide a `conversion` function that converts the solution. A conversion function should take the values of the primitive variables `q` at one node, and the `equations` as input and should return an `SVector` of any length as output. For a user defined conversion function, there should also exist a function `varnames(conversion, equations)` that returns a `Tuple` of the variable names used for labelling. The conversion function can, e.g., be [`prim2cons`](@ref) or [`waterheight_total`](@ref) if one only wants to plot the total waterheight. The resulting plot will have one subplot for each of the returned variables of the conversion variable. By default, the conversion function is just [`prim2prim`](@ref), i.e. the identity.
 
 Plotting an animation over time can, e.g., be done by the following command, which uses `step` to plot the solution at a specific time step.
 
 ```@example overview
 anim = @animate for step in 1:length(sol.u)
-    plot(semi => sol, plot_initial = true, conversion = waterheight_total, step = step, xlim = (-50, 20), yli = [(-0.8, 0.1)])
+    plot(semi => sol, plot_initial = true, conversion = waterheight_total, step = step, xlim = (-50, 20), ylims = [(-0.8, 0.1)])
 end
 gif(anim, "shoaling_solution.gif", fps = 25)
 ```
@@ -213,7 +210,7 @@ callbacks = CallbackSet(relaxation_callback, analysis_callback)
 sol = solve(ode, Tsit5(), abstol = 1e-7, reltol = 1e-7,
             save_everystep = false, callback = callbacks, saveat = saveat)
 anim = @animate for step in 1:length(sol.u)
-    plot(semi => sol, plot_initial = true, conversion = waterheight_total, step = step, xlim = (-50, 20), yli = [(-0.8, 0.1)])
+    plot(semi => sol, plot_initial = true, conversion = waterheight_total, step = step, xlim = (-50, 20), ylims = [(-0.8, 0.1)])
 end
 gif(anim, "shoaling_solution_dg.gif", fps = 25)
 ```

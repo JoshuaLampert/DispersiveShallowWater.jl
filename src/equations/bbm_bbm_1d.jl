@@ -27,7 +27,7 @@ function BBMBBMEquations1D(; gravity_constant, D = 1.0)
     BBMBBMEquations1D(gravity_constant, D)
 end
 
-varnames(::typeof(prim2prim), ::BBMBBMEquations1D) = ("eta", "v")
+varnames(::typeof(prim2prim), ::BBMBBMEquations1D) = ("η", "v")
 varnames(::typeof(prim2cons), ::BBMBBMEquations1D) = ("h", "hv")
 
 # TODO: Initial condition should not get a `mesh`
