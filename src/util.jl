@@ -138,20 +138,20 @@ function convergence_test(mod::Module, example::AbstractString, iterations; kwar
     end
 
     # Use raw error values to compute EOC
-    analyze_convergence(errors, iterations, mod.semi)
+    analyze_convergence(errors, iterations, mod.semi, initial_N)
 end
 
 # Analyze convergence for any semidiscretization
 # Note: this intermediate method is to allow dispatching on the semidiscretization
-function analyze_convergence(errors, iterations, semi::Semidiscretization)
+function analyze_convergence(errors, iterations, semi::Semidiscretization, initial_N)
     _, equations, _, _ = mesh_equations_solver_cache(semi)
     variablenames = varnames(prim2prim, equations)
-    analyze_convergence(errors, iterations, variablenames)
+    analyze_convergence(errors, iterations, variablenames, initial_N)
 end
 
 # This method is called with the collected error values to actually compute and print the EOC
 function analyze_convergence(errors, iterations,
-                             variablenames::Union{Tuple, AbstractArray})
+                             variablenames::Union{Tuple, AbstractArray}, initial_N)
     nvariables = length(variablenames)
 
     # Reshape errors to get a matrix where the i-th row represents the i-th iteration
@@ -171,11 +171,12 @@ function analyze_convergence(errors, iterations,
         println(kind)
 
         for v in variablenames
-            @printf("%-20s", v)
+            @printf("%-25s", v)
         end
         println("")
 
         for k in 1:nvariables
+            @printf("%-5s", "N")
             @printf("%-10s", "error")
             @printf("%-10s", "EOC")
         end
@@ -183,6 +184,7 @@ function analyze_convergence(errors, iterations,
 
         # Print errors for the first iteration
         for k in 1:nvariables
+            @printf("%-5d", initial_N)
             @printf("%-10.2e", error[1, k])
             @printf("%-10s", "-")
         end
@@ -191,6 +193,7 @@ function analyze_convergence(errors, iterations,
         # For the following iterations print errors and EOCs
         for j in 2:iterations
             for k in 1:nvariables
+                @printf("%-5d", initial_N*2^(j - 1))
                 @printf("%-10.2e", error[j, k])
                 @printf("%-10.2f", eocs[kind][j - 1, k])
             end
