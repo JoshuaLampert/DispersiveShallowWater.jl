@@ -193,7 +193,7 @@ function analyze_convergence(errors, iterations,
         # For the following iterations print errors and EOCs
         for j in 2:iterations
             for k in 1:nvariables
-                @printf("%-5d", initial_N * 2^(j - 1))
+                @printf("%-5d", initial_N*2^(j - 1))
                 @printf("%-10.2e", error[j, k])
                 @printf("%-10.2f", eocs[kind][j - 1, k])
             end
