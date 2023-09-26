@@ -58,7 +58,7 @@ function fig_2()
          markersize = markersize)
     plot!(k_zoom, c_euler.(k_zoom) ./ c0, ylim = (0.54, 1.0),
           inset = bbox(0.35, 0.1, 0.35, 0.3), subplot = 2, legend = nothing,
-          linewidth = linewidth, markershape = :circle, markersize = markersize)
+          linewidth = linewidth, markershape = :circle, markersize = markersize, framestyle = :box)
 
     function plot_dispersion_relation(omega, label, markershape)
         c(k) = omega(k) / k
@@ -109,60 +109,24 @@ function fig_2()
     omega_set4(k) = char_equation(alpha_set4, beta_set4, gamma_set4, k)
     plot_dispersion_relation(omega_set4, "S.-K. set 4", :diamond)
 
+    # Plot box
+    plot!([0.0, pi], [0.54, 0.54], color = :black, label = :none)
+    plot!([0.0, pi], [1.0, 1.0], color = :black, label = :none)
+    plot!([0.0, 0.0], [0.54, 1.0], color = :black, label = :none)
+    plot!([pi, pi], [0.54, 1.0], color = :black, label = :none)
+
+    # Plot connecting lines
+    plot!([pi, 6.8], [0.54, 0.629], color = :black, label = :none)
+    plot!([pi, 6.8], [1, 1.01], color = :black, label = :none)
+
     savefig(joinpath(OUT, "dispersion_relations.pdf"))
 end
 
 const OUT_SOLITON = joinpath(OUT, "soliton")
 ispath(OUT_SOLITON) || mkpath(OUT_SOLITON)
 
-# Plot errors, change of invariants, and solution at final time for baseline and relaxation
-function fig_3_4_5()
-    linewidth = 2
-
-    g = 9.81
-    D = 2.0
-    c = 5 / 2 * sqrt(g * D)
-    x_min = -35.0
-    x_max = 35.0
-    tspan = (0.0, 50 * (x_max - x_min) / c)
-    N = 512
-    accuracy_order = 8
-
-    # baseline
-    trixi_include(joinpath(examples_dir(), EXAMPLES_DIR_BBMBBM, "bbm_bbm_1d_basic.jl"),
-                  gravity_constant = g, D = D, coordinates_min = x_min,
-                  coordinates_max = x_max, tspan = tspan, N = N,
-                  accuracy_order = accuracy_order)
-    p1 = plot(analysis_callback, title = "", label_extension = "baseline", style = :auto,
-              linewidth = linewidth, layout = 2, subplot = 1)
-    p2 = plot(analysis_callback, title = "", what = (:errors,),
-              label_extension = "baseline", linestyle = :dash, linewidth = linewidth,
-              ylabel = L"\Vert\eta - \eta_{ana}\Vert_2 + \Vert v - v_{ana}\Vert_2",
-              exclude = [:conservation_error])
-    p3 = plot(semi => sol, label = "baseline", plot_initial = true, linestyle = :dash,
-              linewidth = linewidth, plot_title = "", title = "")
-
-    # relaxation
-    trixi_include(joinpath(examples_dir(), EXAMPLES_DIR_BBMBBM, "bbm_bbm_1d_relaxation.jl"),
-                  gravity_constant = g, D = D, coordinates_min = x_min,
-                  coordinates_max = x_max, tspan = tspan, N = N,
-                  accuracy_order = accuracy_order)
-    plot!(p1, analysis_callback, title = "", label_extension = "relaxation", style = :auto,
-          linewidth = linewidth, subplot = 2)
-    plot!(p2, analysis_callback, title = "", what = (:errors,),
-          label_extension = "relaxation", linestyle = :dot, linewidth = linewidth,
-          ylabel = L"\Vert\eta - \eta_{ana}\Vert_2 + \Vert v - v_{ana}\Vert_2",
-          exclude = [:conservation_error])
-    plot!(p3, semi => sol, plot_bathymetry = false, label = "relaxation", linestyle = :dot,
-          linewidth = linewidth, plot_title = "", title = "", color = :green)
-
-    savefig(p1, joinpath(OUT_SOLITON, "invariants.pdf"))
-    savefig(p2, joinpath(OUT_SOLITON, "errors.pdf"))
-    savefig(p3, joinpath(OUT_SOLITON, "solution.pdf"))
-end
-
 # Plot convergence orders for baseline and relaxation
-function fig_6()
+function fig_3()
     tspan = (0.0, 10.0)
     accuracy_orders = [2, 4, 6, 8]
     iters = [4, 4, 4, 3]
@@ -211,7 +175,74 @@ function fig_6()
     savefig(joinpath(OUT_SOLITON, "orders.pdf"))
 end
 
+# Plot errors, change of invariants, and solution at final time for baseline and relaxation
+function fig_4_5_6()
+    linewidth = 2
+
+    g = 9.81
+    D = 2.0
+    c = 5 / 2 * sqrt(g * D)
+    x_min = -35.0
+    x_max = 35.0
+    tspan = (0.0, 50 * (x_max - x_min) / c)
+    N = 512
+    accuracy_order = 8
+
+    # baseline
+    trixi_include(joinpath(examples_dir(), EXAMPLES_DIR_BBMBBM, "bbm_bbm_1d_basic.jl"),
+                  gravity_constant = g, D = D, coordinates_min = x_min,
+                  coordinates_max = x_max, tspan = tspan, N = N,
+                  accuracy_order = accuracy_order)
+    p1 = plot(analysis_callback, title = "", label_extension = "baseline", style = :auto,
+              linewidth = linewidth, layout = 2, subplot = 1)
+    p2 = plot(analysis_callback, title = "", what = (:errors,),
+              label_extension = "baseline", linestyle = :dash, linewidth = linewidth,
+              ylabel = L"\Vert\eta - \eta_{ana}\Vert_2 + \Vert v - v_{ana}\Vert_2",
+              exclude = [:conservation_error])
+    p3 = plot(semi => sol, label = "baseline", plot_initial = true, linestyle = :dash,
+              linewidth = linewidth, plot_title = "", title = "", ylims = [(-8, 3) (-1, 40)])
+    x = DispersiveShallowWater.grid(semi)
+    q = DispersiveShallowWater.wrap_array(sol.u[end], semi)
+    plot!(p3, x, view(q, 1, :), inset = (1, bbox(0.11, 0.6, 0.35, 0.32)), subplot = 3, xlim = (-20, -10),
+          ylim = (-0.05, 0.05), legend = nothing, linewidth = linewidth, linestyle = :dash, color = 2,
+          tickfontsize = 5, yticks = [0.04, 0.0, -0.04], xticks = [-20, -15, -10], framestyle = :box)
+    q_exact = DispersiveShallowWater.wrap_array(DispersiveShallowWater.compute_coefficients(initial_condition, tspan[2], semi), semi)
+    plot!(p3, x, view(q_exact, 1, :), subplot = 3, legend = nothing, linewidth = linewidth,
+          linestyle = :dot, color = 1)
+    # Plot box
+    plot!(p3, [-20, -10], [-0.1, -0.1], color = :black, label = :none)
+    plot!(p3, [-20, -10], [0.1, 0.1], color = :black, label = :none)
+    plot!(p3, [-20, -20], [-0.1, 0.1], color = :black, label = :none)
+    plot!(p3, [-10, -10], [-0.1, 0.1], color = :black, label = :none)
+
+    # Plot connecting lines
+    plot!(p3, [-20, -29], [-0.1, -3.6], color = :black, label = :none)
+    plot!(p3, [-10, -3.15], [-0.1, -3.6], color = :black, label = :none)
+
+    # relaxation
+    trixi_include(joinpath(examples_dir(), EXAMPLES_DIR_BBMBBM, "bbm_bbm_1d_relaxation.jl"),
+                  gravity_constant = g, D = D, coordinates_min = x_min,
+                  coordinates_max = x_max, tspan = tspan, N = N,
+                  accuracy_order = accuracy_order)
+    plot!(p1, analysis_callback, title = "", label_extension = "relaxation", style = :auto,
+          linewidth = linewidth, subplot = 2)
+    plot!(p2, analysis_callback, title = "", what = (:errors,),
+          label_extension = "relaxation", linestyle = :dot, linewidth = linewidth,
+          ylabel = L"\Vert\eta - \eta_{ana}\Vert_2 + \Vert v - v_{ana}\Vert_2",
+          exclude = [:conservation_error])
+    plot!(p3, semi => sol, plot_bathymetry = false, label = "relaxation", linestyle = :dot,
+          linewidth = linewidth, plot_title = "", title = "", color = 3)
+    x = DispersiveShallowWater.grid(semi)
+    q = DispersiveShallowWater.wrap_array(sol.u[end], semi)
+    plot!(p3, x, view(q, 1, :), subplot = 3, legend = nothing, linewidth = linewidth,
+          linestyle = :dot, color = 3)
+
+    savefig(p1, joinpath(OUT_SOLITON, "invariants.pdf"))
+    savefig(p2, joinpath(OUT_SOLITON, "errors.pdf"))
+    savefig(p3, joinpath(OUT_SOLITON, "solution.pdf"))
+end
+
 fig_1()
 fig_2()
-fig_3_4_5()
-fig_6()
+fig_3()
+fig_4_5_6()
