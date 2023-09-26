@@ -82,7 +82,8 @@ ode = semidiscretize(semi, tspan)
 analysis_callback = AnalysisCallback(semi; interval = 10,
                                      extra_analysis_errors = (:conservation_error,),
                                      extra_analysis_integrals = (waterheight_total,
-                                                                 velocity, entropy))
+                                                                 velocity, entropy),
+                                     io = devnull)
 callbacks = CallbackSet(analysis_callback)
 
 saveat = range(tspan..., length = 100)
@@ -139,7 +140,8 @@ To obtain entropy-conserving time-stepping schemes DispersiveShallowWater.jl use
 analysis_callback = AnalysisCallback(semi; interval = 10,
                                      extra_analysis_errors = (:conservation_error,),
                                      extra_analysis_integrals = (waterheight_total,
-                                                                 velocity, entropy))
+                                                                 velocity, entropy),
+                                     io = devnull)
 relaxation_callback = RelaxationCallback(invariant = entropy)
 callbacks = CallbackSet(relaxation_callback, analysis_callback)
 sol = solve(ode, Tsit5(), abstol = 1e-7, reltol = 1e-7,
@@ -204,7 +206,8 @@ As before, we can run the simulation by
 analysis_callback = AnalysisCallback(semi; interval = 10,
                                      extra_analysis_errors = (:conservation_error,),
                                      extra_analysis_integrals = (waterheight_total,
-                                                                 velocity, entropy))
+                                                                 velocity, entropy),
+                                     io = devnull)
 relaxation_callback = RelaxationCallback(invariant = entropy)
 callbacks = CallbackSet(relaxation_callback, analysis_callback)
 sol = solve(ode, Tsit5(), abstol = 1e-7, reltol = 1e-7,
