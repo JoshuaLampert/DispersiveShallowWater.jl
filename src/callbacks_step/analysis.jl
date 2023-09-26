@@ -180,7 +180,8 @@ function (analysis_callback::AnalysisCallback)(integrator)
     semi = integrator.p
     mesh, equations, solver = mesh_equations_solver(semi)
 
-    l2_error, linf_error = analysis_callback(analysis_callback.io, integrator.u, integrator, semi)
+    l2_error, linf_error = analysis_callback(analysis_callback.io, integrator.u, integrator,
+                                             semi)
 
     # avoid re-evaluating possible FSAL stages
     u_modified!(integrator, false)
@@ -223,18 +224,22 @@ function (analysis_callback::AnalysisCallback)(io, u_ode, integrator, semi)
 
     println(io)
     println(io, "─"^100)
-    println(io, "Simulation running '", get_name(equations), "' with '", semi.initial_condition,
+    println(io, "Simulation running '", get_name(equations), "' with '",
+            semi.initial_condition,
             "'")
     println(io, "─"^100)
-    println(io, " #timesteps:     " * @sprintf("% 14d", iter) *
+    println(io,
+            " #timesteps:     " * @sprintf("% 14d", iter) *
             "               " *
             " run time:       " * @sprintf("%10.8e s", runtime_absolute))
-    println(io, " Δt:             " * @sprintf("%10.8e", dt) *
+    println(io,
+            " Δt:             " * @sprintf("%10.8e", dt) *
             "               " *
             " └── GC time:    " *
             @sprintf("%10.8e s (%5.3f%%)", gc_time_absolute, gc_time_percentage))
     println(io, " sim. time:      " * @sprintf("%10.8e (%5.3f%%)", t, t / t_final*100))
-    println(io, " #DOF:           " * @sprintf("% 14d", nnodes(semi)) *
+    println(io,
+            " #DOF:           " * @sprintf("% 14d", nnodes(semi)) *
             "               " *
             " alloc'd memory: " * @sprintf("%14.3f MiB", memory_use))
     println(io)
@@ -289,7 +294,8 @@ function (analysis_callback::AnalysisCallback)(io, u_ode, integrator, semi)
 end
 
 # Iterate over tuples of analysis integrals in a type-stable way using "lispy tuple programming".
-function analyze_integrals!(io, current_integrals, i, analysis_integrals::NTuple{N, Any}, u_ode,
+function analyze_integrals!(io, current_integrals, i, analysis_integrals::NTuple{N, Any},
+                            u_ode,
                             t, semi) where {N}
 
     # Extract the first analysis integral and process it; keep the remaining to be processed later
