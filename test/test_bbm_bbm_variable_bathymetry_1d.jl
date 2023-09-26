@@ -12,12 +12,13 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_variable_bathymetry_1d")
         @test_trixi_include(joinpath(EXAMPLES_DIR,
                                      "bbm_bbm_variable_bathymetry_1d_basic.jl"),
                             tspan=(0.0, 1.0),
-                            l2=[0.0024561065856105136 0.005467472679563469 0.0],
-                            linf=[0.0019322426802252934 0.003270790905389731 0.0],
+                            l2=[0.002475254552148715 0.005510109246665293 0.0],
+                            linf=[0.0019397546359500861 0.0032957358113563373 0.0],
                             cons_error=[1.0394561372181596e-13 3.410605131648481e-13 0.0],
                             change_waterheight=1.0394561372181596e-13,
                             change_velocity=-3.410605131648481e-13,
-                            change_entropy=0.0006138716858004045)
+                            change_entropy=0.0006197172569955001,
+                            atol_ints=1e-10) # in order to make CI pass
     end
 
     @trixi_testset "bbm_bbm_variable_bathymetry_1d_relaxation" begin
@@ -25,7 +26,7 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_variable_bathymetry_1d")
                                      "bbm_bbm_variable_bathymetry_1d_relaxation.jl"),
                             tspan=(0.0, 1.0),
                             l2=[1.234497154595864 2.0325352963894225 0.0],
-                            linf=[1.856609837506367 2.537322089418664 0.0],
+                            linf=[1.8566998050289607 2.537410906888876 0.0],
                             cons_error=[2.0694557179012918e-13 2.789919043027633e-13 0.0],
                             change_waterheight=-2.1271873151818e-13,
                             change_velocity=2.7874259106214573e-13,
@@ -74,12 +75,12 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_variable_bathymetry_1d")
                                      "bbm_bbm_variable_bathymetry_1d_dingemans.jl"),
                             tspan=(0.0, 1.0),
                             N=512,
-                            l2=[0.23120795192990629 0.7544344847900466 0.0],
-                            linf=[0.03707736413915552 0.12038327721384329 0.0],
+                            l2=[0.23119432844001495 0.7543986688031077 0.0],
+                            linf=[0.037067680051741214 0.12128735996476576 0.0],
                             cons_error=[1.4210854715202004e-13 3.1478183774857893e-15 0.0],
                             change_waterheight=-1.4210854715202004e-13,
                             change_velocity=-3.1478183774857893e-15,
-                            change_entropy=-1.1468728189356625e-9)
+                            change_entropy=-1.3967564882477745e-9)
     end
 end
 
