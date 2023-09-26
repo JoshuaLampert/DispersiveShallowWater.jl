@@ -58,7 +58,8 @@ function fig_2()
          markersize = markersize)
     plot!(k_zoom, c_euler.(k_zoom) ./ c0, ylim = (0.54, 1.0),
           inset = bbox(0.35, 0.1, 0.35, 0.3), subplot = 2, legend = nothing,
-          linewidth = linewidth, markershape = :circle, markersize = markersize, framestyle = :box)
+          linewidth = linewidth, markershape = :circle, markersize = markersize,
+          framestyle = :box)
 
     function plot_dispersion_relation(omega, label, markershape)
         c(k) = omega(k) / k
@@ -200,13 +201,20 @@ function fig_4_5_6()
               ylabel = L"\Vert\eta - \eta_{ana}\Vert_2 + \Vert v - v_{ana}\Vert_2",
               exclude = [:conservation_error])
     p3 = plot(semi => sol, label = "baseline", plot_initial = true, linestyle = :dash,
-              linewidth = linewidth, plot_title = "", title = "", ylims = [(-8, 3) (-1, 40)])
+              linewidth = linewidth, plot_title = "", title = "",
+              ylims = [(-8, 3) (-1, 40)])
     x = DispersiveShallowWater.grid(semi)
     q = DispersiveShallowWater.wrap_array(sol.u[end], semi)
-    plot!(p3, x, view(q, 1, :), inset = (1, bbox(0.11, 0.6, 0.35, 0.32)), subplot = 3, xlim = (-20, -10),
-          ylim = (-0.05, 0.05), legend = nothing, linewidth = linewidth, linestyle = :dash, color = 2,
-          tickfontsize = 5, yticks = [0.04, 0.0, -0.04], xticks = [-20, -15, -10], framestyle = :box)
-    q_exact = DispersiveShallowWater.wrap_array(DispersiveShallowWater.compute_coefficients(initial_condition, tspan[2], semi), semi)
+    plot!(p3, x, view(q, 1, :), inset = (1, bbox(0.11, 0.6, 0.35, 0.32)), subplot = 3,
+          xlim = (-20, -10),
+          ylim = (-0.05, 0.05), legend = nothing, linewidth = linewidth, linestyle = :dash,
+          color = 2,
+          tickfontsize = 5, yticks = [0.04, 0.0, -0.04], xticks = [-20, -15, -10],
+          framestyle = :box)
+    q_exact = DispersiveShallowWater.wrap_array(DispersiveShallowWater.compute_coefficients(initial_condition,
+                                                                                            tspan[2],
+                                                                                            semi),
+                                                semi)
     plot!(p3, x, view(q_exact, 1, :), subplot = 3, legend = nothing, linewidth = linewidth,
           linestyle = :dot, color = 1)
     # Plot box
