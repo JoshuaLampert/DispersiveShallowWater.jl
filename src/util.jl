@@ -61,7 +61,7 @@ include(DispersiveShallowWater.path_create_figures())
 ```
 """
 function path_create_figures()
-    pkgdir(DispersiveShallowWater, "create_figures.jl")
+    pkgdir(DispersiveShallowWater, "visualization", "create_figures.jl")
 end
 
 # Note: We can't call the method below `DispersiveShallowWater.include` since that is created automatically

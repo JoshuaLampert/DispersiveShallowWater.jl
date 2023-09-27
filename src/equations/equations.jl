@@ -81,7 +81,7 @@ of the correct length `nvariables(equations)`.
 """
 function waterheight_total end
 
-varnames(::typeof(waterheight_total), equations) = ("eta",)
+varnames(::typeof(waterheight_total), equations) = ("η",)
 
 """
     waterheight(q, equations)

@@ -5,7 +5,14 @@ using LaTeXStrings
 const OUT = "out/"
 ispath(OUT) || mkpath(OUT)
 const EXAMPLES_DIR_BBMBBM = "bbm_bbm_1d"
+const EXAMPLES_DIR_BBMBBM_VARIABLE = "bbm_bbm_variable_bathymetry_1d"
+const EXAMPLES_DIR_SVAERD_KALISCH = "svaerd_kalisch_1d"
 
+function run_example(path; kwargs...)
+    trixi_include(joinpath(examples_dir(), path); kwargs...)
+end
+
+# Chapter 2
 # Plot of bathymetry and waterheight
 function fig_1()
     L = 1.0
@@ -123,6 +130,9 @@ function fig_2()
     savefig(joinpath(OUT, "dispersion_relations.pdf"))
 end
 
+# Chapter 4
+# Chaper 4.1 Soliton
+
 const OUT_SOLITON = joinpath(OUT, "soliton")
 ispath(OUT_SOLITON) || mkpath(OUT_SOLITON)
 
@@ -190,18 +200,18 @@ function fig_4_5_6()
     accuracy_order = 8
 
     # baseline
-    trixi_include(joinpath(examples_dir(), EXAMPLES_DIR_BBMBBM, "bbm_bbm_1d_basic.jl"),
-                  gravity_constant = g, D = D, coordinates_min = x_min,
-                  coordinates_max = x_max, tspan = tspan, N = N,
-                  accuracy_order = accuracy_order)
+    run_example(joinpath(EXAMPLES_DIR_BBMBBM, "bbm_bbm_1d_basic.jl"),
+                gravity_constant = g, D = D, coordinates_min = x_min,
+                coordinates_max = x_max, tspan = tspan, N = N,
+                accuracy_order = accuracy_order)
     p1 = plot(analysis_callback, title = "", label_extension = "baseline", style = :auto,
               linewidth = linewidth, layout = 2, subplot = 1)
     p2 = plot(analysis_callback, title = "", what = (:errors,),
               label_extension = "baseline", linestyle = :dash, linewidth = linewidth,
               ylabel = L"\Vert\eta - \eta_{ana}\Vert_2 + \Vert v - v_{ana}\Vert_2",
               exclude = [:conservation_error])
-    p3 = plot(semi => sol, label = "baseline", plot_initial = true, linestyle = :dash,
-              linewidth = linewidth, plot_title = "", title = "",
+    p3 = plot(semi => sol, label = "baseline", plot_initial = true, plot_bathymetry = false,
+              linestyle = :dash, linewidth = linewidth, plot_title = "", title = "",
               ylims = [(-8, 3) (-1, 40)])
     x = DispersiveShallowWater.grid(semi)
     q = DispersiveShallowWater.wrap_array(sol.u[end], semi)
@@ -210,13 +220,13 @@ function fig_4_5_6()
           ylim = (-0.05, 0.05), legend = nothing, linewidth = linewidth, linestyle = :dash,
           color = 2,
           tickfontsize = 5, yticks = [0.04, 0.0, -0.04], xticks = [-20, -15, -10],
-          framestyle = :box)
+          plot_initial = true, plot_bathymetry = false, framestyle = :box)
     q_exact = DispersiveShallowWater.wrap_array(DispersiveShallowWater.compute_coefficients(initial_condition,
                                                                                             tspan[2],
                                                                                             semi),
                                                 semi)
     plot!(p3, x, view(q_exact, 1, :), subplot = 3, legend = nothing, linewidth = linewidth,
-          linestyle = :dot, color = 1)
+          linestyle = :solid, color = 1)
     # Plot box
     plot!(p3, [-20, -10], [-0.1, -0.1], color = :black, label = :none)
     plot!(p3, [-20, -10], [0.1, 0.1], color = :black, label = :none)
@@ -228,10 +238,10 @@ function fig_4_5_6()
     plot!(p3, [-10, -3.15], [-0.1, -3.6], color = :black, label = :none)
 
     # relaxation
-    trixi_include(joinpath(examples_dir(), EXAMPLES_DIR_BBMBBM, "bbm_bbm_1d_relaxation.jl"),
-                  gravity_constant = g, D = D, coordinates_min = x_min,
-                  coordinates_max = x_max, tspan = tspan, N = N,
-                  accuracy_order = accuracy_order)
+    run_example(joinpath(EXAMPLES_DIR_BBMBBM, "bbm_bbm_1d_relaxation.jl"),
+                gravity_constant = g, D = D, coordinates_min = x_min,
+                coordinates_max = x_max, tspan = tspan, N = N,
+                accuracy_order = accuracy_order)
     plot!(p1, analysis_callback, title = "", label_extension = "relaxation", style = :auto,
           linewidth = linewidth, subplot = 2)
     plot!(p2, analysis_callback, title = "", what = (:errors,),
@@ -250,7 +260,95 @@ function fig_4_5_6()
     savefig(p3, joinpath(OUT_SOLITON, "solution.pdf"))
 end
 
-fig_1()
-fig_2()
-fig_3()
-fig_4_5_6()
+# Chapter 4.3 Dingemans
+const OUT_DINGEMANS = joinpath(OUT, "dingemans")
+ispath(OUT_DINGEMANS) || mkpath(OUT_DINGEMANS)
+
+# Plot of total waterheight for different models at different points in time
+function fig_7()
+    linewidth = 3
+    fontsize = 16
+
+    N = 512
+    steps = [100, 200, 300, 500]
+    xlims_zoom = [(-25, 0), (5, 30), (20, 45), (-100, -75)]
+    ylim_zoom = (0.75, 0.85)
+    run_example(joinpath(EXAMPLES_DIR_BBMBBM_VARIABLE, "bbm_bbm_variable_bathymetry_1d_dingemans.jl");
+                N = N)
+    plot(layout = (2, 2), ylim = (-0.05, 0.86), size = (1200, 800), titlefontsize = fontsize)
+    for (i, step) in enumerate(steps)
+        plot!(semi => sol, step = step, conversion = waterheight_total, label = "BBM-BBM", subplot = i, plot_title = "", linewidth = linewidth, legend = :none, guidefontsize = fontsize, tickfontsize = fontsize, linestyle = :dash)
+        plot!(semi => sol, step = step, inset = (i, bbox(0.1, 0.2, 0.6, 0.5)), conversion = waterheight_total, linewidth = linewidth, legend = :none, framestyle = :box, xlim = xlims_zoom[i], ylim = ylim_zoom, subplot = length(steps) + i, plot_title = "", title = "", xguide = "", yguide = "", linestyle = :dash)
+    end
+
+    run_example(joinpath(EXAMPLES_DIR_SVAERD_KALISCH, "svaerd_kalisch_1d_dingemans.jl");
+                N = N, alpha = 0.0, beta = 0.2308939393939394, gamma = 0.04034343434343434)
+    for (i, step) in enumerate(steps)
+        plot!(semi => sol, step = step, conversion = waterheight_total, label = "Svärd-Kalisch (set 3)", subplot = i, plot_bathymetry = false, plot_title = "", linewidth = linewidth, legend = :none, guidefontsize = fontsize, tickfontsize = fontsize, color = 2, linestyle = :dot)
+        plot!(semi => sol, step = step, conversion = waterheight_total, linewidth = linewidth, legend = :none, framestyle = :box, xlim = xlims_zoom[i], ylim = ylim_zoom, subplot = length(steps) + i, plot_title = "", title = "", xguide = "", yguide = "", color = 2, linestyle = :dot)
+    end
+
+    include("elixir_shallowwater_1d_dingemans.jl")
+    for (i, step) in enumerate(steps)
+        plot!(PlotData1D(sol.u[step], semi)["H"], label = "Shallow water", subplot = i, title = "t = $(round(sol.t[step], digits = 2))", plot_title = "", linewidth = linewidth, legend = :none, guidefontsize = fontsize, tickfontsize = fontsize, color = 3, linestyle = :dashdot)
+        plot!(PlotData1D(sol.u[step], semi)["H"], linewidth = linewidth, legend = :none, framestyle = :box, xlim = xlims_zoom[i], ylim = ylim_zoom, subplot = length(steps) + i, plot_title = "", title = "", xguide = "", yguide = "", color = 3, linestyle = :dashdot)
+    end
+
+    # dirty hack to have one legend for all subplots
+    plot!(subplot = 3, legend_column = 2, bottom_margin = 22*Plots.mm, legend = (0.7, -0.34), legendfontsize = 12)
+    plot!(left_margin = 5*Plots.mm)
+
+    # plot boxes
+    for i in 1:length(steps)
+        plot!([xlims_zoom[i][1], xlims_zoom[i][2]], [ylim_zoom[1], ylim_zoom[1]], color = :black, label = :none, subplot = i, linewidth = 2)
+        plot!([xlims_zoom[i][1], xlims_zoom[i][2]], [ylim_zoom[2], ylim_zoom[2]], color = :black, label = :none, subplot = i, linewidth = 2)
+        plot!([xlims_zoom[i][1], xlims_zoom[i][1]], [ylim_zoom[1], ylim_zoom[2]], color = :black, label = :none, subplot = i, linewidth = 2)
+        plot!([xlims_zoom[i][2], xlims_zoom[i][2]], [ylim_zoom[1], ylim_zoom[2]], color = :black, label = :none, subplot = i, linewidth = 2)
+    end
+    # plot connecting lines
+    upper_corners = [[-119.5, 0.68], [-9.5, 0.68]]
+    for i in 1:length(steps)
+        plot!([xlims_zoom[i][1], upper_corners[1][1]], [ylim_zoom[1], upper_corners[1][2]], color = :black, label = :none, subplot = i, linewidth = 2)
+        plot!([xlims_zoom[i][2], upper_corners[2][1]], [ylim_zoom[1], upper_corners[2][2]], color = :black, label = :none, subplot = i, linewidth = 2)
+    end
+    savefig(joinpath(OUT_DINGEMANS, "waterheight_over_time.pdf"))
+end
+
+# Plot of total waterheight for Svärd-Kalisch equations at different points in space and different orders of accuracy
+function fig_8()
+    ylim = (0.75, 0.85)
+    yticks = [0.76, 0.78, 0.8, 0.82, 0.84]
+    x_values = [3.04, 9.44, 20.04, 26.04, 30.44, 37.04]
+    tlims = [(15.0, 45.0), (19.0, 48.0), (25.0, 52.0), (30.0, 60.0), (33.0, 61.0), (35.0, 65.0)]
+    plot(layout = (3, 2))
+
+    N = 512
+    tspan = (0.0, 70.0)
+    saveat = range(tspan..., length = 1000)
+    accuracy_orders = [2, 4, 6]
+    linestyles = [:solid, :dash, :dot]
+    for (i, accuracy_order) in enumerate(accuracy_orders)
+        run_example(joinpath(EXAMPLES_DIR_SVAERD_KALISCH, "svaerd_kalisch_1d_dingemans.jl");
+                    N = N, tspan = tspan, accuracy_order = accuracy_order, saveat = saveat)
+        for (j, x) in enumerate(x_values)
+            index = argmin(abs.(DispersiveShallowWater.grid(semi) .- x))
+            title = "x = $(round(DispersiveShallowWater.grid(semi)[index], digits = 4))"
+            plot!(semi => sol, x, conversion = waterheight_total, subplot = j, xlim = tlims[j], ylim = ylim, plot_title = "", title = title, legend = nothing, yticks = yticks, linewidth = 2, titlefontsize = 10, label = "p = $accuracy_order ", linestyle = linestyles[i])
+        end
+    end
+    
+    plot!(subplot = 5, legend = (0.82, -1.0), legend_column = 3, legendfontsize = 8, bottom_margin = 10*Plots.mm)
+    savefig(joinpath(OUT_DINGEMANS, "waterheight_at_x.pdf"))
+end
+
+# Plots of total waterheight for Svärd-Kalisch equations at different points in space and different types of solvers
+function fig_9()
+    
+end
+
+# fig_1()
+# fig_2()
+# fig_3()
+# fig_4_5_6()
+# fig_7()
+# fig_8()

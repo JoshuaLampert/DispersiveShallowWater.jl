@@ -1,4 +1,4 @@
-# This script solves all the examples in `examples_dir()` and creates a .gif of solution
+# This script solves all the examples in `examples_dir()` and creates a .gif of the solution
 # as well as some additional plots. All plots are saved in a directory `out/` and
 # subdirectories therein.
 

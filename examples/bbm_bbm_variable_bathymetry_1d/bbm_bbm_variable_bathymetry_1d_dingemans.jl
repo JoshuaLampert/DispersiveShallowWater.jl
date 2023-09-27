@@ -4,7 +4,7 @@ using DispersiveShallowWater
 ###############################################################################
 # Semidiscretization of the BBM-BBM equations
 
-equations = BBMBBMVariableEquations1D(gravity_constant = 9.81)
+equations = BBMBBMVariableEquations1D(gravity_constant = 9.81, eta0 = 0.8)
 
 initial_condition = initial_condition_dingemans
 boundary_conditions = boundary_condition_periodic

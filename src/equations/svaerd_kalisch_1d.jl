@@ -64,13 +64,13 @@ function initial_condition_dingemans(x, t, equations::SvaerdKalischEquations1D, 
     eta0 = 0.8
     A = 0.02
     # omega = 2*pi/(2.02*sqrt(2))
-    K = 0.8406220896381442 # precomputed result of find_zero(K -> omega^2 - equations.gravity * K * tanh(K * eta0), 1.0) using Roots.jl
-    if x < -30.5 * pi / K || x > -8.5 * pi / K
+    k = 0.8406220896381442 # precomputed result of find_zero(k -> omega^2 - equations.gravity * k * tanh(k * eta0), 1.0) using Roots.jl
+    if x < -30.5 * pi / k || x > -8.5 * pi / k
         h = 0.0
     else
-        h = A * cos(K * x)
+        h = A * cos(k * x)
     end
-    v = sqrt(equations.gravity / K * tanh(K) * eta0) * h / eta0
+    v = sqrt(equations.gravity / k * tanh(k * eta0)) * h / eta0
     if x < 11.01 || x >= 33.07
         b = 0.0
     elseif 11.01 <= x && x < 23.04
