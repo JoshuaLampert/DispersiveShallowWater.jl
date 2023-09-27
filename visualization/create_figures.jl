@@ -273,43 +273,72 @@ function fig_7()
     steps = [100, 200, 300, 500]
     xlims_zoom = [(-25, 0), (5, 30), (20, 45), (-100, -75)]
     ylim_zoom = (0.75, 0.85)
-    run_example(joinpath(EXAMPLES_DIR_BBMBBM_VARIABLE, "bbm_bbm_variable_bathymetry_1d_dingemans.jl");
+    run_example(joinpath(EXAMPLES_DIR_BBMBBM_VARIABLE,
+                         "bbm_bbm_variable_bathymetry_1d_dingemans.jl");
                 N = N)
-    plot(layout = (2, 2), ylim = (-0.05, 0.86), size = (1200, 800), titlefontsize = fontsize)
+    plot(layout = (2, 2), ylim = (-0.05, 0.86), size = (1200, 800),
+         titlefontsize = fontsize)
     for (i, step) in enumerate(steps)
-        plot!(semi => sol, step = step, conversion = waterheight_total, label = "BBM-BBM", subplot = i, plot_title = "", linewidth = linewidth, legend = :none, guidefontsize = fontsize, tickfontsize = fontsize, linestyle = :dash)
-        plot!(semi => sol, step = step, inset = (i, bbox(0.1, 0.2, 0.6, 0.5)), conversion = waterheight_total, linewidth = linewidth, legend = :none, framestyle = :box, xlim = xlims_zoom[i], ylim = ylim_zoom, subplot = length(steps) + i, plot_title = "", title = "", xguide = "", yguide = "", linestyle = :dash)
+        plot!(semi => sol, step = step, conversion = waterheight_total, label = "BBM-BBM",
+              subplot = i, plot_title = "", linewidth = linewidth, legend = :none,
+              guidefontsize = fontsize, tickfontsize = fontsize, linestyle = :dash)
+        plot!(semi => sol, step = step, inset = (i, bbox(0.1, 0.2, 0.6, 0.5)),
+              conversion = waterheight_total, linewidth = linewidth, legend = :none,
+              framestyle = :box, xlim = xlims_zoom[i], ylim = ylim_zoom,
+              subplot = length(steps) + i, plot_title = "", title = "", xguide = "",
+              yguide = "", linestyle = :dash)
     end
 
     run_example(joinpath(EXAMPLES_DIR_SVAERD_KALISCH, "svaerd_kalisch_1d_dingemans.jl");
                 N = N, alpha = 0.0, beta = 0.2308939393939394, gamma = 0.04034343434343434)
     for (i, step) in enumerate(steps)
-        plot!(semi => sol, step = step, conversion = waterheight_total, label = "Svärd-Kalisch (set 3)", subplot = i, plot_bathymetry = false, plot_title = "", linewidth = linewidth, legend = :none, guidefontsize = fontsize, tickfontsize = fontsize, color = 2, linestyle = :dot)
-        plot!(semi => sol, step = step, conversion = waterheight_total, linewidth = linewidth, legend = :none, framestyle = :box, xlim = xlims_zoom[i], ylim = ylim_zoom, subplot = length(steps) + i, plot_title = "", title = "", xguide = "", yguide = "", color = 2, linestyle = :dot)
+        plot!(semi => sol, step = step, conversion = waterheight_total,
+              label = "Svärd-Kalisch (set 3)", subplot = i, plot_bathymetry = false,
+              plot_title = "", linewidth = linewidth, legend = :none,
+              guidefontsize = fontsize, tickfontsize = fontsize, color = 2,
+              linestyle = :dot)
+        plot!(semi => sol, step = step, conversion = waterheight_total,
+              linewidth = linewidth, legend = :none, framestyle = :box,
+              xlim = xlims_zoom[i], ylim = ylim_zoom, subplot = length(steps) + i,
+              plot_title = "", title = "", xguide = "", yguide = "", color = 2,
+              linestyle = :dot)
     end
 
     include("elixir_shallowwater_1d_dingemans.jl")
     for (i, step) in enumerate(steps)
-        plot!(PlotData1D(sol.u[step], semi)["H"], label = "Shallow water", subplot = i, title = "t = $(round(sol.t[step], digits = 2))", plot_title = "", linewidth = linewidth, legend = :none, guidefontsize = fontsize, tickfontsize = fontsize, color = 3, linestyle = :dashdot)
-        plot!(PlotData1D(sol.u[step], semi)["H"], linewidth = linewidth, legend = :none, framestyle = :box, xlim = xlims_zoom[i], ylim = ylim_zoom, subplot = length(steps) + i, plot_title = "", title = "", xguide = "", yguide = "", color = 3, linestyle = :dashdot)
+        plot!(PlotData1D(sol.u[step], semi)["H"], label = "Shallow water", subplot = i,
+              title = "t = $(round(sol.t[step], digits = 2))", plot_title = "",
+              linewidth = linewidth, legend = :none, guidefontsize = fontsize,
+              tickfontsize = fontsize, color = 3, linestyle = :dashdot)
+        plot!(PlotData1D(sol.u[step], semi)["H"], linewidth = linewidth, legend = :none,
+              framestyle = :box, xlim = xlims_zoom[i], ylim = ylim_zoom,
+              subplot = length(steps) + i, plot_title = "", title = "", xguide = "",
+              yguide = "", color = 3, linestyle = :dashdot)
     end
 
     # dirty hack to have one legend for all subplots
-    plot!(subplot = 3, legend_column = 2, bottom_margin = 22*Plots.mm, legend = (0.7, -0.34), legendfontsize = 12)
-    plot!(left_margin = 5*Plots.mm)
+    plot!(subplot = 3, legend_column = 2, bottom_margin = 22 * Plots.mm,
+          legend = (0.7, -0.34), legendfontsize = 12)
+    plot!(left_margin = 5 * Plots.mm)
 
     # plot boxes
     for i in 1:length(steps)
-        plot!([xlims_zoom[i][1], xlims_zoom[i][2]], [ylim_zoom[1], ylim_zoom[1]], color = :black, label = :none, subplot = i, linewidth = 2)
-        plot!([xlims_zoom[i][1], xlims_zoom[i][2]], [ylim_zoom[2], ylim_zoom[2]], color = :black, label = :none, subplot = i, linewidth = 2)
-        plot!([xlims_zoom[i][1], xlims_zoom[i][1]], [ylim_zoom[1], ylim_zoom[2]], color = :black, label = :none, subplot = i, linewidth = 2)
-        plot!([xlims_zoom[i][2], xlims_zoom[i][2]], [ylim_zoom[1], ylim_zoom[2]], color = :black, label = :none, subplot = i, linewidth = 2)
+        plot!([xlims_zoom[i][1], xlims_zoom[i][2]], [ylim_zoom[1], ylim_zoom[1]],
+              color = :black, label = :none, subplot = i, linewidth = 2)
+        plot!([xlims_zoom[i][1], xlims_zoom[i][2]], [ylim_zoom[2], ylim_zoom[2]],
+              color = :black, label = :none, subplot = i, linewidth = 2)
+        plot!([xlims_zoom[i][1], xlims_zoom[i][1]], [ylim_zoom[1], ylim_zoom[2]],
+              color = :black, label = :none, subplot = i, linewidth = 2)
+        plot!([xlims_zoom[i][2], xlims_zoom[i][2]], [ylim_zoom[1], ylim_zoom[2]],
+              color = :black, label = :none, subplot = i, linewidth = 2)
     end
     # plot connecting lines
     upper_corners = [[-119.5, 0.68], [-9.5, 0.68]]
     for i in 1:length(steps)
-        plot!([xlims_zoom[i][1], upper_corners[1][1]], [ylim_zoom[1], upper_corners[1][2]], color = :black, label = :none, subplot = i, linewidth = 2)
-        plot!([xlims_zoom[i][2], upper_corners[2][1]], [ylim_zoom[1], upper_corners[2][2]], color = :black, label = :none, subplot = i, linewidth = 2)
+        plot!([xlims_zoom[i][1], upper_corners[1][1]], [ylim_zoom[1], upper_corners[1][2]],
+              color = :black, label = :none, subplot = i, linewidth = 2)
+        plot!([xlims_zoom[i][2], upper_corners[2][1]], [ylim_zoom[1], upper_corners[2][2]],
+              color = :black, label = :none, subplot = i, linewidth = 2)
     end
     savefig(joinpath(OUT_DINGEMANS, "waterheight_over_time.pdf"))
 end
@@ -319,7 +348,14 @@ function fig_8()
     ylim = (0.75, 0.85)
     yticks = [0.76, 0.78, 0.8, 0.82, 0.84]
     x_values = [3.04, 9.44, 20.04, 26.04, 30.44, 37.04]
-    tlims = [(15.0, 45.0), (19.0, 48.0), (25.0, 52.0), (30.0, 60.0), (33.0, 61.0), (35.0, 65.0)]
+    tlims = [
+        (15.0, 45.0),
+        (19.0, 48.0),
+        (25.0, 52.0),
+        (30.0, 60.0),
+        (33.0, 61.0),
+        (35.0, 65.0),
+    ]
     plot(layout = (3, 2))
 
     N = 512
@@ -333,17 +369,20 @@ function fig_8()
         for (j, x) in enumerate(x_values)
             index = argmin(abs.(DispersiveShallowWater.grid(semi) .- x))
             title = "x = $(round(DispersiveShallowWater.grid(semi)[index], digits = 4))"
-            plot!(semi => sol, x, conversion = waterheight_total, subplot = j, xlim = tlims[j], ylim = ylim, plot_title = "", title = title, legend = nothing, yticks = yticks, linewidth = 2, titlefontsize = 10, label = "p = $accuracy_order ", linestyle = linestyles[i])
+            plot!(semi => sol, x, conversion = waterheight_total, subplot = j,
+                  xlim = tlims[j], ylim = ylim, plot_title = "", title = title,
+                  legend = nothing, yticks = yticks, linewidth = 2, titlefontsize = 10,
+                  label = "p = $accuracy_order ", linestyle = linestyles[i])
         end
     end
-    
-    plot!(subplot = 5, legend = (0.82, -1.0), legend_column = 3, legendfontsize = 8, bottom_margin = 10*Plots.mm)
+
+    plot!(subplot = 5, legend = (0.82, -1.0), legend_column = 3, legendfontsize = 8,
+          bottom_margin = 10 * Plots.mm)
     savefig(joinpath(OUT_DINGEMANS, "waterheight_at_x.pdf"))
 end
 
 # Plots of total waterheight for Svärd-Kalisch equations at different points in space and different types of solvers
 function fig_9()
-    
 end
 
 # fig_1()

@@ -51,12 +51,9 @@ summary_callback = SummaryCallback()
 
 analysis_callback = Trixi.AnalysisCallback(semi, interval = 100)
 
-# stepsize_callback = StepsizeCallback(cfl = 1.0)
-
 callbacks = CallbackSet(summary_callback, analysis_callback)
 
 saveat = range(tspan..., length = 500)
 sol = solve(ode, Tsit5(), reltol = 1e-7, abstol = 1e-7,
-#             dt = 1.0, # solve needs some value here but it will be overwritten by the stepsize_callback
             save_everystep = false, callback = callbacks, saveat = saveat);
 summary_callback() # print the timer summary 
