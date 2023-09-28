@@ -17,7 +17,8 @@ N = 512
 mesh = Mesh1D(coordinates_min, coordinates_max, N)
 
 # create solver with periodic SBP operators of accuracy order 4
-solver = Solver(mesh, 4)
+accuracy_order = 4
+solver = Solver(mesh, accuracy_order)
 
 # semidiscretization holds all the necessary data structures for the spatial discretization
 semi = Semidiscretization(mesh, equations, initial_condition, solver,

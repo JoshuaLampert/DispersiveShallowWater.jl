@@ -108,7 +108,8 @@ function create_cache(mesh,
     tmp1 = similar(h)
     tmp2 = similar(h)
     hmD1betaD1 = Array{RealT}(undef, nnodes(mesh), nnodes(mesh))
-    if solver.D1 isa PeriodicDerivativeOperator
+    if solver.D1 isa PeriodicDerivativeOperator ||
+       solver.D1 isa UniformPeriodicCoupledOperator
         D1_central = solver.D1
         sparse_D1 = sparse(D1_central)
         D1betaD1 = sparse_D1 * Diagonal(beta_hat) * sparse_D1
@@ -142,7 +143,8 @@ function rhs!(du_ode, u_ode, t, mesh, equations::SvaerdKalischEquations1D,
     @. h = eta + D
     hv = h .* v
 
-    if solver.D1 isa PeriodicDerivativeOperator
+    if solver.D1 isa PeriodicDerivativeOperator ||
+       solver.D1 isa UniformPeriodicCoupledOperator
         D1eta = D1_central * eta
         D1v = D1_central * v
         tmp1 = alpha_hat .* (D1_central * (alpha_hat .* D1eta))
@@ -238,7 +240,8 @@ number of nodes as length of the second dimension.
     v = view(q, 2, :)
     D = view(q, 3, :)
     beta_hat = equations.beta * (eta .+ D) .^ 3
-    if cache.D1 isa PeriodicDerivativeOperator
+    if cache.D1 isa PeriodicDerivativeOperator ||
+       cache.D1 isa UniformPeriodicCoupledOperator
         tmp = 0.5 * beta_hat .* ((cache.D1 * v) .^ 2)
     elseif cache.D1 isa PeriodicUpwindOperators
         tmp = 0.5 * beta_hat .* ((cache.D1.minus * v) .^ 2)

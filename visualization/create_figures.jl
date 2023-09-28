@@ -1,4 +1,9 @@
 using DispersiveShallowWater
+using SummationByPartsOperators: legendre_derivative_operator,
+                                 UniformPeriodicMesh1D,
+                                 couple_discontinuously,
+                                 couple_continuously
+using SparseArrays: sparse
 using Plots
 using LaTeXStrings
 
@@ -189,6 +194,7 @@ end
 # Plot errors, change of invariants, and solution at final time for baseline and relaxation
 function fig_4_5_6()
     linewidth = 2
+    linestyles = [:dash, :dot]
 
     g = 9.81
     D = 2.0
@@ -204,20 +210,23 @@ function fig_4_5_6()
                 gravity_constant = g, D = D, coordinates_min = x_min,
                 coordinates_max = x_max, tspan = tspan, N = N,
                 accuracy_order = accuracy_order)
-    p1 = plot(analysis_callback, title = "", label_extension = "baseline", style = :auto,
+    p1 = plot(analysis_callback, title = "", label_extension = "baseline",
+              linestyles = [:solid :dash :dot],
               linewidth = linewidth, layout = 2, subplot = 1)
     p2 = plot(analysis_callback, title = "", what = (:errors,),
-              label_extension = "baseline", linestyle = :dash, linewidth = linewidth,
+              label_extension = "baseline", linestyle = linestyles[1],
+              linewidth = linewidth,
               ylabel = L"\Vert\eta - \eta_{ana}\Vert_2 + \Vert v - v_{ana}\Vert_2",
               exclude = [:conservation_error])
     p3 = plot(semi => sol, label = "baseline", plot_initial = true, plot_bathymetry = false,
-              linestyle = :dash, linewidth = linewidth, plot_title = "", title = "",
+              linestyle = linestyles[1], linewidth = linewidth, plot_title = "", title = "",
               ylims = [(-8, 3) (-1, 40)])
     x = DispersiveShallowWater.grid(semi)
     q = DispersiveShallowWater.wrap_array(sol.u[end], semi)
     plot!(p3, x, view(q, 1, :), inset = (1, bbox(0.11, 0.6, 0.35, 0.32)), subplot = 3,
           xlim = (-20, -10),
-          ylim = (-0.05, 0.05), legend = nothing, linewidth = linewidth, linestyle = :dash,
+          ylim = (-0.05, 0.05), legend = nothing, linewidth = linewidth,
+          linestyle = linestyles[1],
           color = 2,
           tickfontsize = 5, yticks = [0.04, 0.0, -0.04], xticks = [-20, -15, -10],
           plot_initial = true, plot_bathymetry = false, framestyle = :box)
@@ -227,6 +236,27 @@ function fig_4_5_6()
                                                 semi)
     plot!(p3, x, view(q_exact, 1, :), subplot = 3, legend = nothing, linewidth = linewidth,
           linestyle = :solid, color = 1)
+
+    # relaxation
+    run_example(joinpath(EXAMPLES_DIR_BBMBBM, "bbm_bbm_1d_relaxation.jl"),
+                gravity_constant = g, D = D, coordinates_min = x_min,
+                coordinates_max = x_max, tspan = tspan, N = N,
+                accuracy_order = accuracy_order)
+    plot!(p1, analysis_callback, title = "", label_extension = "relaxation",
+          style = [:solid :dash :dot],
+          linewidth = linewidth, subplot = 2)
+    plot!(p2, analysis_callback, title = "", what = (:errors,),
+          label_extension = "relaxation", linestyle = linestyles[2], linewidth = linewidth,
+          ylabel = L"\Vert\eta - \eta_{ana}\Vert_2 + \Vert v - v_{ana}\Vert_2",
+          exclude = [:conservation_error])
+    plot!(p3, semi => sol, plot_bathymetry = false, label = "relaxation",
+          linestyle = linestyles[2],
+          linewidth = linewidth, plot_title = "", title = "", color = 3)
+    x = DispersiveShallowWater.grid(semi)
+    q = DispersiveShallowWater.wrap_array(sol.u[end], semi)
+    plot!(p3, x, view(q, 1, :), subplot = 3, legend = nothing, linewidth = linewidth,
+          linestyle = linestyles[2], color = 3)
+
     # Plot box
     plot!(p3, [-20, -10], [-0.1, -0.1], color = :black, label = :none)
     plot!(p3, [-20, -10], [0.1, 0.1], color = :black, label = :none)
@@ -236,24 +266,6 @@ function fig_4_5_6()
     # Plot connecting lines
     plot!(p3, [-20, -29], [-0.1, -3.6], color = :black, label = :none)
     plot!(p3, [-10, -3.15], [-0.1, -3.6], color = :black, label = :none)
-
-    # relaxation
-    run_example(joinpath(EXAMPLES_DIR_BBMBBM, "bbm_bbm_1d_relaxation.jl"),
-                gravity_constant = g, D = D, coordinates_min = x_min,
-                coordinates_max = x_max, tspan = tspan, N = N,
-                accuracy_order = accuracy_order)
-    plot!(p1, analysis_callback, title = "", label_extension = "relaxation", style = :auto,
-          linewidth = linewidth, subplot = 2)
-    plot!(p2, analysis_callback, title = "", what = (:errors,),
-          label_extension = "relaxation", linestyle = :dot, linewidth = linewidth,
-          ylabel = L"\Vert\eta - \eta_{ana}\Vert_2 + \Vert v - v_{ana}\Vert_2",
-          exclude = [:conservation_error])
-    plot!(p3, semi => sol, plot_bathymetry = false, label = "relaxation", linestyle = :dot,
-          linewidth = linewidth, plot_title = "", title = "", color = 3)
-    x = DispersiveShallowWater.grid(semi)
-    q = DispersiveShallowWater.wrap_array(sol.u[end], semi)
-    plot!(p3, x, view(q, 1, :), subplot = 3, legend = nothing, linewidth = linewidth,
-          linestyle = :dot, color = 3)
 
     savefig(p1, joinpath(OUT_SOLITON, "invariants.pdf"))
     savefig(p2, joinpath(OUT_SOLITON, "errors.pdf"))
@@ -268,6 +280,7 @@ ispath(OUT_DINGEMANS) || mkpath(OUT_DINGEMANS)
 function fig_7()
     linewidth = 3
     fontsize = 16
+    linestyles = [:solid, :dash, :dot]
 
     N = 512
     steps = [100, 200, 300, 500]
@@ -281,27 +294,27 @@ function fig_7()
     for (i, step) in enumerate(steps)
         plot!(semi => sol, step = step, conversion = waterheight_total, label = "BBM-BBM",
               subplot = i, plot_title = "", linewidth = linewidth, legend = :none,
-              guidefontsize = fontsize, tickfontsize = fontsize, linestyle = :dash)
+              guidefontsize = fontsize, tickfontsize = fontsize, linestyle = linestyles[1])
         plot!(semi => sol, step = step, inset = (i, bbox(0.1, 0.2, 0.6, 0.5)),
               conversion = waterheight_total, linewidth = linewidth, legend = :none,
               framestyle = :box, xlim = xlims_zoom[i], ylim = ylim_zoom,
               subplot = length(steps) + i, plot_title = "", title = "", xguide = "",
-              yguide = "", linestyle = :dash)
+              yguide = "", linestyle = linestyles[1])
     end
 
     run_example(joinpath(EXAMPLES_DIR_SVAERD_KALISCH, "svaerd_kalisch_1d_dingemans.jl");
-                N = N, alpha = 0.0, beta = 0.2308939393939394, gamma = 0.04034343434343434)
+                N = N)
     for (i, step) in enumerate(steps)
         plot!(semi => sol, step = step, conversion = waterheight_total,
               label = "Svärd-Kalisch (set 3)", subplot = i, plot_bathymetry = false,
               plot_title = "", linewidth = linewidth, legend = :none,
               guidefontsize = fontsize, tickfontsize = fontsize, color = 2,
-              linestyle = :dot)
+              linestyle = linestyles[2])
         plot!(semi => sol, step = step, conversion = waterheight_total,
               linewidth = linewidth, legend = :none, framestyle = :box,
               xlim = xlims_zoom[i], ylim = ylim_zoom, subplot = length(steps) + i,
               plot_title = "", title = "", xguide = "", yguide = "", color = 2,
-              linestyle = :dot)
+              linestyle = linestyles[2])
     end
 
     include("elixir_shallowwater_1d_dingemans.jl")
@@ -309,11 +322,11 @@ function fig_7()
         plot!(PlotData1D(sol.u[step], semi)["H"], label = "Shallow water", subplot = i,
               title = "t = $(round(sol.t[step], digits = 2))", plot_title = "",
               linewidth = linewidth, legend = :none, guidefontsize = fontsize,
-              tickfontsize = fontsize, color = 3, linestyle = :dashdot)
+              tickfontsize = fontsize, color = 3, linestyle = linestyles[3])
         plot!(PlotData1D(sol.u[step], semi)["H"], linewidth = linewidth, legend = :none,
               framestyle = :box, xlim = xlims_zoom[i], ylim = ylim_zoom,
               subplot = length(steps) + i, plot_title = "", title = "", xguide = "",
-              yguide = "", color = 3, linestyle = :dashdot)
+              yguide = "", color = 3, linestyle = linestyles[3])
     end
 
     # dirty hack to have one legend for all subplots
@@ -363,6 +376,7 @@ function fig_8()
     saveat = range(tspan..., length = 1000)
     accuracy_orders = [2, 4, 6]
     linestyles = [:solid, :dash, :dot]
+
     for (i, accuracy_order) in enumerate(accuracy_orders)
         run_example(joinpath(EXAMPLES_DIR_SVAERD_KALISCH, "svaerd_kalisch_1d_dingemans.jl");
                     N = N, tspan = tspan, accuracy_order = accuracy_order, saveat = saveat)
@@ -378,16 +392,148 @@ function fig_8()
 
     plot!(subplot = 5, legend = (0.82, -1.0), legend_column = 3, legendfontsize = 8,
           bottom_margin = 10 * Plots.mm)
-    savefig(joinpath(OUT_DINGEMANS, "waterheight_at_x.pdf"))
+    savefig(joinpath(OUT_DINGEMANS, "waterheight_at_x_accuracy_order.pdf"))
 end
 
 # Plots of total waterheight for Svärd-Kalisch equations at different points in space and different types of solvers
 function fig_9()
+    ylim = (0.75, 0.85)
+    yticks = [0.76, 0.78, 0.8, 0.82, 0.84]
+    x_values = [3.04, 9.44, 20.04, 26.04, 30.44, 37.04]
+    tlims = [
+        (15.0, 45.0),
+        (19.0, 48.0),
+        (25.0, 52.0),
+        (30.0, 60.0),
+        (33.0, 61.0),
+        (35.0, 65.0),
+    ]
+    plot(layout = (3, 2))
+
+    N = 512
+    tspan = (0.0, 70.0)
+    saveat = range(tspan..., length = 1000)
+    accuracy_order = 4
+    linestyles = [:solid, :dash, :dot]
+
+    p = 3 # N needs to be divisible by p + 1
+    D_legendre = legendre_derivative_operator(-1.0, 1.0, p + 1)
+    uniform_mesh = UniformPeriodicMesh1D(coordinates_min, coordinates_max, div(N, p + 1))
+    D1 = couple_discontinuously(D_legendre, uniform_mesh)
+    D_pl = couple_discontinuously(D_legendre, uniform_mesh, Val(:plus))
+    D_min = couple_discontinuously(D_legendre, uniform_mesh, Val(:minus))
+    D2 = sparse(D_pl) * sparse(D_min)
+    solver_DG = Solver(D1, D2)
+
+    p = 4 # N needs to be divisible by p
+    D_legendre = legendre_derivative_operator(-1.0, 1.0, p + 1)
+    uniform_mesh = UniformPeriodicMesh1D(coordinates_min, coordinates_max, div(N, p))
+    D1 = couple_continuously(D_legendre, uniform_mesh)
+    D2_legendre = legendre_second_derivative_operator(-1.0, 1.0, p + 1)
+    D2 = couple_continuously(D2_legendre, uniform_mesh)
+    solver_CG = Solver(D1, D2)
+
+    solvers = [solver_DG, :none, solver_CG]
+    labels = ["DG ", "FD ", "CG "]
+
+    for (i, solver) in enumerate(solvers)
+        if solver == :none
+            run_example(joinpath(EXAMPLES_DIR_SVAERD_KALISCH,
+                                 "svaerd_kalisch_1d_dingemans.jl");
+                        N = N, tspan = tspan, accuracy_order = accuracy_order,
+                        saveat = saveat)
+        else
+            run_example(joinpath(EXAMPLES_DIR_SVAERD_KALISCH,
+                                 "svaerd_kalisch_1d_dingemans.jl");
+                        N = N, tspan = tspan, accuracy_order = accuracy_order,
+                        saveat = saveat, solver = solvers[i])
+        end
+        for (j, x) in enumerate(x_values)
+            index = argmin(abs.(DispersiveShallowWater.grid(semi) .- x))
+            title = "x = $(round(DispersiveShallowWater.grid(semi)[index], digits = 4))"
+            plot!(semi => sol, x, conversion = waterheight_total, subplot = j,
+                  xlim = tlims[j], ylim = ylim, plot_title = "", title = title,
+                  legend = nothing, yticks = yticks, linewidth = 2, titlefontsize = 10,
+                  label = labels[i], linestyle = linestyles[i])
+        end
+    end
+
+    plot!(subplot = 5, legend = (0.86, -1.0), legend_column = 3, legendfontsize = 8,
+          bottom_margin = 10 * Plots.mm)
+    savefig(joinpath(OUT_DINGEMANS, "waterheight_at_x_solver_types.pdf"))
 end
 
-# fig_1()
-# fig_2()
-# fig_3()
-# fig_4_5_6()
-# fig_7()
-# fig_8()
+function fig_10_11()
+    ylim = (0.75, 0.85)
+    yticks = [0.76, 0.78, 0.8, 0.82, 0.84]
+    x_values = [3.04, 9.44, 20.04, 26.04, 30.44, 37.04]
+    tlims = [
+        (15.0, 45.0),
+        (19.0, 48.0),
+        (25.0, 52.0),
+        (30.0, 60.0),
+        (33.0, 61.0),
+        (35.0, 65.0),
+    ]
+    p1 = plot(layout = (3, 2))
+
+    N = 512
+    tspan = (0.0, 70.0)
+    saveat = range(tspan..., length = 1000)
+    accuracy_order = 4
+    linestyles = [:solid, :dash, :dot]
+    linewidth = 2
+    titlefontsize = 10
+
+    labels = ["EC baseline ", "EC relaxation ", "ED "]
+
+    function plot_at_x(semi, sol, i)
+        for (j, x) in enumerate(x_values)
+            index = argmin(abs.(DispersiveShallowWater.grid(semi) .- x))
+            title = "x = $(round(DispersiveShallowWater.grid(semi)[index], digits = 4))"
+            plot!(p1, semi => sol, x, conversion = waterheight_total, subplot = j,
+                  xlim = tlims[j], ylim = ylim, plot_title = "", title = title,
+                  legend = nothing, yticks = yticks, linewidth = linewidth,
+                  titlefontsize = titlefontsize,
+                  label = labels[i], linestyle = linestyles[i])
+        end
+    end
+
+    run_example(joinpath(EXAMPLES_DIR_SVAERD_KALISCH, "svaerd_kalisch_1d_dingemans.jl");
+                N = N, tspan = tspan, accuracy_order = accuracy_order, saveat = saveat)
+    plot_at_x(semi, sol, 1)
+    p2 = plot(analysis_callback, title = labels[1], legend = :none,
+              linestyles = [:solid :dash :dot],
+              linewidth = linewidth, layout = 3, subplot = 1, titlefontsize = titlefontsize)
+
+    run_example(joinpath(EXAMPLES_DIR_SVAERD_KALISCH,
+                         "svaerd_kalisch_1d_dingemans_relaxation.jl");
+                N = N, tspan = tspan, accuracy_order = accuracy_order, saveat = saveat)
+    plot_at_x(semi, sol, 2)
+    plot!(p2, analysis_callback, title = labels[2], legend = :none,
+          linestyles = [:solid :dash :dot],
+          linewidth = linewidth, subplot = 2, titlefontsize = titlefontsize)
+
+    run_example(joinpath(EXAMPLES_DIR_SVAERD_KALISCH,
+                         "svaerd_kalisch_1d_dingemans_upwind.jl");
+                N = N, tspan = tspan, accuracy_order = accuracy_order, saveat = saveat)
+    plot_at_x(semi, sol, 3)
+    plot!(p2, analysis_callback, title = labels[3], legend = :none,
+          linestyles = [:solid :dash :dot],
+          linewidth = linewidth, subplot = 3, titlefontsize = titlefontsize)
+
+    plot!(p1, subplot = 5, legend = (0.86, -1.0), legend_column = 3, legendfontsize = 8,
+          bottom_margin = 10 * Plots.mm)
+    plot!(p2, subplot = 3, legend = (1.3, 0.6), legendfontsize = 8)
+    savefig(p1, joinpath(OUT_DINGEMANS, "waterheight_at_x_ec.pdf"))
+    savefig(p2, joinpath(OUT_DINGEMANS, "invariants_ec.pdf"))
+end
+
+fig_1()
+fig_2()
+fig_3()
+fig_4_5_6()
+fig_7()
+fig_8()
+fig_9()
+fig_10_11()

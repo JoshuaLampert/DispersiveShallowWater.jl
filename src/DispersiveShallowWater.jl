@@ -16,6 +16,7 @@ using SimpleUnPack: @unpack
 using SparseArrays: sparse
 using SummationByPartsOperators: AbstractDerivativeOperator,
                                  PeriodicDerivativeOperator, PeriodicUpwindOperators,
+                                 UniformPeriodicCoupledOperator,
                                  periodic_derivative_operator,
                                  derivative_order, integrate
 import SummationByPartsOperators: grid, xmin, xmax

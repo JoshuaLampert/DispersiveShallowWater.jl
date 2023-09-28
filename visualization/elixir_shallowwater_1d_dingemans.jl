@@ -6,7 +6,7 @@ equations = ShallowWaterEquations1D(gravity_constant = 9.81, H0 = 0.8)
 function initial_condition_dingemans_trixi(x, t, equations::ShallowWaterEquations1D)
     eta0 = 0.8
     A = 0.02
-    #     omega = 2*pi/(2.02*sqrt(2))
+    # omega = 2*pi/(2.02*sqrt(2))
     k = 0.8406220896381442 # precomputed result of find_zero(k -> omega^2 - equations.gravity * k * tanh(k * eta0), 1.0) using Roots.jl
     if x[1] < -30.5 * pi / k || x[1] > -8.5 * pi / k
         h = 0.0

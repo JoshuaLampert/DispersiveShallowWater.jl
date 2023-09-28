@@ -21,11 +21,11 @@ mesh = Mesh1D(coordinates_min, coordinates_max, N)
 
 # create solver
 accuracy_order = 4
-Dop = legendre_derivative_operator(-1.0, 1.0, accuracy_order)
-sbp_mesh = UniformPeriodicMesh1D(mesh.xmin, mesh.xmax, div(mesh.N, accuracy_order))
-central = couple_discontinuously(Dop, sbp_mesh)
-minus = couple_discontinuously(Dop, sbp_mesh, Val(:minus))
-plus = couple_discontinuously(Dop, sbp_mesh, Val(:plus))
+D_legendre = legendre_derivative_operator(-1.0, 1.0, accuracy_order)
+uniform_mesh = UniformPeriodicMesh1D(mesh.xmin, mesh.xmax, div(mesh.N, accuracy_order))
+central = couple_discontinuously(D_legendre, uniform_mesh)
+minus = couple_discontinuously(D_legendre, uniform_mesh, Val(:minus))
+plus = couple_discontinuously(D_legendre, uniform_mesh, Val(:plus))
 D1 = PeriodicUpwindOperators(minus, central, plus)
 D2 = sparse(plus) * sparse(minus)
 solver = Solver(D1, D2)

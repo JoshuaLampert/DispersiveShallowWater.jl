@@ -173,16 +173,16 @@ As an example, let us create a semidiscretization based on discontinuous Galerki
 ```@example overview
 mesh = Mesh1D(coordinates_min, coordinates_max, N)
 accuracy_order = 4
-Dop = legendre_derivative_operator(-1.0, 1.0, accuracy_order)
-sbp_mesh = UniformPeriodicMesh1D(mesh.xmin, mesh.xmax, div(mesh.N, accuracy_order))
+D_legendre = legendre_derivative_operator(-1.0, 1.0, accuracy_order)
+uniform_mesh = UniformPeriodicMesh1D(mesh.xmin, mesh.xmax, div(mesh.N, accuracy_order))
 ```
 
 Upwind DG operators in negative, central and positive operators can be obtained by `couple_discontinuously`
 
 ```@example overview
-central = couple_discontinuously(Dop, sbp_mesh)
-minus = couple_discontinuously(Dop, sbp_mesh, Val(:minus))
-plus = couple_discontinuously(Dop, sbp_mesh, Val(:plus))
+central = couple_discontinuously(D_legendre, uniform_mesh)
+minus = couple_discontinuously(D_legendre, uniform_mesh, Val(:minus))
+plus = couple_discontinuously(D_legendre, uniform_mesh, Val(:plus))
 D1 = PeriodicUpwindOperators(minus, central, plus)
 ```
 

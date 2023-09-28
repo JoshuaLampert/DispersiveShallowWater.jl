@@ -166,6 +166,8 @@ function pretty(name)
         return "∫P"
     elseif name == :entropy
         return "∫U"
+    elseif name == :entropy_modified
+        return "∫U_mod"
     elseif name == :l2_error
         return "L² error"
     elseif name == :linf_error
@@ -205,7 +207,7 @@ end
             name in exclude && continue
             @series begin
                 subplot --> subplot
-                label := pretty(name) * " " * label_extension
+                label --> pretty(name) * " " * label_extension
                 title --> "errors"
                 xguide --> "t"
                 yguide --> "sum of errors"
