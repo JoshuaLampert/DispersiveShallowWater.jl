@@ -172,6 +172,12 @@ function rhs!(du_ode, u_ode, t, mesh, equations::SvaerdKalischEquations1D,
              0.5 * (vD1y - D1vy - yD1v) -
              0.5 * D1_central * (gamma_hat .* (solver.D2 * v)) -
              0.5 * solver.D2 * (gamma_hat .* D1v))
+    # not split form
+#     tmp2 = -(D1_central * (hv .* v) - v .* (D1_central * hv)+
+#              equations.gravity * h .* D1eta +
+#              vD1y - D1vy -
+#              0.5 * D1_central * (gamma_hat .* (solver.D2 * v)) -
+#              0.5 * solver.D2 * (gamma_hat .* D1v))
     dv[:] = hmD1betaD1 \ tmp2
 
     return nothing

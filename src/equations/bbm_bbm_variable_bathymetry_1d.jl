@@ -129,7 +129,8 @@ function create_cache(mesh,
         D[i] = initial_condition(x[i], 0.0, equations, mesh)[3]
     end
     K = Diagonal(D .^ 2)
-    if solver.D1 isa PeriodicDerivativeOperator
+    if solver.D1 isa PeriodicDerivativeOperator ||
+       solver.D1 isa UniformPeriodicCoupledOperator
         invImDKD_D = (I - 1 / 6 * sparse(solver.D1) * K * sparse(solver.D1)) \
                      Matrix(solver.D1)
         invImD2K_D = (I - 1 / 6 * sparse(solver.D2) * K) \ Matrix(solver.D1)

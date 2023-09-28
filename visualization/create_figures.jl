@@ -1,5 +1,6 @@
 using DispersiveShallowWater
 using SummationByPartsOperators: legendre_derivative_operator,
+                                 legendre_second_derivative_operator,
                                  UniformPeriodicMesh1D,
                                  couple_discontinuously,
                                  couple_continuously
@@ -286,6 +287,7 @@ function fig_7()
     steps = [100, 200, 300, 500]
     xlims_zoom = [(-25, 0), (5, 30), (20, 45), (-100, -75)]
     ylim_zoom = (0.75, 0.85)
+
     run_example(joinpath(EXAMPLES_DIR_BBMBBM_VARIABLE,
                          "bbm_bbm_variable_bathymetry_1d_dingemans.jl");
                 N = N)
@@ -416,6 +418,8 @@ function fig_9()
     accuracy_order = 4
     linestyles = [:solid, :dash, :dot]
 
+    coordinates_min = -138.0
+    coordinates_max = 46.0
     p = 3 # N needs to be divisible by p + 1
     D_legendre = legendre_derivative_operator(-1.0, 1.0, p + 1)
     uniform_mesh = UniformPeriodicMesh1D(coordinates_min, coordinates_max, div(N, p + 1))
@@ -463,6 +467,7 @@ function fig_9()
     savefig(joinpath(OUT_DINGEMANS, "waterheight_at_x_solver_types.pdf"))
 end
 
+# Plot solution at different points in space and invariants for entropy conservative and dissipative schemes
 function fig_10_11()
     ylim = (0.75, 0.85)
     yticks = [0.76, 0.78, 0.8, 0.82, 0.84]

@@ -38,7 +38,8 @@ N = 512
 mesh = Mesh1D(coordinates_min, coordinates_max, N)
 
 # create solver with periodic SBP operators
-D1 = periodic_derivative_operator(1, 4, mesh.xmin, mesh.xmax, mesh.N)
+accuracy_order = 4
+D1 = periodic_derivative_operator(1, accuracy_order, mesh.xmin, mesh.xmax, mesh.N)
 D2 = sparse(D1)^2
 solver = Solver(D1, D2)
 

@@ -20,9 +20,9 @@ N = 512
 mesh = Mesh1D(coordinates_min, coordinates_max, N)
 
 # create solver
-accuracy_order = 4
-D_legendre = legendre_derivative_operator(-1.0, 1.0, accuracy_order)
-uniform_mesh = UniformPeriodicMesh1D(mesh.xmin, mesh.xmax, div(mesh.N, accuracy_order))
+p = 3 # N needs to be divisible by p + 1
+D_legendre = legendre_derivative_operator(-1.0, 1.0, p + 1)
+uniform_mesh = UniformPeriodicMesh1D(mesh.xmin, mesh.xmax, div(mesh.N, p + 1))
 central = couple_discontinuously(D_legendre, uniform_mesh)
 minus = couple_discontinuously(D_legendre, uniform_mesh, Val(:minus))
 plus = couple_discontinuously(D_legendre, uniform_mesh, Val(:plus))
