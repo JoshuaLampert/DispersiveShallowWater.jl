@@ -1,5 +1,7 @@
 using OrdinaryDiffEq
 using DispersiveShallowWater
+using SummationByPartsOperators: upwind_operators, periodic_derivative_operator
+using SparseArrays: sparse
 
 ###############################################################################
 # Semidiscretization of the BBM-BBM equations
@@ -18,7 +20,11 @@ mesh = Mesh1D(coordinates_min, coordinates_max, N)
 
 # create solver with periodic SBP operators of accuracy order 4
 accuracy_order = 4
-solver = Solver(mesh, accuracy_order)
+D1 = upwind_operators(periodic_derivative_operator; derivative_order = 1,
+                      accuracy_order = accuracy_order, xmin = mesh.xmin, xmax = mesh.xmax,
+                      N = mesh.N)
+D2 = sparse(D1.plus) * sparse(D1.minus)
+solver = Solver(D1, D2)
 
 # semidiscretization holds all the necessary data structures for the spatial discretization
 semi = Semidiscretization(mesh, equations, initial_condition, solver,

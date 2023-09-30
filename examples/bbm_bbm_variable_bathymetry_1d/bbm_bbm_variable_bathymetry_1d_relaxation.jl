@@ -8,18 +8,19 @@ using SparseArrays: sparse
 
 equations = BBMBBMVariableEquations1D(gravity_constant = 9.81)
 
-# initial_condition_variable_bathymetry needs periodic boundary conditions
-initial_condition = initial_condition_sin_bathymetry
+# initial_condition_convergence_test needs periodic boundary conditions
+initial_condition = initial_condition_convergence_test
 boundary_conditions = boundary_condition_periodic
 
 # create homogeneous mesh
-coordinates_min = -1.0
-coordinates_max = 1.0
+coordinates_min = -35.0
+coordinates_max = 35.0
 N = 512
 mesh = Mesh1D(coordinates_min, coordinates_max, N)
 
 # create solver with periodic SBP operators
-D1 = periodic_derivative_operator(1, 4, mesh.xmin, mesh.xmax, mesh.N)
+accuracy_order = 4
+D1 = periodic_derivative_operator(1, accuracy_order, mesh.xmin, mesh.xmax, mesh.N)
 D2 = sparse(D1)^2
 solver = Solver(D1, D2)
 

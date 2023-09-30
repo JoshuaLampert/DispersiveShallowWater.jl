@@ -44,7 +44,6 @@ end
 varnames(::typeof(prim2prim), ::SvaerdKalischEquations1D) = ("η", "v", "D")
 varnames(::typeof(prim2cons), ::SvaerdKalischEquations1D) = ("h", "hv", "b")
 
-# TODO: Initial condition should not get a `mesh`
 """
     initial_condition_dingemans(x, t, equations::SvaerdKalischEquations1D, mesh)
 
@@ -64,13 +63,13 @@ function initial_condition_dingemans(x, t, equations::SvaerdKalischEquations1D, 
     eta0 = 0.8
     A = 0.02
     # omega = 2*pi/(2.02*sqrt(2))
-    K = 0.8406220896381442 # precomputed result of find_zero(K -> omega^2 - equations.gravity * K * tanh(K * eta0), 1.0) using Roots.jl
-    if x < -30.5 * pi / K || x > -8.5 * pi / K
+    k = 0.8406220896381442 # precomputed result of find_zero(k -> omega^2 - equations.gravity * k * tanh(k * eta0), 1.0) using Roots.jl
+    if x < -30.5 * pi / k || x > -8.5 * pi / k
         h = 0.0
     else
-        h = A * cos(K * x)
+        h = A * cos(k * x)
     end
-    v = sqrt(equations.gravity / K * tanh(K) * eta0) * h / eta0
+    v = sqrt(equations.gravity / k * tanh(k * eta0)) * h / eta0
     if x < 11.01 || x >= 33.07
         b = 0.0
     elseif 11.01 <= x && x < 23.04
@@ -108,7 +107,8 @@ function create_cache(mesh,
     tmp1 = similar(h)
     tmp2 = similar(h)
     hmD1betaD1 = Array{RealT}(undef, nnodes(mesh), nnodes(mesh))
-    if solver.D1 isa PeriodicDerivativeOperator
+    if solver.D1 isa PeriodicDerivativeOperator ||
+       solver.D1 isa UniformPeriodicCoupledOperator
         D1_central = solver.D1
         sparse_D1 = sparse(D1_central)
         D1betaD1 = sparse_D1 * Diagonal(beta_hat) * sparse_D1
@@ -142,7 +142,8 @@ function rhs!(du_ode, u_ode, t, mesh, equations::SvaerdKalischEquations1D,
     @. h = eta + D
     hv = h .* v
 
-    if solver.D1 isa PeriodicDerivativeOperator
+    if solver.D1 isa PeriodicDerivativeOperator ||
+       solver.D1 isa UniformPeriodicCoupledOperator
         D1eta = D1_central * eta
         D1v = D1_central * v
         tmp1 = alpha_hat .* (D1_central * (alpha_hat .* D1eta))
@@ -170,6 +171,12 @@ function rhs!(du_ode, u_ode, t, mesh, equations::SvaerdKalischEquations1D,
              0.5 * (vD1y - D1vy - yD1v) -
              0.5 * D1_central * (gamma_hat .* (solver.D2 * v)) -
              0.5 * solver.D2 * (gamma_hat .* D1v))
+    # not split form
+    #     tmp2 = -(D1_central * (hv .* v) - v .* (D1_central * hv)+
+    #              equations.gravity * h .* D1eta +
+    #              vD1y - D1vy -
+    #              0.5 * D1_central * (gamma_hat .* (solver.D2 * v)) -
+    #              0.5 * solver.D2 * (gamma_hat .* D1v))
     dv[:] = hmD1betaD1 \ tmp2
 
     return nothing
@@ -238,7 +245,8 @@ number of nodes as length of the second dimension.
     v = view(q, 2, :)
     D = view(q, 3, :)
     beta_hat = equations.beta * (eta .+ D) .^ 3
-    if cache.D1 isa PeriodicDerivativeOperator
+    if cache.D1 isa PeriodicDerivativeOperator ||
+       cache.D1 isa UniformPeriodicCoupledOperator
         tmp = 0.5 * beta_hat .* ((cache.D1 * v) .^ 2)
     elseif cache.D1 isa PeriodicUpwindOperators
         tmp = 0.5 * beta_hat .* ((cache.D1.minus * v) .^ 2)

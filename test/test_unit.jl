@@ -33,11 +33,11 @@ using SparseArrays: sparse, SparseMatrixCSC
         @test real(solver) == Float64
         @test_nowarn show(stdout, solver)
 
-        Dop = legendre_derivative_operator(-1.0, 1.0, p + 1)
-        sbp_mesh = UniformPeriodicMesh1D(-1.0, 1.0, 512 ÷ (p + 1))
-        central = couple_discontinuously(Dop, sbp_mesh)
-        minus = couple_discontinuously(Dop, sbp_mesh, Val(:minus))
-        plus = couple_discontinuously(Dop, sbp_mesh, Val(:plus))
+        D_legendre = legendre_derivative_operator(-1.0, 1.0, p + 1)
+        uniform_mesh = UniformPeriodicMesh1D(-1.0, 1.0, 512 ÷ (p + 1))
+        central = couple_discontinuously(D_legendre, uniform_mesh)
+        minus = couple_discontinuously(D_legendre, uniform_mesh, Val(:minus))
+        plus = couple_discontinuously(D_legendre, uniform_mesh, Val(:plus))
         D2 = sparse(plus) * sparse(minus)
         solver = @test_nowarn Solver(central, D2)
         @test solver.D1 isa UniformPeriodicCoupledOperator

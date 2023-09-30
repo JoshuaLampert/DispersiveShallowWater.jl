@@ -16,6 +16,7 @@ using SimpleUnPack: @unpack
 using SparseArrays: sparse
 using SummationByPartsOperators: AbstractDerivativeOperator,
                                  PeriodicDerivativeOperator, PeriodicUpwindOperators,
+                                 UniformPeriodicCoupledOperator,
                                  periodic_derivative_operator,
                                  derivative_order, integrate
 import SummationByPartsOperators: grid, xmin, xmax
@@ -46,8 +47,7 @@ export Semidiscretization, semidiscretize, grid
 
 export boundary_condition_periodic
 
-export initial_condition_convergence_test, initial_condition_sin_bathymetry,
-       initial_condition_dingemans
+export initial_condition_convergence_test, initial_condition_dingemans
 
 export AnalysisCallback, RelaxationCallback
 export tstops, errors, integrals

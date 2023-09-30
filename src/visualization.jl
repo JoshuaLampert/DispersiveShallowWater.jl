@@ -52,7 +52,7 @@ end
     end
 
     plot_title --> "$(get_name(semi.equations)) at t = $(round(t, digits=5))"
-    layout := nsubplots
+    layout --> nsubplots
 
     for i in 1:nsubplots
         # Don't plot bathymetry in separate subplot
@@ -60,7 +60,7 @@ end
 
         if plot_initial == true
             @series begin
-                subplot := i
+                subplot --> i
                 linestyle := :solid
                 label := "initial $(names[i])"
                 grid(semi), q_exact[i, :]
@@ -68,7 +68,7 @@ end
         end
 
         @series begin
-            subplot := i
+            subplot --> i
             label --> names[i]
             xguide --> "x"
             yguide --> names[i]
@@ -80,12 +80,12 @@ end
     # Plot the bathymetry
     if plot_bathymetry == true
         @series begin
-            subplot := 1
+            subplot --> 1
             linestyle := :solid
             label := "bathymetry"
-            xguide := "x"
-            yguide := names[1]
-            title := names[1]
+            xguide --> "x"
+            yguide --> names[1]
+            title --> names[1]
             color := :black
             grid(semi), bathy
         end
@@ -121,18 +121,17 @@ end
     names = varnames(conversion, equations)
     plot_title -->
     "$(get_name(semi.equations)) at x = $(round(grid(semi)[index], digits=5))"
-    size --> (1200, 800)
-    layout := nsubplots
+    layout --> nsubplots
 
     for i in 1:nsubplots
         # Don't plot bathymetry in separate subplot
         names[i] in ["D", "b"] && continue
         @series begin
-            subplot := i
-            label := names[i]
-            xguide := "t"
-            yguide := names[i]
-            title := names[i]
+            subplot --> i
+            label --> names[i]
+            xguide --> "t"
+            yguide --> names[i]
+            title --> names[i]
             sol.t, data[i, :]
         end
     end
@@ -167,12 +166,16 @@ function pretty(name)
         return "∫P"
     elseif name == :entropy
         return "∫U"
+    elseif name == :entropy_modified
+        return "∫U_mod"
     elseif name == :l2_error
         return "L² error"
     elseif name == :linf_error
         return "L∞ error"
     elseif name == :conservation_error
         return "∫|q_q₀|"
+    elseif name == :lake_at_rest_error
+        return "∫|η-η₀|"
     else
         return string(name)
     end
@@ -206,7 +209,7 @@ end
             name in exclude && continue
             @series begin
                 subplot --> subplot
-                label := pretty(name) * " " * label_extension
+                label --> pretty(name) * " " * label_extension
                 title --> "errors"
                 xguide --> "t"
                 yguide --> "sum of errors"

@@ -9,23 +9,23 @@ using SparseArrays: sparse
 
 equations = BBMBBMVariableEquations1D(gravity_constant = 9.81)
 
-# initial_condition_variable_bathymetry needs periodic boundary conditions
-initial_condition = initial_condition_sin_bathymetry
+# initial_condition_convergence_test needs periodic boundary conditions
+initial_condition = initial_condition_convergence_test
 boundary_conditions = boundary_condition_periodic
 
 # create homogeneous mesh
-coordinates_min = -1.0
-coordinates_max = 1.0
+coordinates_min = -35.0
+coordinates_max = 35.0
 N = 512
 mesh = Mesh1D(coordinates_min, coordinates_max, N)
 
 # create solver
-accuracy_order = 4
-Dop = legendre_derivative_operator(-1.0, 1.0, accuracy_order)
-sbp_mesh = UniformPeriodicMesh1D(mesh.xmin, mesh.xmax, div(mesh.N, accuracy_order))
-central = couple_discontinuously(Dop, sbp_mesh)
-minus = couple_discontinuously(Dop, sbp_mesh, Val(:minus))
-plus = couple_discontinuously(Dop, sbp_mesh, Val(:plus))
+p = 3 # N needs to be divisible by p + 1
+D_legendre = legendre_derivative_operator(-1.0, 1.0, p + 1)
+uniform_mesh = UniformPeriodicMesh1D(mesh.xmin, mesh.xmax, div(mesh.N, p + 1))
+central = couple_discontinuously(D_legendre, uniform_mesh)
+minus = couple_discontinuously(D_legendre, uniform_mesh, Val(:minus))
+plus = couple_discontinuously(D_legendre, uniform_mesh, Val(:plus))
 D1 = PeriodicUpwindOperators(minus, central, plus)
 D2 = sparse(plus) * sparse(minus)
 solver = Solver(D1, D2)

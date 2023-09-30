@@ -6,7 +6,13 @@ In order to reproduce all figures used in the master thesis "Structure-Preservin
 julia> using DispersiveShallowWater
 julia> include(DispersiveShallowWater.path_create_figures())
 ```
-Executing this script may take a while. It will generate a folder `out/` with certain subfolders containing the figures. If you want to modify the plots or only produce a subset of plots, you can download the script [`create_figures.jl`](https://github.com/JoshuaLampert/DispersiveShallowWater.jl/blob/main/create_figures.jl), modify it accordingly and run it by:
+Note that for one figure [Trixi.jl](https://github.com/trixi-framework/Trixi.jl) is needed, so download Trixi.jl first:
+
+```julia
+julia> using Pkg
+julia> Pkg.add("Trixi")
+```
+Executing the script may take a while. It will generate a folder `out/` with certain subfolders containing the figures. If you want to modify the plots or only produce a subset of plots, you can download the script [`create_figures.jl`](https://github.com/JoshuaLampert/DispersiveShallowWater.jl/blob/main/visualization/create_figures.jl), modify it accordingly and run it by:
 
 ```julia
 julia> include("create_figures.jl")

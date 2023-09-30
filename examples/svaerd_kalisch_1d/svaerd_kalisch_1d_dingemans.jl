@@ -17,7 +17,8 @@ N = 512
 mesh = Mesh1D(coordinates_min, coordinates_max, N)
 
 # create solver with periodic SBP operators of accuracy order 4
-solver = Solver(mesh, 4)
+accuracy_order = 4
+solver = Solver(mesh, accuracy_order)
 
 # semidiscretization holds all the necessary data structures for the spatial discretization
 semi = Semidiscretization(mesh, equations, initial_condition, solver,
@@ -30,7 +31,7 @@ ode = semidiscretize(semi, tspan)
 analysis_callback = AnalysisCallback(semi; interval = 10,
                                      extra_analysis_errors = (:conservation_error,),
                                      extra_analysis_integrals = (waterheight_total,
-                                                                 momentum, entropy,
+                                                                 entropy,
                                                                  entropy_modified))
 callbacks = CallbackSet(analysis_callback)
 

@@ -173,16 +173,16 @@ As an example, let us create a semidiscretization based on discontinuous Galerki
 ```@example overview
 mesh = Mesh1D(coordinates_min, coordinates_max, N)
 accuracy_order = 4
-Dop = legendre_derivative_operator(-1.0, 1.0, accuracy_order)
-sbp_mesh = UniformPeriodicMesh1D(mesh.xmin, mesh.xmax, div(mesh.N, accuracy_order))
+D_legendre = legendre_derivative_operator(-1.0, 1.0, accuracy_order)
+uniform_mesh = UniformPeriodicMesh1D(mesh.xmin, mesh.xmax, div(mesh.N, accuracy_order))
 ```
 
 Upwind DG operators in negative, central and positive operators can be obtained by `couple_discontinuously`
 
 ```@example overview
-central = couple_discontinuously(Dop, sbp_mesh)
-minus = couple_discontinuously(Dop, sbp_mesh, Val(:minus))
-plus = couple_discontinuously(Dop, sbp_mesh, Val(:plus))
+central = couple_discontinuously(D_legendre, uniform_mesh)
+minus = couple_discontinuously(D_legendre, uniform_mesh, Val(:minus))
+plus = couple_discontinuously(D_legendre, uniform_mesh, Val(:plus))
 D1 = PeriodicUpwindOperators(minus, central, plus)
 ```
 
@@ -224,7 +224,7 @@ For more details see also the [documentation of SummationByPartsOperators.jl](ht
 
 Some more examples sorted by the simulated equations can be found in the [examples/](https://github.com/JoshuaLampert/DispersiveShallowWater.jl/tree/main/examples) subdirectory. Especially, in [examples/svaerd\_kalisch\_1d/](https://github.com/JoshuaLampert/DispersiveShallowWater.jl/tree/main/examples/svaerd_kalisch_1d) you can find Julia scripts that solve the [`SvaerdKalischEquations1D`](@ref) that were not covered in this tutorial. The same steps as described above, however, apply in the same way to these equations. Attention must be paid for these equations because they do not conserve the classical total entropy ``\mathcal E``, but a modified entropy ``\hat{\mathcal E}``, available as [`entropy_modified`](@ref).
 
-More examples, especially focussing on plotting, can be found in the scripts [create_figures.jl](https://github.com/JoshuaLampert/DispersiveShallowWater.jl/blob/main/create_figures.jl) and [plot_examples.jl](https://github.com/JoshuaLampert/DispersiveShallowWater.jl/blob/main/plot_examples.jl).
+More examples, especially focussing on plotting, can be found in the scripts [create_figures.jl](https://github.com/JoshuaLampert/DispersiveShallowWater.jl/blob/main/visualization/create_figures.jl) and [plot_examples.jl](https://github.com/JoshuaLampert/DispersiveShallowWater.jl/blob/main/visualization/plot_examples.jl).
 
 ## References
 

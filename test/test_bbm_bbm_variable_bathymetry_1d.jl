@@ -25,8 +25,8 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_variable_bathymetry_1d")
         @test_trixi_include(joinpath(EXAMPLES_DIR,
                                      "bbm_bbm_variable_bathymetry_1d_relaxation.jl"),
                             tspan=(0.0, 1.0),
-                            l2=[1.234497154595864 2.0325352963894225 0.0],
-                            linf=[1.8566998050289607 2.537410906888876 0.0],
+                            l2=[0.001695855504730616 0.0034287779832081213 0.0],
+                            linf=[0.0014540429957374812 0.001806888012062302 0.0],
                             cons_error=[2.0694557179012918e-13 2.789919043027633e-13 0.0],
                             change_waterheight=-2.1271873151818e-13,
                             change_velocity=2.7874259106214573e-13,
@@ -37,8 +37,8 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_variable_bathymetry_1d")
         @test_trixi_include(joinpath(EXAMPLES_DIR,
                                      "bbm_bbm_variable_bathymetry_1d_dg_upwind_relaxation.jl"),
                             tspan=(0.0, 1.0),
-                            l2=[1.2344971565355631 2.0325352892395023 0.0],
-                            linf=[1.8563719900575752 2.537410881290326 0.0],
+                            l2=[0.004960390675877118 0.00830158298558452 0.0],
+                            linf=[0.011473564092181476 0.016650286103717254 0.0],
                             cons_error=[3.1796787425264483e-13 1.080125572316959e-14 0.0],
                             change_waterheight=3.1796787425264483e-13,
                             change_velocity=-1.0584519372081047e-12,
@@ -49,8 +49,8 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_variable_bathymetry_1d")
         @test_trixi_include(joinpath(EXAMPLES_DIR,
                                      "bbm_bbm_variable_bathymetry_1d_upwind_relaxation.jl"),
                             tspan=(0.0, 1.0),
-                            l2=[1.2344971597115844 2.032535283544955 0.0],
-                            linf=[1.8566997938473593 2.5374108392574604 0.0],
+                            l2=[0.002644536848587577 0.005179311522968244 0.0],
+                            linf=[0.0022397723587049834 0.0031376618593412786 0.0],
                             cons_error=[7.194245199571014e-14 1.2388735870505485e-12 0.0],
                             change_waterheight=-1.5765166949677223e-13,
                             change_velocity=1.8791999206735355e-13,
@@ -75,12 +75,12 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_variable_bathymetry_1d")
                                      "bbm_bbm_variable_bathymetry_1d_dingemans.jl"),
                             tspan=(0.0, 1.0),
                             N=512,
-                            l2=[0.23119432844001495 0.7543986688031077 0.0],
-                            linf=[0.037067680051741214 0.12128735996476576 0.0],
+                            l2=[0.2322073114427607 0.7753458687737584 0.0],
+                            linf=[0.037222719015511885 0.124336213226626 0.0],
                             cons_error=[1.4210854715202004e-13 3.1478183774857893e-15 0.0],
                             change_waterheight=-1.4210854715202004e-13,
                             change_velocity=-3.1478183774857893e-15,
-                            change_entropy=-1.3967564882477745e-9)
+                            change_entropy=-1.442231223336421e-9)
     end
 end
 

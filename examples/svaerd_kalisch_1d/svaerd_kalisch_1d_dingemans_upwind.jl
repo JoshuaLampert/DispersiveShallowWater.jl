@@ -36,7 +36,7 @@ ode = semidiscretize(semi, tspan)
 analysis_callback = AnalysisCallback(semi; interval = 10,
                                      extra_analysis_errors = (:conservation_error,),
                                      extra_analysis_integrals = (waterheight_total,
-                                                                 momentum, entropy,
+                                                                 entropy,
                                                                  entropy_modified))
 
 callbacks = CallbackSet(analysis_callback)

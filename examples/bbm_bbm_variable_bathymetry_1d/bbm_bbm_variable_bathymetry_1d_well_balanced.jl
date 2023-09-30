@@ -6,12 +6,12 @@ using SparseArrays: sparse
 ###############################################################################
 # Semidiscretization of the BBM-BBM equations
 
-equations = BBMBBMVariableEquations1D(gravity_constant = 9.81, eta0 = 2.0)
+equations = BBMBBMVariableEquations1D(gravity_constant = 1.0, eta0 = 2.0)
 
 # Setup a truly discontinuous bottom topography function for this academic
 # testcase of well-balancedness. The errors from the analysis callback are
 # not important but the error for this lake-at-rest test case
-# `∑|eta0-eta|` should be around machine roundoff.
+# `∫|η-η₀|` should be around machine roundoff.
 function initial_condition_discontinuous_well_balancedness(x, t,
                                                            equations::BBMBBMVariableEquations1D,
                                                            mesh)
@@ -38,7 +38,8 @@ N = 512
 mesh = Mesh1D(coordinates_min, coordinates_max, N)
 
 # create solver with periodic SBP operators
-D1 = periodic_derivative_operator(1, 4, mesh.xmin, mesh.xmax, mesh.N)
+accuracy_order = 4
+D1 = periodic_derivative_operator(1, accuracy_order, mesh.xmin, mesh.xmax, mesh.N)
 D2 = sparse(D1)^2
 solver = Solver(D1, D2)
 
