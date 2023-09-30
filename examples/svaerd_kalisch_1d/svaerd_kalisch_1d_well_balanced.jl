@@ -12,7 +12,7 @@ equations = SvaerdKalischEquations1D(gravity_constant = 1.0, eta0 = 2.0,
 # Setup a truly discontinuous bottom topography function for this academic
 # testcase of well-balancedness. The errors from the analysis callback are
 # not important but the error for this lake-at-rest test case
-# `∑|eta0-eta|` should be around machine roundoff.
+# `∫|η-η₀|` should be around machine roundoff.
 function initial_condition_discontinuous_well_balancedness(x, t,
                                                            equations::SvaerdKalischEquations1D,
                                                            mesh)

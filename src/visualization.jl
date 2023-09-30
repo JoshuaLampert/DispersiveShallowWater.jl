@@ -174,6 +174,8 @@ function pretty(name)
         return "L∞ error"
     elseif name == :conservation_error
         return "∫|q_q₀|"
+    elseif name == :lake_at_rest_error
+        return "∫|η-η₀|"
     else
         return string(name)
     end

@@ -30,7 +30,6 @@ end
 varnames(::typeof(prim2prim), ::BBMBBMEquations1D) = ("η", "v")
 varnames(::typeof(prim2cons), ::BBMBBMEquations1D) = ("h", "hv")
 
-# TODO: Initial condition should not get a `mesh`
 """
     initial_condition_convergence_test(x, t, equations::BBMBBMEquations1D, mesh)
 
@@ -60,7 +59,15 @@ function create_cache(mesh,
                       initial_condition,
                       RealT,
                       uEltype)
-    invImD2_D = (I - 1 / 6 * equations.D^2 * sparse(solver.D2)) \ Matrix(solver.D1)
+    if solver.D1 isa PeriodicDerivativeOperator ||
+       solver.D1 isa UniformPeriodicCoupledOperator
+        invImD2_D = (I - 1 / 6 * equations.D^2 * sparse(solver.D2)) \ Matrix(solver.D1)
+    elseif solver.D1 isa PeriodicUpwindOperators
+        invImD2_D = (I - 1 / 6 * equations.D^2 * sparse(solver.D2)) \
+                    Matrix(solver.D1.central)
+    else
+        @error "unknown type of first-derivative operator"
+    end
     tmp1 = Array{RealT}(undef, nnodes(mesh))
     return (invImD2_D = invImD2_D, tmp1 = tmp1)
 end

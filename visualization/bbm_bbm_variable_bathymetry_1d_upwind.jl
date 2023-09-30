@@ -1,6 +1,6 @@
 using OrdinaryDiffEq
 using DispersiveShallowWater
-using SummationByPartsOperators: periodic_derivative_operator
+using SummationByPartsOperators: upwind_operators, periodic_derivative_operator
 using SparseArrays: sparse
 
 ###############################################################################
@@ -18,10 +18,12 @@ coordinates_max = 35.0
 N = 512
 mesh = Mesh1D(coordinates_min, coordinates_max, N)
 
-# create solver with periodic SBP operators
+# create solver with periodic SBP operators of accuracy order 4
 accuracy_order = 4
-D1 = periodic_derivative_operator(1, accuracy_order, mesh.xmin, mesh.xmax, mesh.N)
-D2 = sparse(D1)^2
+D1 = upwind_operators(periodic_derivative_operator; derivative_order = 1,
+                      accuracy_order = accuracy_order, xmin = mesh.xmin, xmax = mesh.xmax,
+                      N = mesh.N)
+D2 = sparse(D1.plus) * sparse(D1.minus)
 solver = Solver(D1, D2)
 
 # semidiscretization holds all the necessary data structures for the spatial discretization
@@ -36,9 +38,7 @@ analysis_callback = AnalysisCallback(semi; interval = 10,
                                      extra_analysis_errors = (:conservation_error,),
                                      extra_analysis_integrals = (waterheight_total,
                                                                  velocity, entropy))
-relaxation_callback = RelaxationCallback(invariant = entropy)
-# Always put relaxation_callback before analysis_callback to guarantee conservation of the invariant
-callbacks = CallbackSet(relaxation_callback, analysis_callback)
+callbacks = CallbackSet(analysis_callback)
 
 saveat = range(tspan..., length = 100)
 sol = solve(ode, Tsit5(), abstol = 1e-7, reltol = 1e-7,

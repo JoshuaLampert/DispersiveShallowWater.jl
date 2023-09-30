@@ -18,7 +18,7 @@ coordinates_max = 35.0
 N = 512
 mesh = Mesh1D(coordinates_min, coordinates_max, N)
 
-# create solver with periodic SBP operators
+# create solver with periodic SBP operators of accuracy order 4
 accuracy_order = 4
 D1 = periodic_derivative_operator(1, accuracy_order, mesh.xmin, mesh.xmax, mesh.N)
 D2 = sparse(D1)^2
@@ -36,9 +36,7 @@ analysis_callback = AnalysisCallback(semi; interval = 10,
                                      extra_analysis_errors = (:conservation_error,),
                                      extra_analysis_integrals = (waterheight_total,
                                                                  velocity, entropy))
-relaxation_callback = RelaxationCallback(invariant = entropy)
-# Always put relaxation_callback before analysis_callback to guarantee conservation of the invariant
-callbacks = CallbackSet(relaxation_callback, analysis_callback)
+callbacks = CallbackSet(analysis_callback)
 
 saveat = range(tspan..., length = 100)
 sol = solve(ode, Tsit5(), abstol = 1e-7, reltol = 1e-7,

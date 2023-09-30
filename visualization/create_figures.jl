@@ -1,5 +1,8 @@
 using DispersiveShallowWater
-using SummationByPartsOperators: legendre_derivative_operator,
+using SummationByPartsOperators: SummationByPartsOperators,
+                                 periodic_derivative_operator,
+                                 upwind_operators,
+                                 legendre_derivative_operator,
                                  legendre_second_derivative_operator,
                                  UniformPeriodicMesh1D,
                                  couple_discontinuously,
@@ -10,13 +13,11 @@ using LaTeXStrings
 
 const OUT = "out/"
 ispath(OUT) || mkpath(OUT)
-const EXAMPLES_DIR_BBMBBM = "bbm_bbm_1d"
-const EXAMPLES_DIR_BBMBBM_VARIABLE = "bbm_bbm_variable_bathymetry_1d"
-const EXAMPLES_DIR_SVAERD_KALISCH = "svaerd_kalisch_1d"
-
-function run_example(path; kwargs...)
-    trixi_include(joinpath(examples_dir(), path); kwargs...)
-end
+const VISUALIZATION_DIR = pkgdir(DispersiveShallowWater, "visualization")
+const EXAMPLES_DIR_BBMBBM = joinpath(examples_dir(), "bbm_bbm_1d")
+const EXAMPLES_DIR_BBMBBM_VARIABLE = joinpath(examples_dir(),
+                                              "bbm_bbm_variable_bathymetry_1d")
+const EXAMPLES_DIR_SVAERD_KALISCH = joinpath(examples_dir(), "svaerd_kalisch_1d")
 
 # Chapter 2
 # Plot of bathymetry and waterheight
@@ -51,7 +52,7 @@ function fig_1()
     savefig(joinpath(OUT, "bathymetry.pdf"))
 end
 
-# Plot of diserpersion relations
+# Plot of dispersion relations
 function fig_2()
     linewidth = 2
     markersize = 5
@@ -161,34 +162,35 @@ function fig_3()
     # left subplot: baseline
     for i in 1:length(accuracy_orders)
         Ns = initial_Ns[i] * 2 .^ (0:(iters[i] - 1))
-        _, errormatrix = convergence_test("examples/bbm_bbm_1d/bbm_bbm_1d_basic.jl",
+        _, errormatrix = convergence_test(joinpath(EXAMPLES_DIR_BBMBBM,
+                                                   "bbm_bbm_1d_basic.jl"),
                                           iters[i]; N = initial_Ns[i], tspan = tspan,
                                           accuracy_order = accuracy_orders[i])
         # Use sum over all L^2-errors for all variables, i.e. ||η - η_ana||_2 + ||v - v_ana||_2
         l2_err = sum(errormatrix[:l2], dims = 2)
         eocs = log.(l2_err[2:end] ./ l2_err[1:(end - 1)]) ./ log(0.5)
         eoc_mean = round(sum(eocs) / length(eocs), digits = 2)
-        plot!(Ns, l2_err, label = "p = $accuracy_order, EOC: $eoc_mean",
+        plot!(Ns, l2_err, label = "p = $(accuracy_orders[i]), EOC: $eoc_mean",
               markershape = markershapes[i], linewidth = linewidth, markersize = markersize,
               subplot = 1)
     end
-    xticks!(all_Ns, string.(all_Ns), subplot = 1)
 
     # right subplot: relaxation
     for i in 1:length(accuracy_orders)
         Ns = initial_Ns[i] * 2 .^ (0:(iters[i] - 1))
-        _, errormatrix = convergence_test("examples/bbm_bbm_1d/bbm_bbm_1d_relaxation.jl",
+        _, errormatrix = convergence_test(joinpath(EXAMPLES_DIR_BBMBBM,
+                                                   "bbm_bbm_1d_relaxation.jl"),
                                           iters[i]; N = initial_Ns[i], tspan = tspan,
                                           accuracy_order = accuracy_orders[i])
         # Use sum over all L^2-errors for all variables, i.e. ||η - η_ana||_2 + ||v - v_ana||_2
         l2_err = sum(errormatrix[:l2], dims = 2)
         eocs = log.(l2_err[2:end] ./ l2_err[1:(end - 1)]) ./ log(0.5)
         eoc_mean = round(sum(eocs) / length(eocs), digits = 2)
-        plot!(Ns, l2_err, label = "p = $accuracy_order, EOC: $eoc_mean",
+        plot!(Ns, l2_err, label = "p = $(accuracy_orders[i]), EOC: $eoc_mean",
               markershape = markershapes[i], linewidth = linewidth, markersize = markersize,
               subplot = 2)
     end
-    xticks!(all_Ns, string.(all_Ns), subplot = 2)
+    xticks!(all_Ns, string.(all_Ns))
     savefig(joinpath(OUT_SOLITON, "orders.pdf"))
 end
 
@@ -200,17 +202,17 @@ function fig_4_5_6()
     g = 9.81
     D = 2.0
     c = 5 / 2 * sqrt(g * D)
-    x_min = -35.0
-    x_max = 35.0
-    tspan = (0.0, 50 * (x_max - x_min) / c)
+    xmin = -35.0
+    xmax = 35.0
+    tspan = (0.0, 50 * (xmax - xmin) / c)
     N = 512
     accuracy_order = 8
 
     # baseline
-    run_example(joinpath(EXAMPLES_DIR_BBMBBM, "bbm_bbm_1d_basic.jl"),
-                gravity_constant = g, D = D, coordinates_min = x_min,
-                coordinates_max = x_max, tspan = tspan, N = N,
-                accuracy_order = accuracy_order)
+    trixi_include(joinpath(EXAMPLES_DIR_BBMBBM, "bbm_bbm_1d_basic.jl"),
+                  gravity_constant = g, D = D, coordinates_min = xmin,
+                  coordinates_max = xmax, tspan = tspan, N = N,
+                  accuracy_order = accuracy_order)
     p1 = plot(analysis_callback, title = "", label_extension = "baseline",
               linestyles = [:solid :dash :dot],
               linewidth = linewidth, layout = 2, subplot = 1)
@@ -239,12 +241,12 @@ function fig_4_5_6()
           linestyle = :solid, color = 1)
 
     # relaxation
-    run_example(joinpath(EXAMPLES_DIR_BBMBBM, "bbm_bbm_1d_relaxation.jl"),
-                gravity_constant = g, D = D, coordinates_min = x_min,
-                coordinates_max = x_max, tspan = tspan, N = N,
-                accuracy_order = accuracy_order)
+    trixi_include(joinpath(EXAMPLES_DIR_BBMBBM, "bbm_bbm_1d_relaxation.jl"),
+                  gravity_constant = g, D = D, coordinates_min = xmin,
+                  coordinates_max = xmax, tspan = tspan, N = N,
+                  accuracy_order = accuracy_order)
     plot!(p1, analysis_callback, title = "", label_extension = "relaxation",
-          style = [:solid :dash :dot],
+          linestyles = [:solid :dash :dot],
           linewidth = linewidth, subplot = 2)
     plot!(p2, analysis_callback, title = "", what = (:errors,),
           label_extension = "relaxation", linestyle = linestyles[2], linewidth = linewidth,
@@ -273,12 +275,193 @@ function fig_4_5_6()
     savefig(p3, joinpath(OUT_SOLITON, "solution.pdf"))
 end
 
+# Plot errors for narrow-stencil, wide-stencil and upwind operators (all using relaxation)
+function fig_7()
+    linewidth = 2
+    linestyles = [:solid, :dash, :dot, :dashdot]
+
+    g = 9.81
+    D = 2.0
+    c = 5 / 2 * sqrt(g * D)
+    xmin = -35.0
+    xmax = 35.0
+    tspan = (0.0, 20 * (xmax - xmin) / c)
+    N = 512
+    accuracy_order = 8
+
+    plot()
+
+    D1 = periodic_derivative_operator(1, accuracy_order, xmin, xmax, N)
+    D2 = sparse(D1)^2
+    solver_widestencil = Solver(D1, D2)
+
+    D1 = periodic_derivative_operator(1, accuracy_order, xmin, xmax, N)
+    D2 = periodic_derivative_operator(2, accuracy_order, xmin, xmax, N)
+    solver_narrowstencil = Solver(D1, D2)
+
+    D1 = upwind_operators(periodic_derivative_operator; derivative_order = 1,
+                          accuracy_order = accuracy_order, xmin = xmin, xmax = xmax,
+                          N = N)
+    D2 = sparse(D1.plus) * sparse(D1.minus)
+    solver_upwind = Solver(D1, D2)
+    solvers = [
+        solver_narrowstencil,
+        solver_narrowstencil,
+        solver_widestencil,
+        solver_upwind,
+    ]
+    labels = [
+        "narrow-stencil",
+        "narrow-stencil in velocity equation",
+        "wide-stencil",
+        "upwind",
+    ]
+    examples = [joinpath(EXAMPLES_DIR_BBMBBM, "bbm_bbm_1d_relaxation.jl"),
+        joinpath(EXAMPLES_DIR_BBMBBM_VARIABLE,
+                 "bbm_bbm_variable_bathymetry_1d_relaxation.jl"),
+        joinpath(EXAMPLES_DIR_BBMBBM_VARIABLE,
+                 "bbm_bbm_variable_bathymetry_1d_relaxation.jl"),
+        joinpath(EXAMPLES_DIR_BBMBBM_VARIABLE,
+                 "bbm_bbm_variable_bathymetry_1d_relaxation.jl")]
+
+    for (i, solver) in enumerate(solvers)
+        trixi_include(examples[i],
+                      gravity_constant = g, D = D, coordinates_min = xmin,
+                      coordinates_max = xmax, tspan = tspan, N = N,
+                      accuracy_order = accuracy_order, solver = solver)
+        plot!(analysis_callback, title = "", what = (:errors,),
+              label_extension = labels[i], linestyle = linestyles[i],
+              linewidth = linewidth,
+              ylabel = L"\Vert\eta - \eta_{ana}\Vert_2 + \Vert v - v_{ana}\Vert_2",
+              exclude = [:conservation_error, :linf_error])
+    end
+
+    savefig(joinpath(OUT_SOLITON, "errors_stencils.pdf"))
+end
+
+# Compare the orders of narrow-stencil, wide-stencil and upwind SBP operators
+# Not used in the thesis, but nonetheless interesting
+function fig_orders_different_stencils()
+    tspan = (0.0, 10.0)
+    xmin = -35.0
+    xmax = 35.0
+    accuracy_orders = [2, 4, 6, 8]
+    iters = [4, 4, 4, 3]
+    initial_Ns = [128, 128, 128, 128]
+
+    all_Ns = minimum(initial_Ns) * 2 .^ (0:(maximum(iters) - 1))
+
+    linewidth = 2
+    markersize = 5
+    markershapes = [:circle, :star5, :star8, :rtriangle]
+    plot(label = :none, xscale = :log2, yscale = :log10, xlabel = "N", ylim = (1e-4, 1e3),
+         ylabel = L"\Vert\eta - \eta_{ana}\Vert_2 + \Vert v - v_{ana}\Vert_2",
+         legend = :topright, layout = (1, 3))
+
+    # put examples in separate files since the different solvers cannot be set with the convergence_test
+    # because they depend on N
+    examples = [
+        joinpath(EXAMPLES_DIR_BBMBBM_VARIABLE, "bbm_bbm_variable_bathymetry_1d_basic.jl"),
+        joinpath(VISUALIZATION_DIR, "bbm_bbm_variable_bathymetry_1d_widestencil.jl"),
+        joinpath(VISUALIZATION_DIR, "bbm_bbm_variable_bathymetry_1d_upwind.jl")]
+    for (j, example) in enumerate(examples)
+        for i in 1:length(accuracy_orders)
+            Ns = initial_Ns[i] * 2 .^ (0:(iters[i] - 1))
+            _, errormatrix = convergence_test(example,
+                                              iters[i]; N = initial_Ns[i], tspan = tspan,
+                                              accuracy_order = accuracy_orders[i],
+                                              coordinates_min = xmin,
+                                              coordinates_max = xmax)
+            # Use sum over all L^2-errors for all variables, i.e. ||η - η_ana||_2 + ||v - v_ana||_2
+            l2_err = sum(errormatrix[:l2], dims = 2)
+            eocs = log.(l2_err[2:end] ./ l2_err[1:(end - 1)]) ./ log(0.5)
+            eoc_mean = round(sum(eocs) / length(eocs), digits = 2)
+            plot!(Ns, l2_err, label = "p = $(accuracy_orders[i]), EOC: $eoc_mean",
+                  markershape = markershapes[i], linewidth = linewidth,
+                  markersize = markersize,
+                  subplot = j)
+        end
+    end
+
+    xticks!(all_Ns, string.(all_Ns))
+    plot!(top_margin = 3 * Plots.mm, subplot = 1)
+    savefig(joinpath(OUT_SOLITON, "orders_stencils.pdf"))
+end
+
+# Chapter 4.2 Lake-at-rest
+const OUT_LAKEATREST = joinpath(OUT, "lake_at_rest")
+ispath(OUT_LAKEATREST) || mkpath(OUT_LAKEATREST)
+
+# Lake-at-rest error for long-time simulation with discontinuous bottom
+function fig_8()
+    linewidth = 2
+    N = 200
+    accuracy_order = 4
+    xmin = -1.0
+    xmax = 1.0
+    tspan = (0.0, 100.0)
+    D1 = upwind_operators(periodic_derivative_operator; derivative_order = 1,
+                          accuracy_order = accuracy_order, xmin = xmin, xmax = xmax,
+                          N = N)
+    D2 = sparse(D1.plus) * sparse(D1.minus)
+    solver = Solver(D1, D2)
+    trixi_include(joinpath(EXAMPLES_DIR_BBMBBM_VARIABLE,
+                           "bbm_bbm_variable_bathymetry_1d_well_balanced.jl");
+                  N = N, tspan = tspan, solver = solver, dt = 0.5)
+    plot(analysis_callback, exclude = [:waterheight_total, :velocity, :entropy],
+         label_extension = "BBM-BBM", plot_title = "", title = "",
+         ylabel = "lake-at-rest error", linewidth = linewidth)
+
+    trixi_include(joinpath(EXAMPLES_DIR_SVAERD_KALISCH,
+                           "svaerd_kalisch_1d_well_balanced.jl");
+                  N = N, tspan = tspan, solver = solver, dt = 0.003)
+    plot!(analysis_callback, exclude = [:waterheight_total, :momentum, :entropy],
+          label_extension = "Svärd-Kalisch", plot_title = "", title = "",
+          ylabel = "lake-at-rest error", linewidth = linewidth)
+    savefig(joinpath(OUT_LAKEATREST, "lake_at_rest_error_discontinuous.pdf"))
+end
+
+# Plot of condition number of matrix that needs to be inverted for the Svärd-Kalisch equations for different order of accuracy
+# Not used in the thesis, but nonetheless interesting
+function fig_condition_number()
+    xmin = -1.0
+    xmax = 1.0
+    accuracy_orders = [2, 4, 6, 8]
+    eta0 = 2.0
+    beta = 0.49292929292929294
+    Ns = 10:10:500
+    conds = Array{Float64}(undef, length(Ns))
+    plot(xlabel = "N", ylabel = L"cond_2")
+    for accuracy_order in accuracy_orders
+        for (i, N) in enumerate(Ns)
+            D1 = upwind_operators(periodic_derivative_operator; derivative_order = 1,
+                                  accuracy_order = accuracy_order, xmin = xmin, xmax = xmax,
+                                  N = N)
+            eta = fill(eta0, N)
+            D = fill(-1.0, N)
+            for (i, x) in enumerate(SummationByPartsOperators.grid(D1))
+                if x >= 0.5 && x <= 0.75
+                    D[i] = -1.5 - 0.5 * sinpi(2.0 * x)
+                end
+            end
+            d = eta0 .+ D
+            beta_hat = beta * d .^ 3
+
+            D1betaD1 = sparse(D1.plus) * Diagonal(beta_hat) * sparse(D1.minus)
+            hmD1betaD1 = Diagonal(eta .+ D) - D1betaD1
+            conds[i] = cond(Matrix(hmD1betaD1))
+        end
+        plot!(Ns, conds, label = "p = $accuracy_order", linewidth = 2, linestyle = :auto)
+    end
+    savefig(joinpath(OUT_LAKEATREST, "condition_numbers.pdf"))
+end
+
 # Chapter 4.3 Dingemans
 const OUT_DINGEMANS = joinpath(OUT, "dingemans")
 ispath(OUT_DINGEMANS) || mkpath(OUT_DINGEMANS)
 
 # Plot of total waterheight for different models at different points in time
-function fig_7()
+function fig_9()
     linewidth = 3
     fontsize = 16
     linestyles = [:solid, :dash, :dot]
@@ -288,9 +471,9 @@ function fig_7()
     xlims_zoom = [(-25, 0), (5, 30), (20, 45), (-100, -75)]
     ylim_zoom = (0.75, 0.85)
 
-    run_example(joinpath(EXAMPLES_DIR_BBMBBM_VARIABLE,
-                         "bbm_bbm_variable_bathymetry_1d_dingemans.jl");
-                N = N)
+    trixi_include(joinpath(EXAMPLES_DIR_BBMBBM_VARIABLE,
+                           "bbm_bbm_variable_bathymetry_1d_dingemans.jl");
+                  N = N)
     plot(layout = (2, 2), ylim = (-0.05, 0.86), size = (1200, 800),
          titlefontsize = fontsize)
     for (i, step) in enumerate(steps)
@@ -304,8 +487,8 @@ function fig_7()
               yguide = "", linestyle = linestyles[1])
     end
 
-    run_example(joinpath(EXAMPLES_DIR_SVAERD_KALISCH, "svaerd_kalisch_1d_dingemans.jl");
-                N = N)
+    trixi_include(joinpath(EXAMPLES_DIR_SVAERD_KALISCH, "svaerd_kalisch_1d_dingemans.jl");
+                  N = N)
     for (i, step) in enumerate(steps)
         plot!(semi => sol, step = step, conversion = waterheight_total,
               label = "Svärd-Kalisch (set 3)", subplot = i, plot_bathymetry = false,
@@ -359,7 +542,7 @@ function fig_7()
 end
 
 # Plot of total waterheight for Svärd-Kalisch equations at different points in space and different orders of accuracy
-function fig_8()
+function fig_10()
     ylim = (0.75, 0.85)
     yticks = [0.76, 0.78, 0.8, 0.82, 0.84]
     x_values = [3.04, 9.44, 20.04, 26.04, 30.44, 37.04]
@@ -380,8 +563,10 @@ function fig_8()
     linestyles = [:solid, :dash, :dot]
 
     for (i, accuracy_order) in enumerate(accuracy_orders)
-        run_example(joinpath(EXAMPLES_DIR_SVAERD_KALISCH, "svaerd_kalisch_1d_dingemans.jl");
-                    N = N, tspan = tspan, accuracy_order = accuracy_order, saveat = saveat)
+        trixi_include(joinpath(EXAMPLES_DIR_SVAERD_KALISCH,
+                               "svaerd_kalisch_1d_dingemans.jl");
+                      N = N, tspan = tspan, accuracy_order = accuracy_order,
+                      saveat = saveat)
         for (j, x) in enumerate(x_values)
             index = argmin(abs.(DispersiveShallowWater.grid(semi) .- x))
             title = "x = $(round(DispersiveShallowWater.grid(semi)[index], digits = 4))"
@@ -398,7 +583,7 @@ function fig_8()
 end
 
 # Plots of total waterheight for Svärd-Kalisch equations at different points in space and different types of solvers
-function fig_9()
+function fig_11()
     ylim = (0.75, 0.85)
     yticks = [0.76, 0.78, 0.8, 0.82, 0.84]
     x_values = [3.04, 9.44, 20.04, 26.04, 30.44, 37.04]
@@ -442,15 +627,15 @@ function fig_9()
 
     for (i, solver) in enumerate(solvers)
         if solver == :none
-            run_example(joinpath(EXAMPLES_DIR_SVAERD_KALISCH,
-                                 "svaerd_kalisch_1d_dingemans.jl");
-                        N = N, tspan = tspan, accuracy_order = accuracy_order,
-                        saveat = saveat)
+            trixi_include(joinpath(EXAMPLES_DIR_SVAERD_KALISCH,
+                                   "svaerd_kalisch_1d_dingemans.jl");
+                          N = N, tspan = tspan, accuracy_order = accuracy_order,
+                          saveat = saveat)
         else
-            run_example(joinpath(EXAMPLES_DIR_SVAERD_KALISCH,
-                                 "svaerd_kalisch_1d_dingemans.jl");
-                        N = N, tspan = tspan, accuracy_order = accuracy_order,
-                        saveat = saveat, solver = solvers[i])
+            trixi_include(joinpath(EXAMPLES_DIR_SVAERD_KALISCH,
+                                   "svaerd_kalisch_1d_dingemans.jl");
+                          N = N, tspan = tspan, accuracy_order = accuracy_order,
+                          saveat = saveat, solver = solvers[i])
         end
         for (j, x) in enumerate(x_values)
             index = argmin(abs.(DispersiveShallowWater.grid(semi) .- x))
@@ -468,7 +653,7 @@ function fig_9()
 end
 
 # Plot solution at different points in space and invariants for entropy conservative and dissipative schemes
-function fig_10_11()
+function fig_12_13()
     ylim = (0.75, 0.85)
     yticks = [0.76, 0.78, 0.8, 0.82, 0.84]
     x_values = [3.04, 9.44, 20.04, 26.04, 30.44, 37.04]
@@ -504,24 +689,24 @@ function fig_10_11()
         end
     end
 
-    run_example(joinpath(EXAMPLES_DIR_SVAERD_KALISCH, "svaerd_kalisch_1d_dingemans.jl");
-                N = N, tspan = tspan, accuracy_order = accuracy_order, saveat = saveat)
+    trixi_include(joinpath(EXAMPLES_DIR_SVAERD_KALISCH, "svaerd_kalisch_1d_dingemans.jl");
+                  N = N, tspan = tspan, accuracy_order = accuracy_order, saveat = saveat)
     plot_at_x(semi, sol, 1)
     p2 = plot(analysis_callback, title = labels[1], legend = :none,
               linestyles = [:solid :dash :dot],
               linewidth = linewidth, layout = 3, subplot = 1, titlefontsize = titlefontsize)
 
-    run_example(joinpath(EXAMPLES_DIR_SVAERD_KALISCH,
-                         "svaerd_kalisch_1d_dingemans_relaxation.jl");
-                N = N, tspan = tspan, accuracy_order = accuracy_order, saveat = saveat)
+    trixi_include(joinpath(EXAMPLES_DIR_SVAERD_KALISCH,
+                           "svaerd_kalisch_1d_dingemans_relaxation.jl");
+                  N = N, tspan = tspan, accuracy_order = accuracy_order, saveat = saveat)
     plot_at_x(semi, sol, 2)
     plot!(p2, analysis_callback, title = labels[2], legend = :none,
           linestyles = [:solid :dash :dot],
           linewidth = linewidth, subplot = 2, titlefontsize = titlefontsize)
 
-    run_example(joinpath(EXAMPLES_DIR_SVAERD_KALISCH,
-                         "svaerd_kalisch_1d_dingemans_upwind.jl");
-                N = N, tspan = tspan, accuracy_order = accuracy_order, saveat = saveat)
+    trixi_include(joinpath(EXAMPLES_DIR_SVAERD_KALISCH,
+                           "svaerd_kalisch_1d_dingemans_upwind.jl");
+                  N = N, tspan = tspan, accuracy_order = accuracy_order, saveat = saveat)
     plot_at_x(semi, sol, 3)
     plot!(p2, analysis_callback, title = labels[3], legend = :none,
           linestyles = [:solid :dash :dot],
@@ -539,6 +724,10 @@ fig_2()
 fig_3()
 fig_4_5_6()
 fig_7()
+# fig_orders_different_stencils()
 fig_8()
+# fig_condition_number()
 fig_9()
-fig_10_11()
+fig_10()
+fig_11()
+fig_12_13()
