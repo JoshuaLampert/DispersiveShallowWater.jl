@@ -138,7 +138,7 @@ function fig_2()
 end
 
 # Chapter 4
-# Chaper 4.1 Soliton
+# Chapter 4.1 Soliton
 
 const OUT_SOLITON = joinpath(OUT, "soliton")
 ispath(OUT_SOLITON) || mkpath(OUT_SOLITON)
