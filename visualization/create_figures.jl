@@ -675,7 +675,7 @@ function fig_12_13()
     linewidth = 2
     titlefontsize = 10
 
-    labels = ["EC baseline ", "EC relaxation ", "ED "]
+    labels = ["EC baseline", "EC relaxation  ", "ED upwind"]
 
     function plot_at_x(semi, sol, i)
         for (j, x) in enumerate(x_values)
@@ -712,7 +712,7 @@ function fig_12_13()
           linestyles = [:solid :dash :dot],
           linewidth = linewidth, subplot = 3, titlefontsize = titlefontsize)
 
-    plot!(p1, subplot = 5, legend = (0.86, -1.0), legend_column = 3, legendfontsize = 8,
+    plot!(p1, subplot = 5, legend = (0.55, -1.1), legend_column = 3, legendfontsize = 8,
           bottom_margin = 10 * Plots.mm)
     plot!(p2, subplot = 3, legend = (1.3, 0.6), legendfontsize = 8)
     savefig(p1, joinpath(OUT_DINGEMANS, "waterheight_at_x_ec.pdf"))
