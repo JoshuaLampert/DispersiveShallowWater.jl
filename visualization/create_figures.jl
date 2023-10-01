@@ -395,7 +395,7 @@ ispath(OUT_LAKEATREST) || mkpath(OUT_LAKEATREST)
 # Lake-at-rest error for long-time simulation with discontinuous bottom
 function fig_8()
     linewidth = 2
-    N = 200
+    N = 100
     accuracy_order = 4
     xmin = -1.0
     xmax = 1.0
@@ -417,7 +417,7 @@ function fig_8()
                   N = N, tspan = tspan, solver = solver, dt = 0.003)
     plot!(analysis_callback, exclude = [:waterheight_total, :momentum, :entropy],
           label_extension = "Svärd-Kalisch", plot_title = "", title = "",
-          ylabel = "lake-at-rest error", linewidth = linewidth)
+          ylabel = "lake-at-rest error", linestyle = :dash, linewidth = linewidth)
     savefig(joinpath(OUT_LAKEATREST, "lake_at_rest_error_discontinuous.pdf"))
 end
 
