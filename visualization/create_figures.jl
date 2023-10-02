@@ -7,6 +7,7 @@ using SummationByPartsOperators: SummationByPartsOperators,
                                  UniformPeriodicMesh1D,
                                  couple_discontinuously,
                                  couple_continuously
+using Trixi: PlotData1D
 using SparseArrays: sparse
 using Plots
 using LaTeXStrings
@@ -502,13 +503,14 @@ function fig_9()
               linestyle = linestyles[2])
     end
 
-    include("elixir_shallowwater_1d_dingemans.jl")
+    trixi_include("elixir_shallowwater_1d_dingemans.jl")
     for (i, step) in enumerate(steps)
-        plot!(PlotData1D(sol.u[step], semi)["H"], label = "Shallow water", subplot = i,
+        pd = PlotData1D(sol.u[step], semi)
+        plot!(pd["H"], label = "Shallow water", subplot = i,
               title = "t = $(round(sol.t[step], digits = 2))", plot_title = "",
               linewidth = linewidth, legend = :none, guidefontsize = fontsize,
               tickfontsize = fontsize, color = 3, linestyle = linestyles[3])
-        plot!(PlotData1D(sol.u[step], semi)["H"], linewidth = linewidth, legend = :none,
+        plot!(pd["H"], linewidth = linewidth, legend = :none,
               framestyle = :box, xlim = xlims_zoom[i], ylim = ylim_zoom,
               subplot = length(steps) + i, plot_title = "", title = "", xguide = "",
               yguide = "", color = 3, linestyle = linestyles[3])
