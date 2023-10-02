@@ -7,6 +7,7 @@ using SummationByPartsOperators: SummationByPartsOperators,
                                  UniformPeriodicMesh1D,
                                  couple_discontinuously,
                                  couple_continuously
+using Trixi: PlotData1D
 using SparseArrays: sparse
 using Plots
 using LaTeXStrings
@@ -395,7 +396,7 @@ ispath(OUT_LAKEATREST) || mkpath(OUT_LAKEATREST)
 # Lake-at-rest error for long-time simulation with discontinuous bottom
 function fig_8()
     linewidth = 2
-    N = 200
+    N = 100
     accuracy_order = 4
     xmin = -1.0
     xmax = 1.0
@@ -417,7 +418,7 @@ function fig_8()
                   N = N, tspan = tspan, solver = solver, dt = 0.003)
     plot!(analysis_callback, exclude = [:waterheight_total, :momentum, :entropy],
           label_extension = "Svärd-Kalisch", plot_title = "", title = "",
-          ylabel = "lake-at-rest error", linewidth = linewidth)
+          ylabel = "lake-at-rest error", linestyle = :dash, linewidth = linewidth)
     savefig(joinpath(OUT_LAKEATREST, "lake_at_rest_error_discontinuous.pdf"))
 end
 
@@ -502,13 +503,14 @@ function fig_9()
               linestyle = linestyles[2])
     end
 
-    include("elixir_shallowwater_1d_dingemans.jl")
+    trixi_include("elixir_shallowwater_1d_dingemans.jl")
     for (i, step) in enumerate(steps)
-        plot!(PlotData1D(sol.u[step], semi)["H"], label = "Shallow water", subplot = i,
+        pd = PlotData1D(sol.u[step], semi)
+        plot!(pd["H"], label = "Shallow water", subplot = i,
               title = "t = $(round(sol.t[step], digits = 2))", plot_title = "",
               linewidth = linewidth, legend = :none, guidefontsize = fontsize,
               tickfontsize = fontsize, color = 3, linestyle = linestyles[3])
-        plot!(PlotData1D(sol.u[step], semi)["H"], linewidth = linewidth, legend = :none,
+        plot!(pd["H"], linewidth = linewidth, legend = :none,
               framestyle = :box, xlim = xlims_zoom[i], ylim = ylim_zoom,
               subplot = length(steps) + i, plot_title = "", title = "", xguide = "",
               yguide = "", color = 3, linestyle = linestyles[3])
@@ -675,7 +677,7 @@ function fig_12_13()
     linewidth = 2
     titlefontsize = 10
 
-    labels = ["EC baseline ", "EC relaxation ", "ED "]
+    labels = ["EC baseline", "EC relaxation  ", "ED upwind"]
 
     function plot_at_x(semi, sol, i)
         for (j, x) in enumerate(x_values)
@@ -712,7 +714,7 @@ function fig_12_13()
           linestyles = [:solid :dash :dot],
           linewidth = linewidth, subplot = 3, titlefontsize = titlefontsize)
 
-    plot!(p1, subplot = 5, legend = (0.86, -1.0), legend_column = 3, legendfontsize = 8,
+    plot!(p1, subplot = 5, legend = (0.55, -1.1), legend_column = 3, legendfontsize = 8,
           bottom_margin = 10 * Plots.mm)
     plot!(p2, subplot = 3, legend = (1.3, 0.6), legendfontsize = 8)
     savefig(p1, joinpath(OUT_DINGEMANS, "waterheight_at_x_ec.pdf"))
