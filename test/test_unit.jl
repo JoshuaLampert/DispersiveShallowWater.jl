@@ -99,6 +99,20 @@ using SparseArrays: sparse, SparseMatrixCSC
         equations = @test_nowarn BBMBBMEquations1D(gravity_constant = 9.81, D = 2.0)
         @test_nowarn print(equations)
         @test_nowarn display(equations)
+        conversion_functions = [
+            waterheight_total,
+            waterheight,
+            velocity,
+            momentum,
+            discharge,
+            entropy,
+            energy_total,
+            prim2cons,
+            prim2prim,
+        ]
+        for conversion in conversion_functions
+            @test DispersiveShallowWater.varnames(conversion, equations) isa Tuple
+        end
         q = [42.0, 2.0]
         @test prim2prim(q, equations) == q
         @test isapprox(cons2prim(prim2cons(q, equations), equations), q)
@@ -114,6 +128,20 @@ using SparseArrays: sparse, SparseMatrixCSC
         equations = @test_nowarn BBMBBMVariableEquations1D(gravity_constant = 9.81)
         @test_nowarn print(equations)
         @test_nowarn display(equations)
+        conversion_functions = [
+            waterheight_total,
+            waterheight,
+            velocity,
+            momentum,
+            discharge,
+            entropy,
+            energy_total,
+            prim2cons,
+            prim2prim,
+        ]
+        for conversion in conversion_functions
+            @test DispersiveShallowWater.varnames(conversion, equations) isa Tuple
+        end
         q = [42.0, 2.0, 2.0]
         @test prim2prim(q, equations) == q
         @test isapprox(cons2prim(prim2cons(q, equations), equations), q)
@@ -132,6 +160,22 @@ using SparseArrays: sparse, SparseMatrixCSC
                                                           gamma = 0.15707070707070708)
         @test_nowarn print(equations)
         @test_nowarn display(equations)
+        conversion_functions = [
+            waterheight_total,
+            waterheight,
+            velocity,
+            momentum,
+            discharge,
+            entropy,
+            energy_total,
+            prim2cons,
+            prim2prim,
+            energy_total_modified,
+            entropy_modified,
+        ]
+        for conversion in conversion_functions
+            @test DispersiveShallowWater.varnames(conversion, equations) isa Tuple
+        end
         q = [42.0, 2.0, 2.0]
         @test prim2prim(q, equations) == q
         @test isapprox(cons2prim(prim2cons(q, equations), equations), q)
@@ -141,6 +185,50 @@ using SparseArrays: sparse, SparseMatrixCSC
         @test momentum(q, equations) == 88.0
         @test discharge(q, equations) == 88.0
         @test isapprox(energy_total(q, equations), 8740.42)
+    end
+
+    @testset "AnalysisCallback" begin
+        equations = SvaerdKalischEquations1D(gravity_constant = 9.81)
+        initial_condition = initial_condition_dingemans
+        boundary_conditions = boundary_condition_periodic
+        mesh = Mesh1D(-1, 1, 10)
+        solver = Solver(mesh, 4)
+        semi = Semidiscretization(mesh, equations, initial_condition, solver,
+                                  boundary_conditions = boundary_conditions)
+        analysis_callback = AnalysisCallback(semi; interval = 10,
+                                             extra_analysis_errors = (:conservation_error,),
+                                             extra_analysis_integrals = (waterheight_total,
+                                                                         velocity, momentum,
+                                                                         discharge, entropy,
+                                                                         energy_total,
+                                                                         entropy_modified,
+                                                                         energy_total_modified,
+                                                                         lake_at_rest_error))
+        @test_nowarn print(analysis_callback)
+        @test_nowarn display(analysis_callback)
+    end
+
+    @testset "RelaxationCallback" begin
+        relaxation_callback = RelaxationCallback(invariant = entropy)
+        @test_nowarn print(relaxation_callback)
+        @test_nowarn display(relaxation_callback)
+    end
+
+    @testset "util" begin
+        @test_nowarn get_examples()
+        @test_nowarn trixi_include(default_example(), tspan = (0.0, 0.1))
+
+        accuracy_orders = [2, 4, 6]
+        for accuracy_order in accuracy_orders
+            eoc_mean_values, _ = convergence_test(default_example(), 2, initial_N = 128,
+                                                  tspan = (0.0, 1.0),
+                                                  accuracy_order = accuracy_order)
+            show(eoc_mean_values)
+            @test isapprox(eoc_mean_values[:l2][1], accuracy_order, atol = 0.5)
+            @test isapprox(eoc_mean_values[:linf][2], accuracy_order, atol = 0.5)
+            @test isapprox(eoc_mean_values[:l2][1], accuracy_order, atol = 0.5)
+            @test isapprox(eoc_mean_values[:linf][2], accuracy_order, atol = 0.5)
+        end
     end
 end
 
