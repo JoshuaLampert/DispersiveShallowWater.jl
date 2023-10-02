@@ -14,7 +14,7 @@ using Plots
         @test_nowarn plot(semi, sol, 0.0, conversion = prim2cons)
         @test_nowarn plot(analysis_callback)
         @test_nowarn plot(analysis_callback, what = (:errors,))
-        @test_nowarn plot(analysis_callback, what = (:integrals, :errors,))
+        @test_nowarn plot(analysis_callback, what = (:integrals, :errors))
     end
 end
 
