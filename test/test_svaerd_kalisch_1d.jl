@@ -21,6 +21,18 @@ EXAMPLES_DIR = joinpath(examples_dir(), "svaerd_kalisch_1d")
                             change_entropy_modified=3.240868750253867e-6)
     end
 
+    @trixi_testset "svaerd_kalisch_1d_dingemans_cg" begin
+        @test_trixi_include(joinpath(EXAMPLES_DIR,
+                                     "svaerd_kalisch_1d_dingemans_cg.jl"),
+                            tspan=(0.0, 1.0),
+                            l2=[0.22798490823942433 0.7520004851600044 0.0],
+                            linf=[0.03673010870720128 0.12074632168110239 0.0],
+                            cons_error=[1.4210854715202004e-13 4.953054817174909e-5 0.0],
+                            change_waterheight=-1.4210854715202004e-13,
+                            change_entropy=-0.0002425303440531934,
+                            change_entropy_modified=2.9729466177741415e-6)
+    end
+
     @trixi_testset "svaerd_kalisch_1d_dingemans_upwind" begin
         @test_trixi_include(joinpath(EXAMPLES_DIR,
                                      "svaerd_kalisch_1d_dingemans_upwind.jl"),

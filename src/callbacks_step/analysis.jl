@@ -55,7 +55,7 @@ function Base.show(io::IO, ::MIME"text/plain",
             println(io, "    error ", idx, ": ", error)
         end
         for (idx, integral) in enumerate(analysis_integrals)
-            println(io, "    integral ", idx, ": ", integral)
+            println(io, "    integral ", idx, ": ", pretty_form_utf(integral))
         end
     end
 end
