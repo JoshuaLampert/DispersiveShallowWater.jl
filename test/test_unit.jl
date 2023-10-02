@@ -37,7 +37,6 @@ using SparseArrays: sparse, SparseMatrixCSC
         @test grid(solver) == grid(solver.D1) == grid(solver.D2)
         @test real(solver) == Float64
 
-
         D_legendre = legendre_derivative_operator(-1.0, 1.0, p + 1)
         uniform_mesh = UniformPeriodicMesh1D(-1.0, 1.0, 512 ÷ (p + 1))
         central = couple_discontinuously(D_legendre, uniform_mesh)
