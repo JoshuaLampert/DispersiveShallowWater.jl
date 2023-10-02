@@ -286,7 +286,7 @@ function fig_7()
     c = 5 / 2 * sqrt(g * D)
     xmin = -35.0
     xmax = 35.0
-    tspan = (0.0, 20 * (xmax - xmin) / c)
+    tspan = (0.0, 15 * (xmax - xmin) / c)
     N = 512
     accuracy_order = 8
 

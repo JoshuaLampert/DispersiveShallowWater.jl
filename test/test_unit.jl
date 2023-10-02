@@ -216,6 +216,7 @@ using SparseArrays: sparse, SparseMatrixCSC
 
     @testset "util" begin
         @test_nowarn get_examples()
+        @test_nowarn DispersiveShallowWater.path_create_figures()
         @test_nowarn trixi_include(default_example(), tspan = (0.0, 0.1))
 
         accuracy_orders = [2, 4, 6]
