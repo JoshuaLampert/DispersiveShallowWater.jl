@@ -197,7 +197,9 @@ function (analysis_callback::AnalysisCallback)(io, u_ode, integrator, semi)
     @unpack analysis_errors, analysis_integrals, tstops, errors, integrals = analysis_callback
     @unpack t, dt = integrator
     push!(tstops, t)
-    t_final = integrator.sol.prob.tspan[2]
+    t_initial = first(integrator.sol.prob.tspan)
+    t_final = last(integrator.sol.prob.tspan)
+    sim_time_percentage = (t - t_initial) / (t_final - t_initial) * 100
     iter = integrator.stats.naccept
 
     # Compute the total runtime since the analysis callback has been initialized, in seconds
@@ -237,7 +239,7 @@ function (analysis_callback::AnalysisCallback)(io, u_ode, integrator, semi)
             "               " *
             " └── GC time:    " *
             @sprintf("%10.8e s (%5.3f%%)", gc_time_absolute, gc_time_percentage))
-    println(io, " sim. time:      " * @sprintf("%10.8e (%5.3f%%)", t, t / t_final*100))
+    println(io, " sim. time:      " * @sprintf("%10.8e (%5.3f%%)", t, sim_time_percentage))
     println(io,
             " #DOF:           " * @sprintf("% 14d", nnodes(semi)) *
             "               " *
