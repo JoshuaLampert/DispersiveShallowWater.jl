@@ -7,7 +7,8 @@
 [![Aqua QA](https://raw.githubusercontent.com/JuliaTesting/Aqua.jl/master/badge.svg)](https://github.com/JuliaTesting/Aqua.jl)
 [![License: MIT](https://img.shields.io/badge/License-MIT-success.svg)](https://opensource.org/licenses/MIT)
 
-**DispersiveShallowWater.jl** is a [Julia](https://julialang.org/) package that implements structure-preserving numerical methods for dispersive shallow water models. To date, it provides provably conservative, entropy-conserving and well-balanced numerical schemes for two dispersive shallow water models:
+**DispersiveShallowWater.jl** is a [Julia](https://julialang.org/) package that implements structure-preserving numerical methods for dispersive shallow water models.
+To date, it provides provably conservative, entropy-conserving and well-balanced numerical schemes for two dispersive shallow water models:
 
 * the [BBM-BBM equations with varying bottom topography](https://iopscience.iop.org/article/10.1088/1361-6544/ac3c29),
 * the [dispersive shallow water model proposed by Magnus Svärd and Henrik Kalisch](https://arxiv.org/abs/2302.09924).
@@ -19,13 +20,16 @@ A more detailed documentation can be found [online](https://JoshuaLampert.github
 
 # Installation
 
-If you have not yet installed Julia, then you first need to [download Julia](https://julialang.org/downloads/). Please [follow the instructions for your operating system](https://julialang.org/downloads/platform/). DispersiveShallowWater.jl works with Julia v1.8 and newer. DispersiveShallowWater.jl is a registered Julia package. Therefore, you can install it by executing the following commands from the Julia REPL
+If you have not yet installed Julia, then you first need to [download Julia](https://julialang.org/downloads/). Please [follow the instructions for your operating system](https://julialang.org/downloads/platform/).
+DispersiveShallowWater.jl works with Julia v1.8 and newer. DispersiveShallowWater.jl is a registered Julia package. Therefore, you can install it by executing the following commands from the Julia REPL
 ```julia
 julia> using Pkg
 
 julia> Pkg.add(["DispersiveShallowWater", "OrdinaryDiffEq", "Plots"])
 ```
-In addition, this installs the packages [OrdinaryDiffEq.jl](https://github.com/SciML/OrdinaryDiffEq.jl) used for time-integration and [Plots.jl](https://github.com/JuliaPlots/Plots.jl) to visualize the results. If you want to use other SBP operators than the default operators that DispersiveShallowWater.jl uses, then you also need [SummationByPartsOperators.jl](https://github.com/ranocha/SummationByPartsOperators.jl), which can be installed running
+In addition, this installs the packages [OrdinaryDiffEq.jl](https://github.com/SciML/OrdinaryDiffEq.jl) used for time-integration and [Plots.jl](https://github.com/JuliaPlots/Plots.jl) to visualize the results.
+If you want to use other SBP operators than the default operators that DispersiveShallowWater.jl uses, then you also need [SummationByPartsOperators.jl](https://github.com/ranocha/SummationByPartsOperators.jl),
+which can be installed running
 ```julia
 julia> Pkg.add("SummationByPartsOperators")
 ```
@@ -46,11 +50,16 @@ The result can be visualized by using the package Plots.jl
 julia> using Plots
 julia> plot(semi => sol)
 ```
-The command `plot` expects a `Pair` consisting of a `Semidiscretization` and an `ODESolution`. The visualization can also be customized, see the [documentation](https://JoshuaLampert.github.io./DispersiveShallowWater.jl/stable/overview.html#Visualize-results) for more details. Other examples can be found in the subdirectory [examples/](https://github.com/JoshuaLampert/DispersiveShallowWater.jl/tree/main/examples). A list of all examples is returned by running `get_examples()`. You can pass the filename of one of the examples or your own simulation file to `include` in order to run it, e.g., `include(joinpath(examples_dir(), "svaerd_kalisch_1d", "svaerd_kalisch_1d_dingemans_relaxation.jl"))`.
+The command `plot` expects a `Pair` consisting of a `Semidiscretization` and an `ODESolution`. The visualization can also be customized, see the [documentation](https://JoshuaLampert.github.io/DispersiveShallowWater.jl/stable/overview#visualize-results)
+for more details. Other examples can be found in the subdirectory [examples/](https://github.com/JoshuaLampert/DispersiveShallowWater.jl/tree/main/examples).
+A list of all examples is returned by running `get_examples()`. You can pass the filename of one of the examples or your own simulation file to `include` in order to run it,
+e.g., `include(joinpath(examples_dir(), "svaerd_kalisch_1d", "svaerd_kalisch_1d_dingemans_relaxation.jl"))`.
 
 # Authors
 
-The package is developed and maintained by Joshua Lampert and was initiated as part of the master thesis "Structure-Preserving Numerical Methods for Dispersive Shallow Water Models" (2023). Some parts of this repository are based on parts of [Dispersive-wave-schemes-notebooks. A Broad Class of Conservative Numerical Methods for Dispersive Wave Equations](https://github.com/ranocha/Dispersive-wave-schemes-notebooks) by Hendrik Ranocha, Dimitrios Mitsotakis and David Ketcheson. The code structure is inspired by [Trixi.jl](https://github.com/trixi-framework/Trixi.jl/).
+The package is developed and maintained by Joshua Lampert and was initiated as part of the master thesis "Structure-Preserving Numerical Methods for Dispersive Shallow Water Models" (2023).
+Some parts of this repository are based on parts of [Dispersive-wave-schemes-notebooks. A Broad Class of Conservative Numerical Methods for Dispersive Wave Equations](https://github.com/ranocha/Dispersive-wave-schemes-notebooks)
+by Hendrik Ranocha, Dimitrios Mitsotakis and David Ketcheson. The code structure is inspired by [Trixi.jl](https://github.com/trixi-framework/Trixi.jl/).
 
 # License and contributing
 
