@@ -117,7 +117,7 @@ end
 gif(anim, "shoaling_solution.gif", fps = 25)
 ```
 
-It is also possible to plot the solution variables at a fixed spatial point over time by calling `plot(semi => sol, x)` for some `x`-value, see [plot_examples.jl](https://github.com/JoshuaLampert/DispersiveShallowWater.jl/blob/main/plot_examples.jl) for some examples.
+It is also possible to plot the solution variables at a fixed spatial point over time by calling `plot(semi => sol, x)` for some `x`-value, see [plot_examples.jl](https://github.com/JoshuaLampert/DispersiveShallowWater.jl/blob/main/visualization/plot_examples.jl) for some examples.
 
 Often, it is interesting to have a look at how the quantities that are recorded by the `AnalysisCallback` evolve in time. To this end, you can `plot` the `AnalysisCallback` by
 
