@@ -6,6 +6,7 @@
 [![Coveralls](https://coveralls.io/repos/github/JoshuaLampert/DispersiveShallowWater.jl/badge.svg?branch=main)](https://coveralls.io/github/JoshuaLampert/DispersiveShallowWater.jl?branch=main)
 [![Aqua QA](https://raw.githubusercontent.com/JuliaTesting/Aqua.jl/master/badge.svg)](https://github.com/JuliaTesting/Aqua.jl)
 [![License: MIT](https://img.shields.io/badge/License-MIT-success.svg)](https://opensource.org/licenses/MIT)
+[![DOI](https://zenodo.org/badge/635090135.svg)](https://zenodo.org/doi/10.5281/zenodo.10034636)
 
 [**DispersiveShallowWater.jl**](https://github.com/JoshuaLampert/DispersiveShallowWater.jl) is a [Julia](https://julialang.org/) package that implements structure-preserving numerical methods for dispersive shallow water models.
 To date, it provides provably conservative, entropy-conserving and well-balanced numerical schemes for two dispersive shallow water models:
