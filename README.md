@@ -1,6 +1,7 @@
 # DispersiveShallowWater.jl
 
-[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://JoshuaLampert.github.io/DispersiveShallowWater.jl/dev/)
+[![Docs-stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://JoshuaLampert.github.io/DispersiveShallowWater.jl/stable)
+[![Docs-dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://JoshuaLampert.github.io/DispersiveShallowWater.jl/dev/)
 [![Build Status](https://github.com/JoshuaLampert/DispersiveShallowWater.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/JoshuaLampert/DispersiveShallowWater.jl/actions/workflows/CI.yml?query=branch%3Amain)
 [![Coveralls](https://coveralls.io/repos/github/JoshuaLampert/DispersiveShallowWater.jl/badge.svg?branch=main)](https://coveralls.io/github/JoshuaLampert/DispersiveShallowWater.jl?branch=main)
 [![Aqua QA](https://raw.githubusercontent.com/JuliaTesting/Aqua.jl/master/badge.svg)](https://github.com/JuliaTesting/Aqua.jl)
