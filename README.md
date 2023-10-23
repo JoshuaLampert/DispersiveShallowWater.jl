@@ -1,6 +1,7 @@
 # DispersiveShallowWater.jl
 
-[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://JoshuaLampert.github.io/DispersiveShallowWater.jl/dev/)
+[![Docs-stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://JoshuaLampert.github.io/DispersiveShallowWater.jl/stable)
+[![Docs-dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://JoshuaLampert.github.io/DispersiveShallowWater.jl/dev/)
 [![Build Status](https://github.com/JoshuaLampert/DispersiveShallowWater.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/JoshuaLampert/DispersiveShallowWater.jl/actions/workflows/CI.yml?query=branch%3Amain)
 [![Coveralls](https://coveralls.io/repos/github/JoshuaLampert/DispersiveShallowWater.jl/badge.svg?branch=main)](https://coveralls.io/github/JoshuaLampert/DispersiveShallowWater.jl?branch=main)
 [![Aqua QA](https://raw.githubusercontent.com/JuliaTesting/Aqua.jl/master/badge.svg)](https://github.com/JuliaTesting/Aqua.jl)
@@ -11,7 +12,10 @@
 * the [BBM-BBM equations with varying bottom topography](https://iopscience.iop.org/article/10.1088/1361-6544/ac3c29),
 * the [dispersive shallow water model proposed by Magnus Svärd and Henrik Kalisch](https://arxiv.org/abs/2302.09924).
 
-The semidiscretizations are based on summation by parts (SBP) operators, which are implemented in [SummationByPartsOperators.jl](https://github.com/ranocha/SummationByPartsOperators.jl/). In order to obtain fully discrete schemes, the time integration methods from [OrdinaryDiffEq.jl](https://github.com/SciML/OrdinaryDiffEq.jl) are used to solve the resulting ordinary differential equations. Fully discrete entropy-conservative methods can be obtained by using the [relaxation method](https://epubs.siam.org/doi/10.1137/19M1263662) provided by DispersiveShallowWater.jl. A more detailed documentation can be found [online](https://JoshuaLampert.github.io./DispersiveShallowWater.jl/dev/).
+The semidiscretizations are based on summation by parts (SBP) operators, which are implemented in [SummationByPartsOperators.jl](https://github.com/ranocha/SummationByPartsOperators.jl/).
+In order to obtain fully discrete schemes, the time integration methods from [OrdinaryDiffEq.jl](https://github.com/SciML/OrdinaryDiffEq.jl) are used to solve the resulting ordinary differential equations.
+Fully discrete entropy-conservative methods can be obtained by using the [relaxation method](https://epubs.siam.org/doi/10.1137/19M1263662) provided by DispersiveShallowWater.jl.
+A more detailed documentation can be found [online](https://JoshuaLampert.github.io./DispersiveShallowWater.jl/stable/).
 
 # Installation
 
