@@ -1,7 +1,7 @@
 name = "DispersiveShallowWater"
 uuid = "4ab875f6-b79a-4e28-9745-4f0293954817"
 authors = ["Joshua Lampert <joshua.lampert@uni-hamburg.de>"]
-version = "0.1.1"
+version = "0.1.2-pre"
 
 [deps]
 DiffEqBase = "2b5f629d-d688-5b77-993f-72d75c75574e"
