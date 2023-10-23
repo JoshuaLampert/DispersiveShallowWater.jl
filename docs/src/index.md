@@ -2,6 +2,7 @@
 
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://JoshuaLampert.github.io/DispersiveShallowWater.jl/dev/)
 [![Build Status](https://github.com/JoshuaLampert/DispersiveShallowWater.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/JoshuaLampert/DispersiveShallowWater.jl/actions/workflows/CI.yml?query=branch%3Amain)
+[![Coveralls](https://coveralls.io/repos/github/JoshuaLampert/DispersiveShallowWater.jl/badge.svg?branch=main)](https://coveralls.io/github/JoshuaLampert/DispersiveShallowWater.jl?branch=main)
 [![Aqua QA](https://raw.githubusercontent.com/JuliaTesting/Aqua.jl/master/badge.svg)](https://github.com/JuliaTesting/Aqua.jl)
 [![License: MIT](https://img.shields.io/badge/License-MIT-success.svg)](https://opensource.org/licenses/MIT)
 
@@ -14,15 +15,13 @@ The semidiscretizations are based on summation by parts (SBP) operators, which a
 
 # Installation
 
-If you have not yet installed Julia, then you first need to [download Julia](https://julialang.org/downloads/). Please [follow the instructions for your operating system](https://julialang.org/downloads/platform/). DispersiveShallowWater.jl works with Julia v1.8 and newer. You can install DispersiveShallowWater.jl by executing the following commands from the Julia REPL
+If you have not yet installed Julia, then you first need to [download Julia](https://julialang.org/downloads/). Please [follow the instructions for your operating system](https://julialang.org/downloads/platform/). DispersiveShallowWater.jl works with Julia v1.8 and newer. DispersiveShallowWater.jl is a registered Julia package. Therefore, you can install it by executing the following commands from the Julia REPL
 ```julia
 julia> using Pkg
 
-julia> Pkg.add(url="https://github.com/JoshuaLampert/DispersiveShallowWater.jl")
-
-julia> Pkg.add(["OrdinaryDiffEq", "Plots"])
+julia> Pkg.add(["DispersiveShallowWater", "OrdinaryDiffEq", "Plots"])
 ```
-The last command installs also the package "OrdinaryDiffEq.jl" used for time-integration and "Plots.jl" to visualize the results. If you want to use other SBP operators than the default operators that DispersiveShallowWater.jl uses, then you also need SummationByPartsOperators.jl, which can be installed running
+In addition, this installs the packages [OrdinaryDiffEq.jl](https://github.com/SciML/OrdinaryDiffEq.jl) used for time-integration and [Plots.jl](https://github.com/JuliaPlots/Plots.jl) to visualize the results. If you want to use other SBP operators than the default operators that DispersiveShallowWater.jl uses, then you also need [SummationByPartsOperators.jl](https://github.com/ranocha/SummationByPartsOperators.jl), which can be installed running
 ```julia
 julia> Pkg.add("SummationByPartsOperators")
 ```
