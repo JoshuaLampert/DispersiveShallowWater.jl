@@ -1,0 +1,14 @@
+{
+    "description": "Structure-Preserving Numerical Methods for Dispersive Shallow Water Models",
+    "license": "MIT",
+    "title": "DispersiveShallowWater.jl",
+    "upload_type": "software",
+    "creators": [
+        {
+            "affiliation": "Applied Mathematics, University of Hamburg, Germany",
+            "name": "Lampert, Joshua",
+            "orcid": "0009-0007-0971-6709"
+        }
+    ],
+    "access_right": "open"
+}
