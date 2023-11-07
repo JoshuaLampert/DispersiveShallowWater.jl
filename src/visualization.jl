@@ -111,7 +111,8 @@ end
         for k in 1:length(sol.t)
             # Allow that the spatial value `x` is not on the grid. Thus, interpolate the given values to the provided `x`
             # with a linear spline.
-            solution[i, k] = linear_interpolation(grid(semi), view(wrap_array(sol.u[k], semi), i, :))(x)
+            solution[i, k] = linear_interpolation(grid(semi),
+                                                  view(wrap_array(sol.u[k], semi), i, :))(x)
         end
     end
 
