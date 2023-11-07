@@ -1,6 +1,7 @@
 module DispersiveShallowWater
 
 using DiffEqBase
+using Interpolations
 using LinearAlgebra: mul!, ldiv!, factorize, I, Diagonal
 using PolynomialBases
 using Printf: @printf, @sprintf
