@@ -77,7 +77,7 @@ end
 #   A Broad Class of Conservative Numerical Methods for Dispersive Wave Equations
 #   [DOI: 10.4208/cicp.OA-2020-0119](https://doi.org/10.4208/cicp.OA-2020-0119)
 function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMEquations1D, initial_condition,
-              ::BoundaryConditionPeriodic, solver, cache)
+              ::BoundaryConditionPeriodic, source_terms, solver, cache)
     @unpack invImD2_D, tmp1 = cache
 
     q = wrap_array(u_ode, mesh, equations, solver)
@@ -94,6 +94,7 @@ function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMEquations1D, initial_cond
 
     @. tmp1 = -(equations.gravity * eta + 0.5 * v^2)
     mul!(dv, invImD2_D, tmp1)
+    calc_sources!(dq, q, t, source_terms, equations, solver)
 
     return nothing
 end

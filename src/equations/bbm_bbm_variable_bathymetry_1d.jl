@@ -33,29 +33,42 @@ varnames(::typeof(prim2cons), ::BBMBBMVariableEquations1D) = ("h", "hv", "b")
 """
     initial_condition_convergence_test(x, t, equations::BBMBBMVariableEquations1D, mesh)
 
-A travelling-wave solution used for convergence tests in a periodic domain.
-The bathymetry is constant.
-
-For details see Example 5 in Section 3 from (here adapted for dimensional equations):
-- Min Chen (1997)
-  Exact Traveling-Wave Solutions to Bidirectional Wave Equations
-  [DOI: 10.1023/A:1026667903256](https://doi.org/10.1023/A:1026667903256)
+A smooth manufactured solution in combination with `source_terms_convergence_test`.
 """
-function initial_condition_convergence_test(x,
-                                            t,
+function initial_condition_convergence_test(x, t,
                                             equations::BBMBBMVariableEquations1D,
                                             mesh)
-    g = equations.gravity
-    D = 2.0 # constant bathymetry in this case
-    c = 5 / 2 * sqrt(D * g)
-    rho = 18 / 5
-    x_t = mod(x - c * t - xmin(mesh), xmax(mesh) - xmin(mesh)) + xmin(mesh)
-
-    theta = 0.5 * sqrt(rho) * x_t / D
-    eta = -D + c^2 * rho^2 / (81 * g) +
-          5 * c^2 * rho^2 / (108 * g) * (2 * sech(theta)^2 - 3 * sech(theta)^4)
-    v = c * (1 - 5 * rho / 18) + 5 * c * rho / 6 * sech(theta)^2
+    eta = exp(t) * cospi(2 * (x - 2 * t))
+    v = exp(t / 2) * sinpi(2 * (x - t / 2))
+    D = cospi(2 * x)
     return SVector(eta, v, D)
+end
+
+"""
+    source_terms_convergence_test(q, x, t, equations::BBMBBMVariableEquations1D, mesh)
+
+A smooth manufactured solution in combination with `initial_condition_convergence_test`.
+"""
+function source_terms_convergence_test(q, x, t, equations::BBMBBMVariableEquations1D)
+    g = equations.gravity
+    a1 = cospi(2 * x)
+    a2 = sinpi(2 * x)
+    a3 = cospi(t - 2 * x)
+    a4 = sinpi(t - 2 * x)
+    a5 = sinpi(2 * t - 4 * x)
+    a6 = sinpi(4 * t - 2 * x)
+    a7 = cospi(4 * t - 2 * x)
+    dq1 = -2 / 3 * pi^2 * (4 * pi * a6 - a7) * exp(t) * a1^2 +
+          4 / 3 * pi^2 * (a6 + 4 * pi * a7) * exp(t) * a2 * a1 -
+          2 * pi * exp(3 * t / 2) * a4 * a6 + 2 * pi * exp(3 * t / 2) * a3 * a7 +
+          2 * pi * exp(t / 2) * a2 * a4 + 2 * pi * exp(t / 2) * a1 * a3 -
+          4 * pi * exp(t) * a6 + exp(t) * a7
+    dq2 = 2 * pi * g * exp(t) * a6 -
+          pi^2 *
+          (8 / 3 * (2 * pi * a4 - a3) * a2 * a1 -
+           4 / 3 * (a2^2 - a1^2) * (a4 + 2 * pi * a3) + 2 / 3 * (a4 + 2 * pi * a3) * a1^2) *
+          exp(t / 2) / 2 - exp(t / 2) * a4 / 2 - pi * exp(t / 2) * a3 - pi * exp(t) * a5
+    return SVector(dq1, dq2, 0.0)
 end
 
 """
@@ -100,7 +113,7 @@ end
 
 function create_cache(mesh,
                       equations::BBMBBMVariableEquations1D,
-                      solver::Solver,
+                      solver,
                       initial_condition,
                       RealT,
                       uEltype)
@@ -133,8 +146,8 @@ end
 #   [DOI: 10.4208/cicp.OA-2020-0119](https://doi.org/10.4208/cicp.OA-2020-0119)
 # Here, adapted for spatially varying bathymetry.
 function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMVariableEquations1D,
-              initial_condition,
-              ::BoundaryConditionPeriodic, solver, cache)
+              initial_condition, ::BoundaryConditionPeriodic, source_terms,
+              solver, cache)
     @unpack invImDKD_D, invImD2K_D, tmp1 = cache
 
     q = wrap_array(u_ode, mesh, equations, solver)
@@ -153,6 +166,7 @@ function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMVariableEquations1D,
 
     @. tmp1 = -(equations.gravity * eta + 0.5 * v^2)
     mul!(dv, invImD2K_D, tmp1)
+    calc_sources!(dq, q, t, source_terms, equations, solver)
 
     return nothing
 end

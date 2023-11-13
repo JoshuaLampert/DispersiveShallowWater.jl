@@ -114,3 +114,20 @@ function calc_error_norms(u_ode, t, initial_condition, mesh::Mesh1D, equations,
     end
     return l2_error, linf_error
 end
+
+function calc_sources!(dq, q, t, source_terms::Nothing,
+                       equations::AbstractEquations{1}, solver::Solver)
+    return nothing
+end
+
+function calc_sources!(dq, q, t, source_terms,
+                       equations::AbstractEquations{1}, solver::Solver)
+    x = grid(solver)
+    for i in eachnode(solver)
+        local_source = source_terms(view(q, :, i), x[i], t, equations)
+        for v in eachvariable(equations)
+            dq[v, i] += local_source[v]
+        end
+    end
+    return nothing
+end

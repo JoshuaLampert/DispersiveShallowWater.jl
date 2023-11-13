@@ -86,7 +86,7 @@ end
 
 function create_cache(mesh,
                       equations::SvaerdKalischEquations1D,
-                      solver::Solver,
+                      solver,
                       initial_condition,
                       RealT,
                       uEltype)
@@ -123,8 +123,8 @@ end
 
 # Discretization that conserves the mass (for eta and v) and is energy-bounded for periodic boundary conditions
 function rhs!(du_ode, u_ode, t, mesh, equations::SvaerdKalischEquations1D,
-              initial_condition,
-              ::BoundaryConditionPeriodic, solver, cache)
+              initial_condition, ::BoundaryConditionPeriodic, source_terms,
+              solver, cache)
     @unpack hmD1betaD1, D1betaD1, d, h, hv, alpha_hat, beta_hat, gamma_hat, tmp1, tmp2, D1_central = cache
     q = wrap_array(u_ode, mesh, equations, solver)
     dq = wrap_array(du_ode, mesh, equations, solver)
@@ -176,6 +176,7 @@ function rhs!(du_ode, u_ode, t, mesh, equations::SvaerdKalischEquations1D,
     #              0.5 * D1_central * (gamma_hat .* (solver.D2 * v)) -
     #              0.5 * solver.D2 * (gamma_hat .* D1v))
     dv[:] = hmD1betaD1 \ tmp2
+    calc_sources!(dq, q, t, source_terms, equations, solver)
 
     return nothing
 end

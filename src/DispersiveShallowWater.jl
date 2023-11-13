@@ -23,8 +23,8 @@ import SummationByPartsOperators: grid, xmin, xmax
 
 include("boundary_conditions.jl")
 include("mesh.jl")
-include("solver.jl")
 include("equations/equations.jl")
+include("solver.jl")
 include("semidiscretization.jl")
 include("callbacks_step/callbacks_step.jl")
 include("visualization.jl")
@@ -47,7 +47,8 @@ export Semidiscretization, semidiscretize, grid
 
 export boundary_condition_periodic
 
-export initial_condition_convergence_test, initial_condition_dingemans
+export initial_condition_convergence_test, source_terms_convergence_test,
+       initial_condition_dingemans
 
 export AnalysisCallback, RelaxationCallback
 export tstops, errors, integrals
