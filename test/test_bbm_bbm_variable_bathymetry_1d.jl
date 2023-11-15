@@ -57,6 +57,19 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_variable_bathymetry_1d")
                             change_entropy=2.1316282072803006e-14)
     end
 
+
+    @trixi_testset "bbm_bbm_variable_bathymetry_1d_manufactured" begin
+        @test_trixi_include(joinpath(EXAMPLES_DIR,
+                                     "bbm_bbm_variable_bathymetry_1d_manufactured.jl"),
+                            tspan=(0.0, 1.0),
+                            l2=[6.867287425380051e-9 3.446178245128195e-9 0.0],
+                            linf=[1.1667709465257303e-8 5.917459633408839e-9 0.0],
+                            cons_error=[1.359075785939412e-11 3.8711139735371144e-13 0.0],
+                            change_waterheight=-1.359075785939412e-11,
+                            change_velocity=-3.8711139735371144e-13,
+                            change_entropy=17.81701226932122)
+    end
+
     @trixi_testset "bbm_bbm_variable_bathymetry_1d_well_balanced" begin
         @test_trixi_include(joinpath(EXAMPLES_DIR,
                                      "bbm_bbm_variable_bathymetry_1d_well_balanced.jl"),
