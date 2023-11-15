@@ -33,23 +33,50 @@ varnames(::typeof(prim2cons), ::BBMBBMVariableEquations1D) = ("h", "hv", "b")
 """
     initial_condition_convergence_test(x, t, equations::BBMBBMVariableEquations1D, mesh)
 
-A smooth manufactured solution in combination with `source_terms_convergence_test`.
+A travelling-wave solution used for convergence tests in a periodic domain.
+The bathymetry is constant.
+
+For details see Example 5 in Section 3 from (here adapted for dimensional equations):
+- Min Chen (1997)
+  Exact Traveling-Wave Solutions to Bidirectional Wave Equations
+  [DOI: 10.1023/A:1026667903256](https://doi.org/10.1023/A:1026667903256)
 """
 function initial_condition_convergence_test(x, t,
                                             equations::BBMBBMVariableEquations1D,
                                             mesh)
-    eta = exp(t) * cospi(2 * (x - 2 * t))
-    v = exp(t / 2) * sinpi(2 * (x - t / 2))
-    D = cospi(2 * x)
+    g = equations.gravity
+    D = 2.0 # constant bathymetry in this case
+    c = 5 / 2 * sqrt(D * g)
+    rho = 18 / 5
+    x_t = mod(x - c * t - xmin(mesh), xmax(mesh) - xmin(mesh)) + xmin(mesh)
+
+    theta = 0.5 * sqrt(rho) * x_t / D
+    eta = -D + c^2 * rho^2 / (81 * g) +
+          5 * c^2 * rho^2 / (108 * g) * (2 * sech(theta)^2 - 3 * sech(theta)^4)
+    v = c * (1 - 5 * rho / 18) + 5 * c * rho / 6 * sech(theta)^2
     return SVector(eta, v, D)
 end
 
 """
-    source_terms_convergence_test(q, x, t, equations::BBMBBMVariableEquations1D, mesh)
+    initial_condition_manufactured(x, t, equations::BBMBBMVariableEquations1D, mesh)
 
-A smooth manufactured solution in combination with `initial_condition_convergence_test`.
+A smooth manufactured solution in combination with `source_terms_manufactured`.
 """
-function source_terms_convergence_test(q, x, t, equations::BBMBBMVariableEquations1D)
+function initial_condition_manufactured(x, t,
+                                        equations::BBMBBMVariableEquations1D,
+                                        mesh)
+    eta = exp(t) * cospi(2 * (x - 2 * t))
+    v = exp(t / 2) * sinpi(2 * (x - t / 2))
+    D = 5.0 + 2.0 * cospi(2 * x)
+    return SVector(eta, v, D)
+end
+
+"""
+    source_terms_manufactured(q, x, t, equations::BBMBBMVariableEquations1D, mesh)
+
+A smooth manufactured solution in combination with `initial_condition_manufactured`.
+"""
+function source_terms_manufactured(q, x, t, equations::BBMBBMVariableEquations1D)
     g = equations.gravity
     a1 = cospi(2 * x)
     a2 = sinpi(2 * x)
@@ -58,16 +85,18 @@ function source_terms_convergence_test(q, x, t, equations::BBMBBMVariableEquatio
     a5 = sinpi(2 * t - 4 * x)
     a6 = sinpi(4 * t - 2 * x)
     a7 = cospi(4 * t - 2 * x)
-    dq1 = -2 / 3 * pi^2 * (4 * pi * a6 - a7) * exp(t) * a1^2 +
-          4 / 3 * pi^2 * (a6 + 4 * pi * a7) * exp(t) * a2 * a1 -
-          2 * pi * exp(3 * t / 2) * a4 * a6 + 2 * pi * exp(3 * t / 2) * a3 * a7 +
-          2 * pi * exp(t / 2) * a2 * a4 + 2 * pi * exp(t / 2) * a1 * a3 -
+    dq1 = -2 * pi^2 * (4 * pi * a6 - a7) * (2 * a1 + 5)^2 * exp(t) / 3 +
+          8 * pi^2 * (a6 + 4 * pi * a7) * (2 * a1 + 5) * exp(t) * a2 / 3 +
+          2 * pi * (2 * a1 + 5) * exp(t / 2) * a3 - 2 * pi * exp(3 * t / 2) * a4 * a6 +
+          2 * pi * exp(3 * t / 2) * a3 * a7 + 4 * pi * exp(t / 2) * a2 * a4 -
           4 * pi * exp(t) * a6 + exp(t) * a7
     dq2 = 2 * pi * g * exp(t) * a6 -
           pi^2 *
-          (8 / 3 * (2 * pi * a4 - a3) * a2 * a1 -
-           4 / 3 * (a2^2 - a1^2) * (a4 + 2 * pi * a3) + 2 / 3 * (a4 + 2 * pi * a3) * a1^2) *
-          exp(t / 2) / 2 - exp(t / 2) * a4 / 2 - pi * exp(t / 2) * a3 - pi * exp(t) * a5
+          (8 * (2 * pi * a4 - a3) * (2 * a1 + 5) * a2 +
+           (a4 + 2 * pi * a3) * (2 * a1 + 5)^2 +
+           4 * (a4 + 2 * pi * a3) * (16 * sinpi(x)^4 - 26 * sinpi(x)^2 + 7)) * exp(t / 2) /
+          3 - exp(t / 2) * a4 / 2 - pi * exp(t / 2) * a3 - pi * exp(t) * a5
+
     return SVector(dq1, dq2, 0.0)
 end
 
@@ -126,18 +155,17 @@ function create_cache(mesh,
     K = Diagonal(D .^ 2)
     if solver.D1 isa PeriodicDerivativeOperator ||
        solver.D1 isa UniformPeriodicCoupledOperator
-        invImDKD_D = (I - 1 / 6 * sparse(solver.D1) * K * sparse(solver.D1)) \
-                     Matrix(solver.D1)
-        invImD2K_D = (I - 1 / 6 * sparse(solver.D2) * K) \ Matrix(solver.D1)
+        invImDKD = inv(I - 1 / 6 * Matrix(solver.D1) * K * Matrix(solver.D1))
+        invImD2K = inv(I - 1 / 6 * Matrix(solver.D2) * K)
     elseif solver.D1 isa PeriodicUpwindOperators
-        invImDKD_D = (I - 1 / 6 * sparse(solver.D1.minus) * K * sparse(solver.D1.plus)) \
-                     Matrix(solver.D1.minus)
-        invImD2K_D = (I - 1 / 6 * sparse(solver.D2) * K) \ Matrix(solver.D1.plus)
+        invImDKD = inv(I - 1 / 6 * Matrix(solver.D1.minus) * K * Matrix(solver.D1.plus))
+        invImD2K = inv(I - 1 / 6 * Matrix(solver.D2) * K)
     else
         @error "unknown type of first-derivative operator"
     end
     tmp1 = Array{RealT}(undef, nnodes(mesh))
-    return (invImDKD_D = invImDKD_D, invImD2K_D = invImD2K_D, tmp1 = tmp1)
+    tmp2 = similar(tmp1)
+    return (invImDKD = invImDKD, invImD2K = invImD2K, tmp1 = tmp1, tmp2 = tmp2)
 end
 
 # Discretization that conserves the mass (for eta and v) and the energy for periodic boundary conditions, see
@@ -148,7 +176,7 @@ end
 function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMVariableEquations1D,
               initial_condition, ::BoundaryConditionPeriodic, source_terms,
               solver, cache)
-    @unpack invImDKD_D, invImD2K_D, tmp1 = cache
+    @unpack invImDKD, invImD2K, tmp1 = cache
 
     q = wrap_array(u_ode, mesh, equations, solver)
     dq = wrap_array(du_ode, mesh, equations, solver)
@@ -161,12 +189,21 @@ function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMVariableEquations1D,
     dD = view(dq, 3, :)
     fill!(dD, zero(eltype(dD)))
 
-    @. tmp1 = -(D * v + eta * v)
-    mul!(deta, invImDKD_D, tmp1)
+    if solver.D1 isa PeriodicDerivativeOperator ||
+       solver.D1 isa UniformPeriodicCoupledOperator
+        deta[:] = -solver.D1 * (D .* v + eta .* v)
+        dv[:] = -solver.D1 * (equations.gravity * eta + 0.5 * v .^ 2)
+    elseif solver.D1 isa PeriodicUpwindOperators
+        deta[:] = -solver.D1.minus * (D .* v + eta .* v)
+        dv[:] = -solver.D1.plus * (equations.gravity * eta + 0.5 * v .^ 2)
+    else
+        @error "unknown type of first-derivative operator"
+    end
 
-    @. tmp1 = -(equations.gravity * eta + 0.5 * v^2)
-    mul!(dv, invImD2K_D, tmp1)
     calc_sources!(dq, q, t, source_terms, equations, solver)
+
+    deta[:] = invImDKD * deta
+    dv[:] = invImD2K * dv
 
     return nothing
 end
