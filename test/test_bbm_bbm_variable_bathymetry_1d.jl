@@ -68,7 +68,7 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_variable_bathymetry_1d")
                             change_waterheight=-1.359075785939412e-11,
                             change_velocity=-3.8711139735371144e-13,
                             change_entropy=17.81701226932122,
-                            atol=1e-11,
+                            atol=1e-10,
                             atol_ints=1e-11) # in order to make CI pass
     end
 

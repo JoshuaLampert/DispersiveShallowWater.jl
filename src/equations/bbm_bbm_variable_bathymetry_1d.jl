@@ -163,9 +163,8 @@ function create_cache(mesh,
     else
         @error "unknown type of first-derivative operator"
     end
-    tmp1 = Array{RealT}(undef, nnodes(mesh))
-    tmp2 = similar(tmp1)
-    return (invImDKD = invImDKD, invImD2K = invImD2K, tmp1 = tmp1, tmp2 = tmp2)
+    tmp1 = Array{RealT}(undef, nnodes(mesh)) # tmp1 is needed for the `RelaxationCallback`
+    return (invImDKD = invImDKD, invImD2K = invImD2K, tmp1 = tmp1)
 end
 
 # Discretization that conserves the mass (for eta and v) and the energy for periodic boundary conditions, see
@@ -176,7 +175,7 @@ end
 function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMVariableEquations1D,
               initial_condition, ::BoundaryConditionPeriodic, source_terms,
               solver, cache)
-    @unpack invImDKD, invImD2K, tmp1 = cache
+    @unpack invImDKD, invImD2K = cache
 
     q = wrap_array(u_ode, mesh, equations, solver)
     dq = wrap_array(du_ode, mesh, equations, solver)
