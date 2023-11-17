@@ -57,7 +57,6 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_variable_bathymetry_1d")
                             change_entropy=2.1316282072803006e-14)
     end
 
-
     @trixi_testset "bbm_bbm_variable_bathymetry_1d_manufactured" begin
         @test_trixi_include(joinpath(EXAMPLES_DIR,
                                      "bbm_bbm_variable_bathymetry_1d_manufactured.jl"),

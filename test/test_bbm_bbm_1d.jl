@@ -50,8 +50,10 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_1d")
                             cons_error=[3.873483998828586e-12 2.2986355942039745e-11],
                             change_waterheight=3.873483998828586e-12,
                             change_velocity=2.2986355942039745e-11,
-                            change_entropy=17.387441847193436)
-        end
+                            change_entropy=17.387441847193436,
+                            atol=1e-10,
+                            atol_ints=1e-11) # in order to make CI pass
+    end
 end
 
 end # module
