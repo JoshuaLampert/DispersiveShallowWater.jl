@@ -87,7 +87,7 @@ end
 """
     initial_condition_manufactured(x, t, equations::SvaerdKalischEquations1D, mesh)
 
-A smooth manufactured solution in combination with `source_terms_manufactured`.
+A smooth manufactured solution in combination with [`source_terms_manufactured`](@ref).
 """
 function initial_condition_manufactured(x, t,
                                         equations::SvaerdKalischEquations1D,
@@ -102,7 +102,7 @@ end
 """
     source_terms_manufactured(q, x, t, equations::SvaerdKalischEquations1D, mesh)
 
-A smooth manufactured solution in combination with `initial_condition_manufactured`.
+A smooth manufactured solution in combination with [`initial_condition_manufactured`](@ref).
 """
 function source_terms_manufactured(q, x, t, equations::SvaerdKalischEquations1D)
     g = equations.gravity
