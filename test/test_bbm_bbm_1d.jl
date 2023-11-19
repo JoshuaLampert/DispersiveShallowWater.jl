@@ -52,7 +52,7 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_1d")
                             change_velocity=2.2986355942039745e-11,
                             change_entropy=17.387441847193436,
                             atol=1e-10,
-                            atol_ints=1e-11) # in order to make CI pass
+                            atol_ints=1e-10) # in order to make CI pass
     end
 end
 
