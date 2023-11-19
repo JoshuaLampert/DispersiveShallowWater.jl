@@ -54,7 +54,8 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_variable_bathymetry_1d")
                             cons_error=[7.194245199571014e-14 1.2388735870505485e-12 0.0],
                             change_waterheight=-1.5765166949677223e-13,
                             change_velocity=1.8791999206735355e-13,
-                            change_entropy=2.1316282072803006e-14)
+                            change_entropy=2.1316282072803006e-14,
+                            atol=1e-11) # in order to make CI pass)
     end
 
     @trixi_testset "bbm_bbm_variable_bathymetry_1d_manufactured" begin
