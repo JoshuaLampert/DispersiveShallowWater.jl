@@ -2,9 +2,9 @@ using OrdinaryDiffEq
 using DispersiveShallowWater
 
 ###############################################################################
-# Semidiscretization of the BBM-BBM equations
+# Semidiscretization of the Svärd-Kalisch equations
 
-equations = SvaerdKalischEquations1D(gravity_constant = 1.0, eta0 = 2.0,
+equations = SvaerdKalischEquations1D(gravity_constant = 1.0, eta0 = 0.0,
                                      alpha = 0.0004040404040404049,
                                      beta = 0.49292929292929294,
                                      gamma = 0.15707070707070708)
@@ -16,7 +16,7 @@ boundary_conditions = boundary_condition_periodic
 # create homogeneous mesh
 coordinates_min = 0.0
 coordinates_max = 1.0
-N = 512
+N = 128
 mesh = Mesh1D(coordinates_min, coordinates_max, N)
 
 # create solver with periodic SBP operators of accuracy order 4
@@ -40,4 +40,4 @@ callbacks = CallbackSet(analysis_callback)
 
 saveat = range(tspan..., length = 100)
 sol = solve(ode, Tsit5(), abstol = 1e-7, reltol = 1e-7,
-            save_everystep = true, callback = callbacks, saveat = saveat)
+            save_everystep = false, callback = callbacks, saveat = saveat)

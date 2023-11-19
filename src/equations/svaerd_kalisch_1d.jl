@@ -94,8 +94,7 @@ function initial_condition_manufactured(x, t,
                                         mesh)
     eta = exp(t) * cospi(2 * (x - 2 * t))
     v = exp(t / 2) * sinpi(2 * (x - t / 2))
-#     D = cospi(2 * x)
-    D = -2.0
+    D = 3.0
     return SVector(eta, v, D)
 end
 
@@ -106,21 +105,28 @@ A smooth manufactured solution in combination with [`initial_condition_manufactu
 """
 function source_terms_manufactured(q, x, t, equations::SvaerdKalischEquations1D)
     g = equations.gravity
-    D = q[3, 1]
+    D = q[3, 1] # D is constant, thus simply take the first entry
     eta0 = equations.eta0
     alpha = equations.alpha
     beta = equations.beta
     gamma = equations.gamma
-    a1 = cospi(2 * x)
-    a2 = sinpi(2 * x)
-    a3 = cospi(t - 2 * x)
-    a4 = sinpi(t - 2 * x)
-    a6 = sinpi(4 * t - 2 * x)
-    a7 = cospi(4 * t - 2 * x)
-#     dq1 = -10*pi^3*alpha^2*g*(eta0 + a1)^3*(2*(eta0 + a1)*a7 + 5*a2*a6)*exp(t)*a2 + 2*pi^3*alpha^2*g*(eta0 + a1)^3*(4*(eta0 + a1)^2*a6 - 20*(eta0 + a1)*a2*a7 + 10*(eta0 + a1)*a6*a1 - 15*a2^2*a6)*exp(t) - 2*pi*(exp(t)*a6 - a2)*exp(t/2)*a4 + 2*pi*(exp(t)*a7 + a1)*exp(t/2)*a3 - 4*pi*exp(t)*a6 + exp(t)*a7
-#     dq2 = 4*pi^3*alpha^2*g*(eta0 + a1)^4*(2*(eta0 + a1)*a7 + 5*a2*a6)*exp(3*t/2)*a3 + 10*pi^3*alpha^2*g*(eta0 + a1)^3*(2*(eta0 + a1)*a7 + 5*a2*a6)*exp(3*t/2)*a2*a4 - 2*pi^3*alpha^2*g*(eta0 + a1)^3*(4*(eta0 + a1)^2*a6 - 20*(eta0 + a1)*a2*a7 + 10*(eta0 + a1)*a6*a1 - 15*a2^2*a6)*exp(3*t/2)*a4 - 2*pi^2*beta*(eta0 + a1)^2*((eta0 + a1)*a4 + 2*pi*(eta0 + a1)*a3 + 6*pi*a2*a4 - 3*a2*a3)*exp(t/2) + 2*pi*g*(exp(t)*a7 + a1)*exp(t)*a6 + 4.0*pi^3*gamma*sqrt(g*(eta0 + a1))*(eta0 + a1)^3*exp(t/2)*a3 + 14.0*pi^3*gamma*sqrt(g*(eta0 + a1))*(eta0 + a1)^2*exp(t/2)*a2*a4 + pi^3*gamma*sqrt(g*(eta0 + a1))*(eta0 + a1)*(4*(eta0 + a1)^2*a3 + 28*(eta0 + a1)*a2*a4 + 12*((eta0 + a1)*a1 - 2*a2^2)*a3 + (2*(eta0 + a1)*a1 + a2^2)*a3 - 12*a2^2*a3)*exp(t/2) + (4*pi*a6 - a7)*exp(3*t/2)*a4 + 2*pi*(exp(t)*a6 - a2)*exp(t)*a4^2 - (exp(t)*a7 + a1)*exp(t/2)*a4/2 - pi*(exp(t)*a7 + a1)*exp(t/2)*a3 - 4*pi*(exp(t)*a7 + a1)*exp(t)*a4*a3 - (10*pi^3*alpha^2*g*(eta0 + a1)^3*(2*(eta0 + a1)*a7 + 5*a2*a6)*exp(t)*a2 - 2*pi^3*alpha^2*g*(eta0 + a1)^3*(4*(eta0 + a1)^2*a6 - 20*(eta0 + a1)*a2*a7 + 10*(eta0 + a1)*a6*a1 - 15*a2^2*a6)*exp(t) + 2*pi*(exp(t)*a6 - a2)*exp(t/2)*a4 - 2*pi*(exp(t)*a7 + a1)*exp(t/2)*a3 + 4*pi*exp(t)*a6 - exp(t)*a7)*exp(t/2)*a4
-    dq1 = 8*pi^3*alpha^2*g*(D + eta0)^5*exp(t)*sin(pi*(4*t - 2*x)) + 2*pi*(D + exp(t)*cos(pi*(4*t - 2*x)))*exp(t/2)*cos(pi*(t - 2*x)) - 2*pi*exp(3*t/2)*sin(pi*(t - 2*x))*sin(pi*(4*t - 2*x)) - 4*pi*exp(t)*sin(pi*(4*t - 2*x)) + exp(t)*cos(pi*(4*t - 2*x))
-    dq2 = 2*pi*D*g*exp(t)*sin(4*pi*t - 2*pi*x) - D*exp(t/2)*sin(pi*t - 2*pi*x)/2 - pi*D*exp(t/2)*cos(pi*t - 2*pi*x) - 2*pi*D*exp(t)*sin(pi*t - 2*pi*x)*cos(pi*t - 2*pi*x) + 8*pi^3*alpha^2*g*(D + eta0)^5*exp(3*t/2)*cos(pi*t - 2*pi*x)*cos(4*pi*t - 2*pi*x) - 2*pi^2*beta*(D + eta0)^3*exp(t/2)*sin(pi*t - 2*pi*x) - 4*pi^3*beta*(D + eta0)^3*exp(t/2)*cos(pi*t - 2*pi*x) + 2*pi*g*exp(2*t)*sin(4*pi*t - 2*pi*x)*cos(4*pi*t - 2*pi*x) + 8.0*pi^3*gamma*(D + eta0)^3*sqrt(D*g + eta0*g)*exp(t/2)*cos(pi*t - 2*pi*x) - exp(3*t/2)*sin(pi*t - 2*pi*x)*cos(4*pi*t - 2*pi*x)/2 - pi*exp(3*t/2)*cos(pi*t - 2*pi*x)*cos(4*pi*t - 2*pi*x) - 2*pi*exp(2*t)*sin(pi*t - 2*pi*x)*cos(pi*t - 2*pi*x)*cos(4*pi*t - 2*pi*x)
+    a1 = cospi(t - 2 * x)
+    a2 = sinpi(t - 2 * x)
+    a3 = cospi(4 * t - 2 * x)
+    a4 = sinpi(4 * t - 2 * x)
+
+    dq1 = 8 * pi^3 * alpha * sqrt(g * (D + eta0)) * (D + eta0)^2 * exp(t) * a4 +
+          2 * pi * (D + exp(t) * a3) * exp(t / 2) * a1 - 2 * pi * exp(3 * t / 2) * a2 * a4 -
+          4 * pi * exp(t) * a4 + exp(t) * a3
+    dq2 = 2 * pi * D * g * exp(t) * a4 - D * exp(t / 2) * a2 / 2 -
+          pi * D * exp(t / 2) * a1 - 2 * pi * D * exp(t) * a2 * a1 +
+          8 * pi^3 * alpha * (D + eta0)^2 * sqrt(D * g + eta0 * g) * exp(3 * t / 2) * a1 *
+          a3 - 2 * pi^2 * beta * (D + eta0)^3 * exp(t / 2) * a2 -
+          4 * pi^3 * beta * (D + eta0)^3 * exp(t / 2) * a1 +
+          2 * pi * g * exp(2 * t) * a4 * a3 +
+          8.0 * pi^3 * gamma * (D + eta0)^3 * sqrt(D * g + eta0 * g) * exp(t / 2) * a1 -
+          exp(3 * t / 2) * a2 * a3 / 2 - pi * exp(3 * t / 2) * a1 * a3 -
+          2 * pi * exp(2 * t) * a2 * a1 * a3
     return SVector(dq1, dq2, 0.0)
 end
 #
