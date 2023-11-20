@@ -5,6 +5,7 @@ version = "0.1.2-pre"
 
 [deps]
 DiffEqBase = "2b5f629d-d688-5b77-993f-72d75c75574e"
+Interpolations = "a98d9a8b-a2ab-59e6-89dd-64a1c18fca59"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 PolynomialBases = "c74db56a-226d-5e98-8bb0-a6049094aeea"
 Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
@@ -19,6 +20,7 @@ SummationByPartsOperators = "9f78cca6-572e-554e-b819-917d2f1cf240"
 
 [compat]
 DiffEqBase = "6.121"
+Interpolations = "0.14"
 LinearAlgebra = "1"
 PolynomialBases = "0.4.15"
 Printf = "1"

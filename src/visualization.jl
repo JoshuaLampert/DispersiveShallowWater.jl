@@ -105,12 +105,14 @@ end
         nsubplots -= 1
     end
 
-    index = argmin(abs.(grid(semi) .- x))
     solution = zeros(nvariables(semi), length(sol.t))
     data = zeros(nvars, length(sol.t))
     for i in 1:nvariables(semi)
         for k in 1:length(sol.t)
-            solution[i, k] = wrap_array(sol.u[k], semi)[i, index]
+            # Allow that the spatial value `x` is not on the grid. Thus, interpolate the given values to the provided `x`
+            # with a linear spline.
+            solution[i, k] = linear_interpolation(grid(semi),
+                                                  view(wrap_array(sol.u[k], semi), i, :))(x)
         end
     end
 
@@ -120,7 +122,7 @@ end
 
     names = varnames(conversion, equations)
     plot_title -->
-    "$(get_name(semi.equations)) at x = $(round(grid(semi)[index], digits=5))"
+    "$(get_name(semi.equations)) at x = $(round(x, digits=5))"
     layout --> nsubplots
 
     for i in 1:nsubplots
