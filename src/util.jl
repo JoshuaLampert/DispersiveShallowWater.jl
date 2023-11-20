@@ -48,22 +48,6 @@ function default_example()
              "bbm_bbm_variable_bathymetry_1d_basic.jl")
 end
 
-"""
-    path_create_figures()
-
-Return the path to the file that creates all figures used in the master thesis "Structure-preserving
-Numerical Methods for Dispersive Shallow Water Model" (2023). Executing this julia script may take a
-while.
-
-# Examples
-```@example
-include(DispersiveShallowWater.path_create_figures())
-```
-"""
-function path_create_figures()
-    pkgdir(DispersiveShallowWater, "visualization", "create_figures.jl")
-end
-
 # Note: We can't call the method below `DispersiveShallowWater.include` since that is created automatically
 # inside `module DispersiveShallowWater` to `include` source files and evaluate them within the global scope
 # of `DispersiveShallowWater`. However, users will want to evaluate in the global scope of `Main` or something

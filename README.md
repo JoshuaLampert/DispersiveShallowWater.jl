@@ -58,7 +58,7 @@ e.g., `include(joinpath(examples_dir(), "svaerd_kalisch_1d", "svaerd_kalisch_1d_
 
 ## Authors
 
-The package is developed and maintained by Joshua Lampert and was initiated as part of the master thesis "Structure-Preserving Numerical Methods for Dispersive Shallow Water Models" (2023).
+The package is developed and maintained by Joshua Lampert (University of Hamburg).
 Some parts of this repository are based on parts of [Dispersive-wave-schemes-notebooks. A Broad Class of Conservative Numerical Methods for Dispersive Wave Equations](https://github.com/ranocha/Dispersive-wave-schemes-notebooks)
 by Hendrik Ranocha, Dimitrios Mitsotakis and David Ketcheson. The code structure is inspired by [Trixi.jl](https://github.com/trixi-framework/Trixi.jl/).
 
