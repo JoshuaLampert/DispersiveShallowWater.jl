@@ -1,36 +1,36 @@
 using OrdinaryDiffEq
 using DispersiveShallowWater
-using SummationByPartsOperators: periodic_derivative_operator
-using SparseArrays: sparse
 
 ###############################################################################
-# Semidiscretization of the BBM-BBM equations
+# Semidiscretization of the Svärd-Kalisch equations
 
-equations = BBMBBMEquations1D(gravity_constant = 9.81, D = 2.0)
+equations = SvaerdKalischEquations1D(gravity_constant = 1.0, eta0 = 0.0,
+                                     alpha = 0.0004040404040404049,
+                                     beta = 0.49292929292929294,
+                                     gamma = 0.15707070707070708)
 
-# initial_condition_convergence_test needs periodic boundary conditions
-initial_condition = initial_condition_convergence_test
+initial_condition = initial_condition_manufactured
+source_terms = source_terms_manufactured
 boundary_conditions = boundary_condition_periodic
 
 # create homogeneous mesh
-coordinates_min = -35.0
-coordinates_max = 35.0
-N = 512
+coordinates_min = 0.0
+coordinates_max = 1.0
+N = 128
 mesh = Mesh1D(coordinates_min, coordinates_max, N)
 
 # create solver with periodic SBP operators of accuracy order 4
 accuracy_order = 4
-D1 = periodic_derivative_operator(1, accuracy_order, mesh.xmin, mesh.xmax, mesh.N)
-D2 = sparse(D1)^2
-solver = Solver(D1, D2)
+solver = Solver(mesh, accuracy_order)
 
 # semidiscretization holds all the necessary data structures for the spatial discretization
 semi = Semidiscretization(mesh, equations, initial_condition, solver,
-                          boundary_conditions = boundary_conditions)
+                          boundary_conditions = boundary_conditions,
+                          source_terms = source_terms)
 
 ###############################################################################
 # Create `ODEProblem` and run the simulation
-tspan = (0.0, 30.0)
+tspan = (0.0, 1.0)
 ode = semidiscretize(semi, tspan)
 analysis_callback = AnalysisCallback(semi; interval = 10,
                                      extra_analysis_errors = (:conservation_error,),

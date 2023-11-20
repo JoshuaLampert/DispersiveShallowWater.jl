@@ -53,6 +53,41 @@ function initial_condition_convergence_test(x, t, equations::BBMBBMEquations1D, 
     return SVector(eta, v)
 end
 
+"""
+    initial_condition_manufactured(x, t, equations::BBMBBMEquations1D, mesh)
+
+A smooth manufactured solution in combination with [`source_terms_manufactured`](@ref).
+"""
+function initial_condition_manufactured(x, t,
+                                        equations::BBMBBMEquations1D,
+                                        mesh)
+    eta = exp(t) * cospi(2 * (x - 2 * t))
+    v = exp(t / 2) * sinpi(2 * (x - t / 2))
+    return SVector(eta, v)
+end
+
+"""
+    source_terms_manufactured(q, x, t, equations::BBMBBMEquations1D, mesh)
+
+A smooth manufactured solution in combination with [`initial_condition_manufactured`](@ref).
+"""
+function source_terms_manufactured(q, x, t, equations::BBMBBMEquations1D)
+    g = equations.gravity
+    D = equations.D
+    a3 = cospi(t - 2 * x)
+    a4 = sinpi(t - 2 * x)
+    a5 = sinpi(2 * t - 4 * x)
+    a6 = sinpi(4 * t - 2 * x)
+    a7 = cospi(4 * t - 2 * x)
+    dq1 = -2 * pi^2 * D^2 * (4 * pi * a6 - a7) * exp(t) / 3 + 2 * pi * D * exp(t / 2) * a3 -
+          2 * pi * exp(3 * t / 2) * a4 * a6 + 2 * pi * exp(3 * t / 2) * a3 * a7 -
+          4 * pi * exp(t) * a6 + exp(t) * a7
+    dq2 = -pi^2 * D^2 * (a4 + 2 * pi * a3) * exp(t / 2) / 3 + 2 * pi * g * exp(t) * a6 -
+          exp(t / 2) * a4 / 2 - pi * exp(t / 2) * a3 - pi * exp(t) * a5
+
+    return SVector(dq1, dq2)
+end
+#
 function create_cache(mesh,
                       equations::BBMBBMEquations1D,
                       solver,
@@ -61,15 +96,14 @@ function create_cache(mesh,
                       uEltype)
     if solver.D1 isa PeriodicDerivativeOperator ||
        solver.D1 isa UniformPeriodicCoupledOperator
-        invImD2_D = (I - 1 / 6 * equations.D^2 * sparse(solver.D2)) \ Matrix(solver.D1)
+        invImD2 = inv(I - 1 / 6 * equations.D^2 * Matrix(solver.D2))
     elseif solver.D1 isa PeriodicUpwindOperators
-        invImD2_D = (I - 1 / 6 * equations.D^2 * sparse(solver.D2)) \
-                    Matrix(solver.D1.central)
+        invImD2 = inv(I - 1 / 6 * equations.D^2 * Matrix(solver.D2))
     else
         @error "unknown type of first-derivative operator"
     end
-    tmp1 = Array{RealT}(undef, nnodes(mesh))
-    return (invImD2_D = invImD2_D, tmp1 = tmp1)
+    tmp1 = Array{RealT}(undef, nnodes(mesh)) # tmp1 is needed for the `RelaxationCallback`
+    return (invImD2 = invImD2, tmp1 = tmp1)
 end
 
 # Discretization that conserves the mass (for eta and v) and the energy for periodic boundary conditions, see
@@ -77,8 +111,8 @@ end
 #   A Broad Class of Conservative Numerical Methods for Dispersive Wave Equations
 #   [DOI: 10.4208/cicp.OA-2020-0119](https://doi.org/10.4208/cicp.OA-2020-0119)
 function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMEquations1D, initial_condition,
-              ::BoundaryConditionPeriodic, solver, cache)
-    @unpack invImD2_D, tmp1 = cache
+              ::BoundaryConditionPeriodic, source_terms, solver, cache)
+    @unpack invImD2 = cache
 
     q = wrap_array(u_ode, mesh, equations, solver)
     dq = wrap_array(du_ode, mesh, equations, solver)
@@ -89,11 +123,21 @@ function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMEquations1D, initial_cond
     dv = view(dq, 2, :)
 
     # energy and mass conservative semidiscretization
-    @. tmp1 = -(equations.D * v + eta * v)
-    mul!(deta, invImD2_D, tmp1)
+    if solver.D1 isa PeriodicDerivativeOperator ||
+       solver.D1 isa UniformPeriodicCoupledOperator
+        deta[:] = -solver.D1 * (equations.D * v + eta .* v)
+        dv[:] = -solver.D1 * (equations.gravity * eta + 0.5 * v .^ 2)
+    elseif solver.D1 isa PeriodicUpwindOperators
+        deta[:] = -solver.D1.central * (equations.D * v + eta .* v)
+        dv[:] = -solver.D1.central * (equations.gravity * eta + 0.5 * v .^ 2)
+    else
+        @error "unknown type of first-derivative operator"
+    end
 
-    @. tmp1 = -(equations.gravity * eta + 0.5 * v^2)
-    mul!(dv, invImD2_D, tmp1)
+    calc_sources!(dq, q, t, source_terms, equations, solver)
+
+    deta[:] = invImD2 * deta
+    dv[:] = invImD2 * dv
 
     return nothing
 end

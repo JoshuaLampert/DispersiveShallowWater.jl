@@ -1,38 +1,33 @@
 using OrdinaryDiffEq
 using DispersiveShallowWater
-using SummationByPartsOperators: upwind_operators, periodic_derivative_operator
-using SparseArrays: sparse
 
 ###############################################################################
 # Semidiscretization of the BBM-BBM equations
 
 equations = BBMBBMVariableEquations1D(gravity_constant = 9.81)
 
-# initial_condition_convergence_test needs periodic boundary conditions
-initial_condition = initial_condition_convergence_test
+initial_condition = initial_condition_manufactured
+source_terms = source_terms_manufactured
 boundary_conditions = boundary_condition_periodic
 
 # create homogeneous mesh
-coordinates_min = -35.0
-coordinates_max = 35.0
+coordinates_min = 0.0
+coordinates_max = 1.0
 N = 512
 mesh = Mesh1D(coordinates_min, coordinates_max, N)
 
 # create solver with periodic SBP operators of accuracy order 4
 accuracy_order = 4
-D1 = upwind_operators(periodic_derivative_operator; derivative_order = 1,
-                      accuracy_order = accuracy_order, xmin = mesh.xmin, xmax = mesh.xmax,
-                      N = mesh.N)
-D2 = sparse(D1.plus) * sparse(D1.minus)
-solver = Solver(D1, D2)
+solver = Solver(mesh, accuracy_order)
 
 # semidiscretization holds all the necessary data structures for the spatial discretization
 semi = Semidiscretization(mesh, equations, initial_condition, solver,
-                          boundary_conditions = boundary_conditions)
+                          boundary_conditions = boundary_conditions,
+                          source_terms = source_terms)
 
 ###############################################################################
 # Create `ODEProblem` and run the simulation
-tspan = (0.0, 30.0)
+tspan = (0.0, 1.0)
 ode = semidiscretize(semi, tspan)
 analysis_callback = AnalysisCallback(semi; interval = 10,
                                      extra_analysis_errors = (:conservation_error,),

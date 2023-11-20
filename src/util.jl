@@ -48,22 +48,6 @@ function default_example()
              "bbm_bbm_variable_bathymetry_1d_basic.jl")
 end
 
-"""
-    path_create_figures()
-
-Return the path to the file that creates all figures used in the master thesis "Structure-preserving
-Numerical Methods for Dispersive Shallow Water Model" (2023). Executing this julia script may take a
-while.
-
-# Examples
-```@example
-include(DispersiveShallowWater.path_create_figures())
-```
-"""
-function path_create_figures()
-    pkgdir(DispersiveShallowWater, "visualization", "create_figures.jl")
-end
-
 # Note: We can't call the method below `DispersiveShallowWater.include` since that is created automatically
 # inside `module DispersiveShallowWater` to `include` source files and evaluate them within the global scope
 # of `DispersiveShallowWater`. However, users will want to evaluate in the global scope of `Main` or something
@@ -96,6 +80,16 @@ julia> redirect_stdout(devnull) do
 ```
 """
 function trixi_include(mod::Module, example::AbstractString; kwargs...)
+    # Check that all kwargs exist as assignments
+    code = read(example, String)
+    expr = Meta.parse("begin \n$code \nend")
+    expr = insert_maxiters(expr)
+
+    for (key, val) in kwargs
+        # This will throw an error when `key` is not found
+        find_assignment(expr, key)
+    end
+
     Base.include(ex -> replace_assignments(insert_maxiters(ex); kwargs...), mod, example)
 end
 
@@ -282,6 +276,7 @@ end
 function find_assignment(expr, destination)
     # declare result to be able to assign to it in the closure
     local result
+    found = false
 
     # find explicit and keyword assignments
     walkexpr(expr) do x
@@ -289,10 +284,15 @@ function find_assignment(expr, destination)
             if (x.head === Symbol("=") || x.head === :kw) &&
                x.args[1] === Symbol(destination)
                 result = x.args[2]
+                found = true
                 # dump(x)
             end
         end
         return x
+    end
+
+    if !found
+        throw(ArgumentError("assignment `$destination` not found in expression"))
     end
 
     result

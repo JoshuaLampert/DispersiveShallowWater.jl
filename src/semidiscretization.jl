@@ -6,7 +6,7 @@ A `struct` containing everything needed to describe a spatial semidiscretization
 of an equation.
 """
 struct Semidiscretization{Mesh, Equations, InitialCondition, BoundaryConditions,
-                          Solver, Cache}
+                          SourceTerms, Solver, Cache}
     mesh::Mesh
     equations::Equations
 
@@ -15,30 +15,34 @@ struct Semidiscretization{Mesh, Equations, InitialCondition, BoundaryConditions,
     initial_condition::InitialCondition
 
     boundary_conditions::BoundaryConditions
+    source_terms::SourceTerms
     solver::Solver
     cache::Cache
 
     function Semidiscretization{Mesh, Equations, InitialCondition, BoundaryConditions,
-                                Solver,
+                                SourceTerms, Solver,
                                 Cache}(mesh::Mesh, equations::Equations,
                                        initial_condition::InitialCondition,
                                        boundary_conditions::BoundaryConditions,
+                                       source_terms::SourceTerms,
                                        solver::Solver,
                                        cache::Cache) where {Mesh, Equations,
                                                             InitialCondition,
-                                                            BoundaryConditions, Solver,
-                                                            Cache}
+                                                            BoundaryConditions, SourceTerms,
+                                                            Solver, Cache}
         @assert ndims(mesh) == ndims(equations)
         @assert xmin(mesh) == xmin(solver.D1)
         @assert xmax(mesh) == xmax(solver.D1)
         @assert nnodes(mesh) == length(grid(solver))
 
-        new(mesh, equations, initial_condition, boundary_conditions, solver, cache)
+        new(mesh, equations, initial_condition, boundary_conditions, source_terms, solver,
+            cache)
     end
 end
 
 """
     Semidiscretization(mesh, equations, initial_condition, solver;
+                       source_terms=nothing,
                        boundary_conditions=boundary_condition_periodic,
                        RealT=real(solver),
                        uEltype=RealT,
@@ -47,6 +51,7 @@ end
 Construct a semidiscretization of a PDE.
 """
 function Semidiscretization(mesh, equations, initial_condition, solver;
+                            source_terms = nothing,
                             boundary_conditions = boundary_condition_periodic,
                             # `RealT` is used as real type for node locations etc.
                             # while `uEltype` is used as element type of solutions etc.
@@ -57,12 +62,10 @@ function Semidiscretization(mesh, equations, initial_condition, solver;
              initial_cache...)
 
     Semidiscretization{typeof(mesh), typeof(equations), typeof(initial_condition),
-                       typeof(boundary_conditions), typeof(solver), typeof(cache)}(mesh,
-                                                                                   equations,
-                                                                                   initial_condition,
-                                                                                   boundary_conditions,
-                                                                                   solver,
-                                                                                   cache)
+                       typeof(boundary_conditions), typeof(source_terms),
+                       typeof(solver), typeof(cache)}(mesh, equations, initial_condition,
+                                                      boundary_conditions, source_terms,
+                                                      solver, cache)
 end
 
 function Base.show(io::IO, semi::Semidiscretization)
@@ -73,6 +76,7 @@ function Base.show(io::IO, semi::Semidiscretization)
     print(io, ", ", semi.equations)
     print(io, ", ", semi.initial_condition)
     print(io, ", ", semi.boundary_conditions)
+    print(io, ", ", semi.source_terms)
     print(io, ", ", semi.solver)
     print(io, ", cache(")
     for (idx, key) in enumerate(keys(semi.cache))
@@ -93,7 +97,8 @@ function Base.show(io::IO, ::MIME"text/plain", semi::Semidiscretization)
         println(io, "    mesh: ", semi.mesh)
         println(io, "    equations: ", get_name(semi.equations))
         println(io, "    initial condition: ", semi.initial_condition)
-        print(io, "    boundary condition: ", semi.boundary_conditions)
+        println(io, "    boundary condition: ", semi.boundary_conditions)
+        print(io, "    source terms: ", semi.source_terms)
     end
 end
 
@@ -196,10 +201,11 @@ function wrap_array(u_ode, semi::Semidiscretization)
 end
 
 function rhs!(du_ode, u_ode, semi::Semidiscretization, t)
-    @unpack mesh, equations, initial_condition, boundary_conditions, solver, cache = semi
+    @unpack mesh, equations, initial_condition, boundary_conditions, solver, source_terms, cache = semi
 
-    rhs!(du_ode, u_ode, t, mesh, equations, initial_condition, boundary_conditions, solver,
-         cache)
+    rhs!(du_ode, u_ode, t, mesh, equations, initial_condition, boundary_conditions,
+         source_terms,
+         solver, cache)
 
     return nothing
 end

@@ -117,7 +117,8 @@ end
 gif(anim, "shoaling_solution.gif", fps = 25)
 ```
 
-It is also possible to plot the solution variables at a fixed spatial point over time by calling `plot(semi => sol, x)` for some `x`-value, see [plot_examples.jl](https://github.com/JoshuaLampert/DispersiveShallowWater.jl/blob/main/visualization/plot_examples.jl) for some examples.
+It is also possible to plot the solution variables at a fixed spatial point over time by calling `plot(semi => sol, x)` for some `x`-value, see [plot_examples.jl](https://github.com/JoshuaLampert/2023-master-thesis/blob/main/code/plot_examples.jl) from
+the reproducibility repository of the master thesis of Joshua Lampert for some examples.
 
 Often, it is interesting to have a look at how the quantities that are recorded by the `AnalysisCallback` evolve in time. To this end, you can `plot` the `AnalysisCallback` by
 
@@ -224,7 +225,7 @@ For more details see also the [documentation of SummationByPartsOperators.jl](ht
 
 Some more examples sorted by the simulated equations can be found in the [examples/](https://github.com/JoshuaLampert/DispersiveShallowWater.jl/tree/main/examples) subdirectory. Especially, in [examples/svaerd\_kalisch\_1d/](https://github.com/JoshuaLampert/DispersiveShallowWater.jl/tree/main/examples/svaerd_kalisch_1d) you can find Julia scripts that solve the [`SvaerdKalischEquations1D`](@ref) that were not covered in this tutorial. The same steps as described above, however, apply in the same way to these equations. Attention must be paid for these equations because they do not conserve the classical total entropy ``\mathcal E``, but a modified entropy ``\hat{\mathcal E}``, available as [`entropy_modified`](@ref).
 
-More examples, especially focussing on plotting, can be found in the scripts [create_figures.jl](https://github.com/JoshuaLampert/DispersiveShallowWater.jl/blob/main/visualization/create_figures.jl) and [plot_examples.jl](https://github.com/JoshuaLampert/DispersiveShallowWater.jl/blob/main/visualization/plot_examples.jl).
+More examples, especially focussing on plotting, can be found in the scripts [create_figures.jl](https://github.com/JoshuaLampert/2023-master-thesis/blob/main/code/create_figures.jl) and [plot_examples.jl](https://github.com/JoshuaLampert/2023-master-thesis/blob/main/code/plot_examples.jl) from the reproducibility repository of the master thesis of Joshua Lampert.
 
 ## References
 

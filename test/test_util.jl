@@ -41,8 +41,8 @@ macro test_trixi_include(example, args...)
         if (arg.head == :(=) &&
             !(arg.args[1] in (:l2, :linf, :cons_error, :change_waterheight,
                               :change_velocity, :change_momentum, :change_entropy,
-                              :change_entropy_modified, :atol, :rtol, :atol_ints,
-                              :rtol_ints)))
+                              :change_entropy_modified, :lake_at_rest,
+                              :atol, :rtol, :atol_ints, :rtol_ints)))
             push!(kwargs, Pair(arg.args...))
         end
     end

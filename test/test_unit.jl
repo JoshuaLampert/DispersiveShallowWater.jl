@@ -216,15 +216,13 @@ using SparseArrays: sparse, SparseMatrixCSC
 
     @testset "util" begin
         @test_nowarn get_examples()
-        @test_nowarn DispersiveShallowWater.path_create_figures()
         @test_nowarn trixi_include(default_example(), tspan = (0.0, 0.1))
 
         accuracy_orders = [2, 4, 6]
         for accuracy_order in accuracy_orders
-            eoc_mean_values, _ = convergence_test(default_example(), 2, initial_N = 128,
+            eoc_mean_values, _ = convergence_test(default_example(), 2, N = 512,
                                                   tspan = (0.0, 1.0),
                                                   accuracy_order = accuracy_order)
-            show(eoc_mean_values)
             @test isapprox(eoc_mean_values[:l2][1], accuracy_order, atol = 0.5)
             @test isapprox(eoc_mean_values[:linf][2], accuracy_order, atol = 0.5)
             @test isapprox(eoc_mean_values[:l2][1], accuracy_order, atol = 0.5)
