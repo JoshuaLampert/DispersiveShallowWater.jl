@@ -84,9 +84,55 @@ function initial_condition_dingemans(x, t, equations::SvaerdKalischEquations1D, 
     return SVector(eta, v, D)
 end
 
+"""
+    initial_condition_manufactured(x, t, equations::SvaerdKalischEquations1D, mesh)
+
+A smooth manufactured solution in combination with [`source_terms_manufactured`](@ref).
+"""
+function initial_condition_manufactured(x, t,
+                                        equations::SvaerdKalischEquations1D,
+                                        mesh)
+    eta = exp(t) * cospi(2 * (x - 2 * t))
+    v = exp(t / 2) * sinpi(2 * (x - t / 2))
+    D = 3.0
+    return SVector(eta, v, D)
+end
+
+"""
+    source_terms_manufactured(q, x, t, equations::SvaerdKalischEquations1D, mesh)
+
+A smooth manufactured solution in combination with [`initial_condition_manufactured`](@ref).
+"""
+function source_terms_manufactured(q, x, t, equations::SvaerdKalischEquations1D)
+    g = equations.gravity
+    D = q[3, 1] # D is constant, thus simply take the first entry
+    eta0 = equations.eta0
+    alpha = equations.alpha
+    beta = equations.beta
+    gamma = equations.gamma
+    a1 = cospi(t - 2 * x)
+    a2 = sinpi(t - 2 * x)
+    a3 = cospi(4 * t - 2 * x)
+    a4 = sinpi(4 * t - 2 * x)
+
+    dq1 = 8 * pi^3 * alpha * sqrt(g * (D + eta0)) * (D + eta0)^2 * exp(t) * a4 +
+          2 * pi * (D + exp(t) * a3) * exp(t / 2) * a1 - 2 * pi * exp(3 * t / 2) * a2 * a4 -
+          4 * pi * exp(t) * a4 + exp(t) * a3
+    dq2 = 2 * pi * D * g * exp(t) * a4 - D * exp(t / 2) * a2 / 2 -
+          pi * D * exp(t / 2) * a1 - 2 * pi * D * exp(t) * a2 * a1 +
+          8 * pi^3 * alpha * (D + eta0)^2 * sqrt(D * g + eta0 * g) * exp(3 * t / 2) * a1 *
+          a3 - 2 * pi^2 * beta * (D + eta0)^3 * exp(t / 2) * a2 -
+          4 * pi^3 * beta * (D + eta0)^3 * exp(t / 2) * a1 +
+          2 * pi * g * exp(2 * t) * a4 * a3 +
+          8.0 * pi^3 * gamma * (D + eta0)^3 * sqrt(D * g + eta0 * g) * exp(t / 2) * a1 -
+          exp(3 * t / 2) * a2 * a3 / 2 - pi * exp(3 * t / 2) * a1 * a3 -
+          2 * pi * exp(2 * t) * a2 * a1 * a3
+    return SVector(dq1, dq2, 0.0)
+end
+#
 function create_cache(mesh,
                       equations::SvaerdKalischEquations1D,
-                      solver::Solver,
+                      solver,
                       initial_condition,
                       RealT,
                       uEltype)
@@ -123,8 +169,8 @@ end
 
 # Discretization that conserves the mass (for eta and v) and is energy-bounded for periodic boundary conditions
 function rhs!(du_ode, u_ode, t, mesh, equations::SvaerdKalischEquations1D,
-              initial_condition,
-              ::BoundaryConditionPeriodic, solver, cache)
+              initial_condition, ::BoundaryConditionPeriodic, source_terms,
+              solver, cache)
     @unpack hmD1betaD1, D1betaD1, d, h, hv, alpha_hat, beta_hat, gamma_hat, tmp1, tmp2, D1_central = cache
     q = wrap_array(u_ode, mesh, equations, solver)
     dq = wrap_array(du_ode, mesh, equations, solver)
@@ -137,7 +183,7 @@ function rhs!(du_ode, u_ode, t, mesh, equations::SvaerdKalischEquations1D,
     dD = view(dq, 3, :)
     fill!(dD, zero(eltype(dD)))
 
-    @. h = eta + D
+    h = eta .+ D
     hv = h .* v
 
     if solver.D1 isa PeriodicDerivativeOperator ||
@@ -164,18 +210,21 @@ function rhs!(du_ode, u_ode, t, mesh, equations::SvaerdKalischEquations1D,
 
     hmD1betaD1 = Diagonal(h) - D1betaD1
     # split form
-    tmp2 = -(0.5 * (D1_central * (hv .* v) + hv .* D1v - v .* (D1_central * hv)) +
-             equations.gravity * h .* D1eta +
-             0.5 * (vD1y - D1vy - yD1v) -
-             0.5 * D1_central * (gamma_hat .* (solver.D2 * v)) -
-             0.5 * solver.D2 * (gamma_hat .* D1v))
-    # not split form
-    #     tmp2 = -(D1_central * (hv .* v) - v .* (D1_central * hv)+
-    #              equations.gravity * h .* D1eta +
-    #              vD1y - D1vy -
-    #              0.5 * D1_central * (gamma_hat .* (solver.D2 * v)) -
-    #              0.5 * solver.D2 * (gamma_hat .* D1v))
-    dv[:] = hmD1betaD1 \ tmp2
+    dv[:] = -(0.5 * (D1_central * (hv .* v) + hv .* D1v - v .* (D1_central * hv)) +
+              equations.gravity * h .* D1eta +
+              0.5 * (vD1y - D1vy - yD1v) -
+              0.5 * D1_central * (gamma_hat .* (solver.D2 * v)) -
+              0.5 * solver.D2 * (gamma_hat .* D1v))
+
+    # no split form
+    #     dv[:] = -(D1_central * (hv .* v) - v .* (D1_central * hv)+
+    #               equations.gravity * h .* D1eta +
+    #               vD1y - D1vy -
+    #               0.5 * D1_central * (gamma_hat .* (solver.D2 * v)) -
+    #               0.5 * solver.D2 * (gamma_hat .* D1v))
+
+    calc_sources!(dq, q, t, source_terms, equations, solver)
+    dv[:] = hmD1betaD1 \ dv
 
     return nothing
 end

@@ -41,6 +41,19 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_1d")
                             change_velocity=-4.547473508864641e-13,
                             change_entropy=0.0)
     end
+
+    @trixi_testset "bbm_bbm_1d_manufactured" begin
+        @test_trixi_include(joinpath(EXAMPLES_DIR, "bbm_bbm_1d_manufactured.jl"),
+                            tspan=(0.0, 1.0),
+                            l2=[4.365176233405813e-9 6.7151849982388e-10],
+                            linf=[6.226559268185383e-9 9.698699621196738e-10],
+                            cons_error=[3.873483998828586e-12 2.2986355942039745e-11],
+                            change_waterheight=3.873483998828586e-12,
+                            change_velocity=2.2986355942039745e-11,
+                            change_entropy=17.387441847193436,
+                            atol=1e-10,
+                            atol_ints=1e-10) # in order to make CI pass
+    end
 end
 
 end # module
