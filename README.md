@@ -56,6 +56,21 @@ for more details. Other examples can be found in the subdirectory [examples/](ht
 A list of all examples is returned by running `get_examples()`. You can pass the filename of one of the examples or your own simulation file to `include` in order to run it,
 e.g., `include(joinpath(examples_dir(), "svaerd_kalisch_1d", "svaerd_kalisch_1d_dingemans_relaxation.jl"))`.
 
+## Referencing
+
+You can directly refer to DispersiveShallowWater.jl as
+```bibtex
+@misc{lampert2023dispersive,
+  title={{D}ispersive{S}hallow{W}ater.jl: {S}tructure-preserving numerical
+         methods for dispersive shallow water models},
+  author={Lampert, Joshua},
+  year={2023},
+  month={10},
+  howpublished={\url{https://github.com/JoshuaLampert/DispersiveShallowWater.jl}},
+  doi={10.5281/zenodo.10034636}
+}
+```
+
 ## Authors
 
 The package is developed and maintained by Joshua Lampert (University of Hamburg).
