@@ -18,7 +18,7 @@ The semidiscretizations are based on summation by parts (SBP) operators, which a
 In order to obtain fully discrete schemes, the time integration methods from [OrdinaryDiffEq.jl](https://github.com/SciML/OrdinaryDiffEq.jl) are used to solve the resulting ordinary differential equations.
 Fully discrete entropy-conservative methods can be obtained by using the [relaxation method](https://epubs.siam.org/doi/10.1137/19M1263662) provided by DispersiveShallowWater.jl.
 
-# Installation
+## Installation
 
 If you have not yet installed Julia, then you first need to [download Julia](https://julialang.org/downloads/). Please [follow the instructions for your operating system](https://julialang.org/downloads/platform/).
 DispersiveShallowWater.jl works with Julia v1.8 and newer. DispersiveShallowWater.jl is a registered Julia package. Therefore, you can install it by executing the following commands from the Julia REPL
@@ -34,7 +34,7 @@ which can be installed running
 julia> Pkg.add("SummationByPartsOperators")
 ```
 
-# Usage
+## Usage
 
 In the Julia REPL, first load the package DispersiveShallowWater.jl
 ```julia
@@ -55,12 +55,27 @@ for more details. Other examples can be found in the subdirectory [examples/](ht
 A list of all examples is returned by running [`get_examples()`](@ref). You can pass the filename of one of the examples or your own simulation file to `include` in order to run it,
 e.g., `include(joinpath(examples_dir(), "svaerd_kalisch_1d", "svaerd_kalisch_1d_dingemans_relaxation.jl"))`.
 
-# Authors
+## Referencing
+
+You can directly refer to DispersiveShallowWater.jl as
+```bibtex
+@misc{lampert2023dispersive,
+  title={{D}ispersive{S}hallow{W}ater.jl: {S}tructure-preserving numerical
+         methods for dispersive shallow water models},
+  author={Lampert, Joshua},
+  year={2023},
+  month={10},
+  howpublished={\url{https://github.com/JoshuaLampert/DispersiveShallowWater.jl}},
+  doi={10.5281/zenodo.10034636}
+}
+```
+
+## Authors
 
 The package is developed and maintained by Joshua Lampert (University of Hamburg).
 Some parts of this repository are based on parts of [Dispersive-wave-schemes-notebooks. A Broad Class of Conservative Numerical Methods for Dispersive Wave Equations](https://github.com/ranocha/Dispersive-wave-schemes-notebooks)
 by Hendrik Ranocha, Dimitrios Mitsotakis and David Ketcheson. The code structure is inspired by [Trixi.jl](https://github.com/trixi-framework/Trixi.jl/).
 
-# License and contributing
+## License and contributing
 
 DispersiveShallowWater.jl is published under the MIT license (see [License](https://github.com/JoshuaLampert/DispersiveShallowWater.jl/blob/main/LICENSE)). We are pleased to accept contributions from everyone, preferably in the form of a PR.

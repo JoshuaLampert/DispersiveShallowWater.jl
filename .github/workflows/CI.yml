@@ -5,17 +5,25 @@ on:
       - main
     tags: ['*']
     paths-ignore:
+      - 'CITATION.bib'
       - 'LICENSE.md'
       - 'README.md'
+      - '.zenodo.json'
       - '.github/workflows/CompatHelper.yml'
+      - '.github/workflows/Documenter.yml'
+      - '.github/workflows/Format-check.yml'
       - '.github/workflows/TagBot.yml'
       - '.github/workflows/SpellCheck.yml'
       - 'docs/**'
   pull_request:
     paths-ignore:
+      - 'CITATION.bib'
       - 'LICENSE.md'
       - 'README.md'
+      - '.zenodo.json'
       - '.github/workflows/CompatHelper.yml'
+      - '.github/workflows/Documenter.yml'
+      - '.github/workflows/Format-check.yml'
       - '.github/workflows/TagBot.yml'
       - '.github/workflows/SpellCheck.yml'
       - 'docs/**'
