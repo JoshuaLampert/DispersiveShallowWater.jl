@@ -20,7 +20,7 @@ SummationByPartsOperators = "9f78cca6-572e-554e-b819-917d2f1cf240"
 
 [compat]
 DiffEqBase = "6.121"
-Interpolations = "0.14"
+Interpolations = "0.14, 0.15"
 LinearAlgebra = "1"
 PolynomialBases = "0.4.15"
 Printf = "1"
