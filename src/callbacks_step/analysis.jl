@@ -108,12 +108,10 @@ end
 
 Return the time values that correspond to the saved values of the [`errors`](@ref) and [`integrals`](@ref).
 """
-function tstops(cb::DiscreteCallback{
-                                     Condition,
-                                     Affect!
-                                     }) where {Condition,
-                                               Affect! <:
-                                               AnalysisCallback}
+function tstops(cb::DiscreteCallback{Condition,
+                                     Affect!}) where {Condition,
+                                                      Affect! <:
+                                                      AnalysisCallback}
     analysis_callback = cb.affect!
     return analysis_callback.tstops
 end
@@ -124,12 +122,10 @@ end
 Return the computed errors for each timestep as a named tuple.
 The shape of each entry is (nvariables, ntimesteps).
 """
-function errors(cb::DiscreteCallback{
-                                     Condition,
-                                     Affect!
-                                     }) where {Condition,
-                                               Affect! <:
-                                               AnalysisCallback}
+function errors(cb::DiscreteCallback{Condition,
+                                     Affect!}) where {Condition,
+                                                      Affect! <:
+                                                      AnalysisCallback}
     analysis_callback = cb.affect!
     names = collect(analysis_callback.analysis_errors)
     # "transpose" vector of matrices, first write it as 3d array and then convert it back to vector of matrices
@@ -144,12 +140,10 @@ end
 
 Return the computed integrals for each timestep as a named tuple.
 """
-function integrals(cb::DiscreteCallback{
-                                        Condition,
-                                        Affect!
-                                        }) where {Condition,
-                                                  Affect! <:
-                                                  AnalysisCallback}
+function integrals(cb::DiscreteCallback{Condition,
+                                        Affect!}) where {Condition,
+                                                         Affect! <:
+                                                         AnalysisCallback}
     analysis_callback = cb.affect!
     names = collect(Symbol.(nameof.(analysis_callback.analysis_integrals)))
     # "transpose" vector of vector
