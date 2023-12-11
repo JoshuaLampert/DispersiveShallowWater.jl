@@ -214,6 +214,13 @@ using SparseArrays: sparse, SparseMatrixCSC
         @test_nowarn display(relaxation_callback)
     end
 
+    @testset "SummaryCallback" begin
+        summary_callback = SummaryCallback()
+        @test_nowarn print(summary_callback)
+        @test_nowarn display(summary_callback)
+        @test_nowarn summary_callback()
+    end
+
     @testset "util" begin
         @test_nowarn get_examples()
         @test_nowarn trixi_include(default_example(), tspan = (0.0, 0.1))

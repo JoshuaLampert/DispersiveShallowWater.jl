@@ -190,19 +190,21 @@ function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMVariableEquations1D,
 
     if solver.D1 isa PeriodicDerivativeOperator ||
        solver.D1 isa UniformPeriodicCoupledOperator
-        deta[:] = -solver.D1 * (D .* v + eta .* v)
-        dv[:] = -solver.D1 * (equations.gravity * eta + 0.5 * v .^ 2)
+        @timeit timer() "deta hyperbolic" deta[:]=-solver.D1 * (D .* v + eta .* v)
+        @timeit timer() "dv hyperbolic" dv[:]=-solver.D1 *
+                                              (equations.gravity * eta + 0.5 * v .^ 2)
     elseif solver.D1 isa PeriodicUpwindOperators
-        deta[:] = -solver.D1.minus * (D .* v + eta .* v)
-        dv[:] = -solver.D1.plus * (equations.gravity * eta + 0.5 * v .^ 2)
+        @timeit timer() "deta hyperbolic" deta[:]=-solver.D1.minus * (D .* v + eta .* v)
+        @timeit timer() "dv hyperbolic" dv[:]=-solver.D1.plus *
+                                              (equations.gravity * eta + 0.5 * v .^ 2)
     else
         @error "unknown type of first-derivative operator"
     end
 
-    calc_sources!(dq, q, t, source_terms, equations, solver)
+    @timeit timer() "source terms" calc_sources!(dq, q, t, source_terms, equations, solver)
 
-    deta[:] = invImDKD * deta
-    dv[:] = invImD2K * dv
+    @timeit timer() "deta elliptic" deta[:]=invImDKD * deta
+    @timeit timer() "dv elliptic" dv[:]=invImD2K * dv
 
     return nothing
 end

@@ -21,6 +21,7 @@ using SummationByPartsOperators: AbstractDerivativeOperator,
                                  periodic_derivative_operator,
                                  derivative_order, integrate
 import SummationByPartsOperators: grid, xmin, xmax
+using TimerOutputs: TimerOutputs, TimerOutput, @timeit, print_timer, reset_timer!
 
 include("boundary_conditions.jl")
 include("mesh.jl")
@@ -52,7 +53,7 @@ export initial_condition_convergence_test,
        initial_condition_manufactured, source_terms_manufactured,
        initial_condition_dingemans
 
-export AnalysisCallback, RelaxationCallback
+export AnalysisCallback, RelaxationCallback, SummaryCallback
 export tstops, errors, integrals
 
 end
