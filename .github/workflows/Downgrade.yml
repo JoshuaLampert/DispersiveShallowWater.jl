@@ -49,6 +49,8 @@ jobs:
       - run: julia -e 'using InteractiveUtils; versioninfo(verbose=true)'
       - uses: julia-actions/cache@v1
       - uses: cjdoris/julia-downgrade-compat-action@v1
+        with:
+          skip: LinearAlgebra,Printf,SparseArrays
       - uses: julia-actions/julia-buildpkg@v1
         env:
           PYTHON: ""
