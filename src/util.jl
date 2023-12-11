@@ -311,6 +311,12 @@ function extract_initial_N(example, kwargs)
     end
 end
 
+# Store main timer for global timing of functions
+const main_timer = TimerOutput()
+
+# Always call timer() to hide implementation details
+timer() = main_timer
+
 """
     @autoinfiltrate
     @autoinfiltrate condition::Bool

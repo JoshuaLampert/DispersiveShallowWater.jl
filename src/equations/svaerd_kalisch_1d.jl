@@ -183,38 +183,41 @@ function rhs!(du_ode, u_ode, t, mesh, equations::SvaerdKalischEquations1D,
     dD = view(dq, 3, :)
     fill!(dD, zero(eltype(dD)))
 
-    h = eta .+ D
-    hv = h .* v
+    @timeit timer() "deta hyperbolic" begin
+        h = eta .+ D
+        hv = h .* v
 
-    if solver.D1 isa PeriodicDerivativeOperator ||
-       solver.D1 isa UniformPeriodicCoupledOperator
-        D1eta = D1_central * eta
-        D1v = D1_central * v
-        tmp1 = alpha_hat .* (D1_central * (alpha_hat .* D1eta))
-        vD1y = v .* (D1_central * tmp1)
-        D1vy = D1_central * (v .* tmp1)
-        yD1v = tmp1 .* D1v
-        @. tmp2 = tmp1 - hv
-        mul!(deta, D1_central, tmp2)
-    elseif solver.D1 isa PeriodicUpwindOperators
-        D1eta = D1_central * eta
-        D1v = D1_central * v
-        tmp1 = alpha_hat .* (solver.D1.minus * (alpha_hat .* (solver.D1.plus * eta)))
-        vD1y = v .* (solver.D1.minus * tmp1)
-        D1vy = solver.D1.minus * (v .* tmp1)
-        yD1v = tmp1 .* (solver.D1.plus * v)
-        deta[:] = solver.D1.minus * tmp1 - D1_central * hv
-    else
-        @error "unknown type of first derivative operator"
+        if solver.D1 isa PeriodicDerivativeOperator ||
+        solver.D1 isa UniformPeriodicCoupledOperator
+            D1eta = D1_central * eta
+            D1v = D1_central * v
+            tmp1 = alpha_hat .* (D1_central * (alpha_hat .* D1eta))
+            vD1y = v .* (D1_central * tmp1)
+            D1vy = D1_central * (v .* tmp1)
+            yD1v = tmp1 .* D1v
+            @. tmp2 = tmp1 - hv
+            mul!(deta, D1_central, tmp2)
+        elseif solver.D1 isa PeriodicUpwindOperators
+            D1eta = D1_central * eta
+            D1v = D1_central * v
+            tmp1 = alpha_hat .* (solver.D1.minus * (alpha_hat .* (solver.D1.plus * eta)))
+            vD1y = v .* (solver.D1.minus * tmp1)
+            D1vy = solver.D1.minus * (v .* tmp1)
+            yD1v = tmp1 .* (solver.D1.plus * v)
+            deta[:] = solver.D1.minus * tmp1 - D1_central * hv
+        else
+            @error "unknown type of first derivative operator"
+        end
     end
 
-    hmD1betaD1 = Diagonal(h) - D1betaD1
     # split form
-    dv[:] = -(0.5 * (D1_central * (hv .* v) + hv .* D1v - v .* (D1_central * hv)) +
-              equations.gravity * h .* D1eta +
-              0.5 * (vD1y - D1vy - yD1v) -
-              0.5 * D1_central * (gamma_hat .* (solver.D2 * v)) -
-              0.5 * solver.D2 * (gamma_hat .* D1v))
+    @timeit timer() "dv hyperbolic" begin
+        dv[:] = -(0.5 * (D1_central * (hv .* v) + hv .* D1v - v .* (D1_central * hv)) +
+                equations.gravity * h .* D1eta +
+                0.5 * (vD1y - D1vy - yD1v) -
+                0.5 * D1_central * (gamma_hat .* (solver.D2 * v)) -
+                0.5 * solver.D2 * (gamma_hat .* D1v))
+    end
 
     # no split form
     #     dv[:] = -(D1_central * (hv .* v) - v .* (D1_central * hv)+
@@ -223,8 +226,11 @@ function rhs!(du_ode, u_ode, t, mesh, equations::SvaerdKalischEquations1D,
     #               0.5 * D1_central * (gamma_hat .* (solver.D2 * v)) -
     #               0.5 * solver.D2 * (gamma_hat .* D1v))
 
-    calc_sources!(dq, q, t, source_terms, equations, solver)
-    dv[:] = hmD1betaD1 \ dv
+    @timeit timer() "source terms" calc_sources!(dq, q, t, source_terms, equations, solver)
+    @timeit timer() "dv elliptic" begin
+        hmD1betaD1 = Diagonal(h) - D1betaD1
+        dv[:] = hmD1betaD1 \ dv
+    end
 
     return nothing
 end

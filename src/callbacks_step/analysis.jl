@@ -218,74 +218,76 @@ function (analysis_callback::AnalysisCallback)(io, u_ode, integrator, semi)
     # Source: https://github.com/JuliaLang/julia/blob/b540315cb4bd91e6f3a3e4ab8129a58556947628/base/timing.jl#L86-L97
     memory_use = Base.gc_live_bytes() / 2^20 # bytes -> MiB
 
-    println(io)
-    println(io, "─"^100)
-    println(io, "Simulation running '", get_name(equations), "' with '",
-            semi.initial_condition,
-            "'")
-    println(io, "─"^100)
-    println(io,
-            " #timesteps:     " * @sprintf("% 14d", iter) *
-            "               " *
-            " run time:       " * @sprintf("%10.8e s", runtime_absolute))
-    println(io,
-            " Δt:             " * @sprintf("%10.8e", dt) *
-            "               " *
-            " └── GC time:    " *
-            @sprintf("%10.8e s (%5.3f%%)", gc_time_absolute, gc_time_percentage))
-    println(io, " sim. time:      " * @sprintf("%10.8e (%5.3f%%)", t, sim_time_percentage))
-    println(io,
-            " #DOF:           " * @sprintf("% 14d", nnodes(semi)) *
-            "               " *
-            " alloc'd memory: " * @sprintf("%14.3f MiB", memory_use))
-    println(io)
+    @timeit timer() "analyze solution" begin
+        println(io)
+        println(io, "─"^100)
+        println(io, "Simulation running '", get_name(equations), "' with '",
+                semi.initial_condition,
+                "'")
+        println(io, "─"^100)
+        println(io,
+                " #timesteps:     " * @sprintf("% 14d", iter) *
+                "               " *
+                " run time:       " * @sprintf("%10.8e s", runtime_absolute))
+        println(io,
+                " Δt:             " * @sprintf("%10.8e", dt) *
+                "               " *
+                " └── GC time:    " *
+                @sprintf("%10.8e s (%5.3f%%)", gc_time_absolute, gc_time_percentage))
+        println(io, " sim. time:      " * @sprintf("%10.8e (%5.3f%%)", t, sim_time_percentage))
+        println(io,
+                " #DOF:           " * @sprintf("% 14d", nnodes(semi)) *
+                "               " *
+                " alloc'd memory: " * @sprintf("%14.3f MiB", memory_use))
+        println(io)
 
-    print(io, " Variable:    ")
-    for v in eachvariable(equations)
-        @printf(io, "   %-14s", varnames(prim2prim, equations)[v])
-    end
-    println(io)
-
-    # Calculate L2/Linf errors, which are also returned
-    l2_error, linf_error = calc_error_norms(u_ode, t, semi)
-    current_errors = zeros(real(semi), (length(analysis_errors), nvariables(equations)))
-    current_errors[1, :] = l2_error
-    current_errors[2, :] = linf_error
-    print(io, " L2 error:    ")
-    for v in eachvariable(equations)
-        @printf(io, "  % 10.8e", l2_error[v])
-    end
-    println(io)
-
-    print(io, " Linf error:  ")
-    for v in eachvariable(equations)
-        @printf(io, "  % 10.8e", linf_error[v])
-    end
-    println(io)
-
-    # Conservation error
-    if :conservation_error in analysis_errors
-        @unpack initial_state_integrals = analysis_callback
-        state_integrals = integrate(u_ode, semi)
-        current_errors[3, :] = abs.(state_integrals - initial_state_integrals)
-        print(io, " |∫q - ∫q₀|:  ")
+        print(io, " Variable:    ")
         for v in eachvariable(equations)
-            @printf(io, "  % 10.8e", current_errors[3, v])
+            @printf(io, "   %-14s", varnames(prim2prim, equations)[v])
         end
         println(io)
-    end
-    push!(errors, current_errors)
 
-    # additional integrals
-    if length(analysis_integrals) > 0
+        # Calculate L2/Linf errors, which are also returned
+        l2_error, linf_error = calc_error_norms(u_ode, t, semi)
+        current_errors = zeros(real(semi), (length(analysis_errors), nvariables(equations)))
+        current_errors[1, :] = l2_error
+        current_errors[2, :] = linf_error
+        print(io, " L2 error:    ")
+        for v in eachvariable(equations)
+            @printf(io, "  % 10.8e", l2_error[v])
+        end
         println(io)
-        println(io, " Integrals:    ")
-    end
-    current_integrals = zeros(real(semi), length(analysis_integrals))
-    analyze_integrals!(io, current_integrals, 1, analysis_integrals, u_ode, t, semi)
-    push!(integrals, current_integrals)
 
-    println(io, "─"^100)
+        print(io, " Linf error:  ")
+        for v in eachvariable(equations)
+            @printf(io, "  % 10.8e", linf_error[v])
+        end
+        println(io)
+
+        # Conservation error
+        if :conservation_error in analysis_errors
+            @unpack initial_state_integrals = analysis_callback
+            state_integrals = integrate(u_ode, semi)
+            current_errors[3, :] = abs.(state_integrals - initial_state_integrals)
+            print(io, " |∫q - ∫q₀|:  ")
+            for v in eachvariable(equations)
+                @printf(io, "  % 10.8e", current_errors[3, v])
+            end
+            println(io)
+        end
+        push!(errors, current_errors)
+
+        # additional integrals
+        if length(analysis_integrals) > 0
+            println(io)
+            println(io, " Integrals:    ")
+        end
+        current_integrals = zeros(real(semi), length(analysis_integrals))
+        analyze_integrals!(io, current_integrals, 1, analysis_integrals, u_ode, t, semi)
+        push!(integrals, current_integrals)
+
+        println(io, "─"^100)
+    end
     return l2_error, linf_error
 end
 

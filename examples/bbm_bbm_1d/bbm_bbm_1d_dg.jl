@@ -39,11 +39,12 @@ semi = Semidiscretization(mesh, equations, initial_condition, solver,
 
 tspan = (0.0, 30.0)
 ode = semidiscretize(semi, tspan)
+summary_callback = SummaryCallback()
 analysis_callback = AnalysisCallback(semi; interval = 10,
                                      extra_analysis_errors = (:conservation_error,),
                                      extra_analysis_integrals = (waterheight_total,
                                                                  velocity, entropy))
-callbacks = CallbackSet(analysis_callback)
+callbacks = CallbackSet(analysis_callback, summary_callback)
 
 saveat = range(tspan..., length = 100)
 sol = solve(ode, Tsit5(), abstol = 1e-7, reltol = 1e-7,
