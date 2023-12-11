@@ -21,7 +21,7 @@ TimerOutputs = "a759f4b9-e2f1-59dc-863e-4aeb61b1ea8f"
 
 [compat]
 DiffEqBase = "6.128"
-Interpolations = "0.14, 0.15"
+Interpolations = "0.14.2, 0.15"
 LinearAlgebra = "1"
 PolynomialBases = "0.4.15"
 Printf = "1"
