@@ -188,7 +188,7 @@ function rhs!(du_ode, u_ode, t, mesh, equations::SvaerdKalischEquations1D,
         hv = h .* v
 
         if solver.D1 isa PeriodicDerivativeOperator ||
-        solver.D1 isa UniformPeriodicCoupledOperator
+           solver.D1 isa UniformPeriodicCoupledOperator
             D1eta = D1_central * eta
             D1v = D1_central * v
             tmp1 = alpha_hat .* (D1_central * (alpha_hat .* D1eta))
@@ -213,10 +213,10 @@ function rhs!(du_ode, u_ode, t, mesh, equations::SvaerdKalischEquations1D,
     # split form
     @timeit timer() "dv hyperbolic" begin
         dv[:] = -(0.5 * (D1_central * (hv .* v) + hv .* D1v - v .* (D1_central * hv)) +
-                equations.gravity * h .* D1eta +
-                0.5 * (vD1y - D1vy - yD1v) -
-                0.5 * D1_central * (gamma_hat .* (solver.D2 * v)) -
-                0.5 * solver.D2 * (gamma_hat .* D1v))
+                  equations.gravity * h .* D1eta +
+                  0.5 * (vD1y - D1vy - yD1v) -
+                  0.5 * D1_central * (gamma_hat .* (solver.D2 * v)) -
+                  0.5 * solver.D2 * (gamma_hat .* D1v))
     end
 
     # no split form

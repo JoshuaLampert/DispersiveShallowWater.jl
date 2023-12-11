@@ -234,7 +234,8 @@ function (analysis_callback::AnalysisCallback)(io, u_ode, integrator, semi)
                 "               " *
                 " └── GC time:    " *
                 @sprintf("%10.8e s (%5.3f%%)", gc_time_absolute, gc_time_percentage))
-        println(io, " sim. time:      " * @sprintf("%10.8e (%5.3f%%)", t, sim_time_percentage))
+        println(io,
+                " sim. time:      " * @sprintf("%10.8e (%5.3f%%)", t, sim_time_percentage))
         println(io,
                 " #DOF:           " * @sprintf("% 14d", nnodes(semi)) *
                 "               " *

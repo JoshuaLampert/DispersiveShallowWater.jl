@@ -21,7 +21,7 @@ struct SummaryCallback
     end
 end
 
-function Base.show(io::IO, cb::DiscreteCallback{<:Any, <: SummaryCallback})
+function Base.show(io::IO, cb::DiscreteCallback{<:Any, <:SummaryCallback})
     @nospecialize cb # reduce precompilation time
 
     print(io, "SummaryCallback")
@@ -32,14 +32,12 @@ function initialize_summary_callback(cb::DiscreteCallback, u, t, integrator)
     return nothing
 end
 
-
 function (cb::SummaryCallback)(integrator)
     u_modified!(integrator, false)
     cb()
 end
 
 function (summary_callback::SummaryCallback)()
-
     io = summary_callback.io
     TimerOutputs.complement!(timer())
     print_timer(io, timer(), title = "DispersiveSWE",
@@ -49,4 +47,7 @@ function (summary_callback::SummaryCallback)()
 end
 
 # Allow calling the callback explicitly
-(cb::DiscreteCallback{Condition, Affect!})() where {Condition, Affect! <: SummaryCallback} = cb.affect!()
+function (cb::DiscreteCallback{Condition, Affect!})() where {Condition,
+                                                             Affect! <: SummaryCallback}
+    cb.affect!()
+end

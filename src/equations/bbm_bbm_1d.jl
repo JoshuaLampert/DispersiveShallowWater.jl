@@ -125,19 +125,22 @@ function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMEquations1D, initial_cond
     # energy and mass conservative semidiscretization
     if solver.D1 isa PeriodicDerivativeOperator ||
        solver.D1 isa UniformPeriodicCoupledOperator
-        @timeit timer() "deta hyperbolic" deta[:] = -solver.D1 * (equations.D * v + eta .* v)
-        @timeit timer() "dv hyperbolic" dv[:] = -solver.D1 * (equations.gravity * eta + 0.5 * v .^ 2)
+        @timeit timer() "deta hyperbolic" deta[:]=-solver.D1 * (equations.D * v + eta .* v)
+        @timeit timer() "dv hyperbolic" dv[:]=-solver.D1 *
+                                              (equations.gravity * eta + 0.5 * v .^ 2)
     elseif solver.D1 isa PeriodicUpwindOperators
-        @timeit timer() "deta hyperbolic" deta[:] = -solver.D1.central * (equations.D * v + eta .* v)
-        @timeit timer() "dv hyperbolic" dv[:] = -solver.D1.central * (equations.gravity * eta + 0.5 * v .^ 2)
+        @timeit timer() "deta hyperbolic" deta[:]=-solver.D1.central *
+                                                  (equations.D * v + eta .* v)
+        @timeit timer() "dv hyperbolic" dv[:]=-solver.D1.central *
+                                              (equations.gravity * eta + 0.5 * v .^ 2)
     else
         @error "unknown type of first-derivative operator"
     end
 
     @timeit timer() "source terms" calc_sources!(dq, q, t, source_terms, equations, solver)
 
-    @timeit timer() "deta elliptic" deta[:] = invImD2 * deta
-    @timeit timer() "dv elliptic" dv[:] = invImD2 * dv
+    @timeit timer() "deta elliptic" deta[:]=invImD2 * deta
+    @timeit timer() "dv elliptic" dv[:]=invImD2 * dv
 
     return nothing
 end

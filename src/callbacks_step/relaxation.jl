@@ -91,14 +91,15 @@ end
     energy_old = relaxation_functional(uold, semi)
 
     @timeit timer() "relaxation" begin
-        if (relaxation_functional(convex_combination(gamma_lo, uold, unew), semi) - energy_old) *
-        (relaxation_functional(convex_combination(gamma_hi, uold, unew), semi) - energy_old) >
-        0
+        if (relaxation_functional(convex_combination(gamma_lo, uold, unew), semi) -
+            energy_old) *
+           (relaxation_functional(convex_combination(gamma_hi, uold, unew), semi) -
+            energy_old) > 0
             terminate_integration = true
         else
             gamma = find_zero(g -> relaxation_functional(convex_combination(g, uold, unew),
-                                                        semi) -
-                                energy_old, (gamma_lo, gamma_hi), AlefeldPotraShi())
+                                                         semi) -
+                                   energy_old, (gamma_lo, gamma_hi), AlefeldPotraShi())
         end
 
         if gamma < eps(typeof(gamma))
@@ -116,7 +117,6 @@ end
         if terminate_integration
             terminate!(integrator)
         end
-
     end
     return nothing
 end
