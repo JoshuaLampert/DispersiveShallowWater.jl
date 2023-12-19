@@ -23,7 +23,7 @@ A more detailed documentation can be found [online](https://JoshuaLampert.github
 ## Installation
 
 If you have not yet installed Julia, then you first need to [download Julia](https://julialang.org/downloads/). Please [follow the instructions for your operating system](https://julialang.org/downloads/platform/).
-DispersiveShallowWater.jl works with Julia v1.8 and newer. DispersiveShallowWater.jl is a registered Julia package. Therefore, you can install it by executing the following commands from the Julia REPL
+DispersiveShallowWater.jl works with Julia v1.9 and newer. DispersiveShallowWater.jl is a registered Julia package. Therefore, you can install it by executing the following commands from the Julia REPL
 ```julia
 julia> using Pkg
 
