@@ -1,9 +1,8 @@
 """
     SummaryCallback(io::IO = stdout)
 
-Create and return a callback that prints a human-readable summary of the simulation setup at the
-beginning of a simulation and then resets the timer. When the returned callback is executed
-directly, the current timer values are shown.
+Create and return a callback that resets the timer at the beginning of
+a simulation and prints the timer values at the end of the simulation.
 """
 struct SummaryCallback
     io::IO
@@ -12,12 +11,17 @@ struct SummaryCallback
         function initialize(cb, u, t, integrator)
             initialize_summary_callback(cb, u, t, integrator)
         end
+        # At the end of the simulation, the timer is printed
+        function finalize(cb, u, t, integrator)
+            finalize_summary_callback(cb, u, t, integrator)
+        end
         summary_callback = new(io)
-        # SummaryCallback is called at end of simulation
-        condition = (u, t, integrator) -> isfinished(integrator)
+        # SummaryCallback is never called during the simulation
+        condition = (u, t, integrator) -> false
         DiscreteCallback(condition, summary_callback,
                          save_positions = (false, false),
-                         initialize = initialize)
+                         initialize = initialize,
+                         finalize = finalize)
     end
 end
 
@@ -32,22 +36,14 @@ function initialize_summary_callback(cb::DiscreteCallback, u, t, integrator)
     return nothing
 end
 
-function (cb::SummaryCallback)(integrator)
-    u_modified!(integrator, false)
-    cb()
-end
+# the summary callback does nothing when called accidentally
+(cb::SummaryCallback)(integrator) = u_modified!(integrator, false)
 
-function (summary_callback::SummaryCallback)()
-    io = summary_callback.io
+function finalize_summary_callback(cb::DiscreteCallback, u, t, integrator)
+    io = cb.affect!.io
     TimerOutputs.complement!(timer())
     print_timer(io, timer(), title = "DispersiveSWE",
                 allocations = true, linechars = :unicode, compact = false)
     println(io)
     return nothing
-end
-
-# Allow calling the callback explicitly
-function (cb::DiscreteCallback{Condition, Affect!})() where {Condition,
-                                                             Affect! <: SummaryCallback}
-    cb.affect!()
 end
