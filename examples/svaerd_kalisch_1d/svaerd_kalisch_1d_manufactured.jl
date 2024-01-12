@@ -5,9 +5,9 @@ using DispersiveShallowWater
 # Semidiscretization of the Svärd-Kalisch equations
 
 equations = SvaerdKalischEquations1D(gravity_constant = 1.0, eta0 = 0.0,
-                                     alpha = 0.4040404040404049,
+                                     alpha = 0.0004040404040404049,
                                      beta = 0.49292929292929294,
-                                     gamma = 0.0)
+                                     gamma = 0.15707070707070708)
 
 initial_condition = initial_condition_manufactured
 source_terms = source_terms_manufactured
@@ -30,7 +30,7 @@ semi = Semidiscretization(mesh, equations, initial_condition, solver,
 
 ###############################################################################
 # Create `ODEProblem` and run the simulation
-tspan = (0.0, 0.0002)
+tspan = (0.0, 0.1)
 ode = semidiscretize(semi, tspan)
 summary_callback = SummaryCallback()
 analysis_callback = AnalysisCallback(semi; interval = 10,
