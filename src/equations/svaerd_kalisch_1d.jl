@@ -94,7 +94,8 @@ function initial_condition_manufactured(x, t,
                                         mesh)
     eta = exp(t) * cospi(2 * (x - 2 * t))
     v = exp(t / 2) * sinpi(2 * (x - t / 2))
-    D = 3.0
+    #     D = 3.0
+    D = 4 * exp(-(x - 1 / 2)^2)
     return SVector(eta, v, D)
 end
 
@@ -105,7 +106,7 @@ A smooth manufactured solution in combination with [`initial_condition_manufactu
 """
 function source_terms_manufactured(q, x, t, equations::SvaerdKalischEquations1D)
     g = equations.gravity
-    D = q[3, 1] # D is constant, thus simply take the first entry
+    #     D = q[3, 1] # D is constant, thus simply take the first entry
     eta0 = equations.eta0
     alpha = equations.alpha
     beta = equations.beta
@@ -115,21 +116,81 @@ function source_terms_manufactured(q, x, t, equations::SvaerdKalischEquations1D)
     a3 = cospi(4 * t - 2 * x)
     a4 = sinpi(4 * t - 2 * x)
 
-    dq1 = 8 * pi^3 * alpha * sqrt(g * (D + eta0)) * (D + eta0)^2 * exp(t) * a4 +
-          2 * pi * (D + exp(t) * a3) * exp(t / 2) * a1 - 2 * pi * exp(3 * t / 2) * a2 * a4 -
-          4 * pi * exp(t) * a4 + exp(t) * a3
-    dq2 = 2 * pi * D * g * exp(t) * a4 - D * exp(t / 2) * a2 / 2 -
-          pi * D * exp(t / 2) * a1 - 2 * pi * D * exp(t) * a2 * a1 +
-          8 * pi^3 * alpha * (D + eta0)^2 * sqrt(D * g + eta0 * g) * exp(3 * t / 2) * a1 *
-          a3 - 2 * pi^2 * beta * (D + eta0)^3 * exp(t / 2) * a2 -
-          4 * pi^3 * beta * (D + eta0)^3 * exp(t / 2) * a1 +
-          2 * pi * g * exp(2 * t) * a4 * a3 +
-          8.0 * pi^3 * gamma * (D + eta0)^3 * sqrt(D * g + eta0 * g) * exp(t / 2) * a1 -
-          exp(3 * t / 2) * a2 * a3 / 2 - pi * exp(3 * t / 2) * a1 * a3 -
-          2 * pi * exp(2 * t) * a2 * a1 * a3
+    #     dq1 = 8 * pi^3 * alpha * sqrt(g * (D + eta0)) * (D + eta0)^2 * exp(t) * a4 +
+    #           2 * pi * (D + exp(t) * a3) * exp(t / 2) * a1 - 2 * pi * exp(3 * t / 2) * a2 * a4 -
+    #           4 * pi * exp(t) * a4 + exp(t) * a3
+    #     dq2 = 2 * pi * D * g * exp(t) * a4 - D * exp(t / 2) * a2 / 2 -
+    #           pi * D * exp(t / 2) * a1 - 2 * pi * D * exp(t) * a2 * a1 +
+    #           8 * pi^3 * alpha * (D + eta0)^2 * sqrt(D * g + eta0 * g) * exp(3 * t / 2) * a1 *
+    #           a3 - 2 * pi^2 * beta * (D + eta0)^3 * exp(t / 2) * a2 -
+    #           4 * pi^3 * beta * (D + eta0)^3 * exp(t / 2) * a1 +
+    #           2 * pi * g * exp(2 * t) * a4 * a3 +
+    #           8.0 * pi^3 * gamma * (D + eta0)^3 * sqrt(D * g + eta0 * g) * exp(t / 2) * a1 -
+    #           exp(3 * t / 2) * a2 * a3 / 2 - pi * exp(3 * t / 2) * a1 * a3 -
+    #           2 * pi * exp(2 * t) * a2 * a1 * a3
+    dq1 = (-10 * pi * alpha * sqrt(g * (eta0 * exp((x - 0.5)^2) + 4)) * (2 * x - 1.0) *
+           ((10 * x - 5.0) * a4 + 2 * pi * (eta0 * exp((x - 0.5)^2) + 4) * a3) *
+           exp(t + 29 * (x - 0.5)^2 / 4) +
+           4 * pi * alpha * sqrt(g * (eta0 * exp((x - 0.5)^2) + 4)) *
+           (-10 * (x - 0.5)^2 * a4 + 2 * pi^2 * (eta0 * exp((x - 0.5)^2) + 4)^2 * a4 +
+            5 * (eta0 * exp((x - 0.5)^2) + 4) *
+            (-2 * (x - 0.5)^2 * a4 - 2 * pi * (2 * x - 1.0) * a3 + a4)) *
+           exp(t + 29 * (x - 0.5)^2 / 4) +
+           (-4 * pi * a4 + a3) * exp(t + 39 * (x - 0.5)^2 / 4) +
+           (2 * pi * (exp(t + (x - 0.5)^2) * a3 + 4) * a1 +
+            (8 * x - 2 * pi * exp(t + (x - 0.5)^2) * a4 - 4.0) * a2) *
+           exp(t / 2 + 35 * (x - 0.5)^2 / 4)) * exp(-39 * (x - 0.5)^2 / 4)
+#     dq2 = (20*pi*alpha*sqrt(g*(eta0*exp((x - 0.5)^2) + 4))*(2*x - 1.0)*((10*x - 5.0)*a4 + 2*pi*(eta0*exp((x - 0.5)^2) + 4)*a3)*exp(3*t/2 + 35*(x - 0.5)^2/2)*a2 + 8*pi^2*alpha*sqrt(g*(eta0*exp((x - 0.5)^2) + 4))*(eta0*exp((x - 0.5)^2) + 4)*((10*x - 5.0)*a4 + 2*pi*(eta0*exp((x - 0.5)^2) + 4)*a3)*exp(3*t/2 + 35*(x - 0.5)^2/2)*a1 + 8*pi*alpha*sqrt(g*(eta0*exp((x - 0.5)^2) + 4))*(10*(x - 0.5)^2*a4 - 2*pi^2*(eta0*exp((x - 0.5)^2) + 4)^2*a4 + 5*(eta0*exp((x - 0.5)^2) + 4)*(2*(x - 0.5)^2*a4 + 2*pi*(2*x - 1.0)*a3 - a4))*exp(3*t/2 + 35*(x - 0.5)^2/2)*a2 - 4*pi*beta*(eta0*exp((x - 0.5)^2) + 4)^2*((6.0 - 12*x)*a1 + 12*pi*(2*x - 1.0)*a2 + pi*(eta0*exp((x - 0.5)^2) + 4)*a2 + 2*pi^2*(eta0*exp((x - 0.5)^2) + 4)*a1)*exp(t/2 + 17*(x - 0.5)^2) + pi*gamma*sqrt(g*(eta0*exp((x - 0.5)^2) + 4))*(eta0*exp((x - 0.5)^2) + 4)*(-384.0*(x - 0.5)^2*a1 + 168.0*pi*(2*x - 1.0)*(eta0*exp((x - 0.5)^2) + 4)*a2 + 16.0*pi^2*(eta0*exp((x - 0.5)^2) + 4)^2*a1 + (8.0*(1 - 2*(x - 0.5)^2)*(eta0*exp((x - 0.5)^2) + 4) + 32.0*(x - 0.5)^2)*a1 + (48.0*eta0*exp((x - 0.5)^2) - 96.0*(x - 0.5)^2*(eta0*exp((x - 0.5)^2) + 4) - 768.0*(x - 0.5)^2 + 192.0)*a1)*exp(t/2 + 33*(x - 0.5)^2/2) + 2*(4*pi*a4 - a3)*exp(3*t/2 + 20*(x - 0.5)^2)*a2 + (4*pi*g*(exp(t + (x - 0.5)^2)*a3 + 4)*exp(t)*a4 - (exp(t + (x - 0.5)^2)*a3 + 4)*exp(t/2)*a2 - 2*pi*(exp(t + (x - 0.5)^2)*a3 + 4)*exp(t/2)*a1 - 8*pi*(exp(t + (x - 0.5)^2)*a3 + 4)*exp(t)*a2*a1 + (-16*x + 4*pi*exp(t + (x - 0.5)^2)*a4 + 8.0)*exp(t)*a2^2)*exp(19*(x - 0.5)^2))*exp(-20*(x - 0.5)^2)/2
+    dq2 = (-(10 * pi * alpha * sqrt(g * (eta0 * exp((x - 0.5)^2) + 4)) * (2 * x - 1.0) *
+             ((10 * x - 5.0) * a4 + 2 * pi * (eta0 * exp((x - 0.5)^2) + 4) * a3) *
+             exp(t + 29 * (x - 0.5)^2 / 4) +
+             4 * pi * alpha * sqrt(g * (eta0 * exp((x - 0.5)^2) + 4)) *
+             (10 * (x - 0.5)^2 * a4 - 2 * pi^2 * (eta0 * exp((x - 0.5)^2) + 4)^2 * a4 +
+              5 * (eta0 * exp((x - 0.5)^2) + 4) *
+              (2 * (x - 0.5)^2 * a4 + 2 * pi * (2 * x - 1.0) * a3 - a4)) *
+             exp(t + 29 * (x - 0.5)^2 / 4) +
+             (4 * pi * a4 - a3) * exp(t + 39 * (x - 0.5)^2 / 4) +
+             (-2 * pi * (exp(t + (x - 0.5)^2) * a3 + 4) * a1 +
+              (-8 * x + 2 * pi * exp(t + (x - 0.5)^2) * a4 + 4.0) * a2) *
+             exp(t / 2 + 35 * (x - 0.5)^2 / 4)) * exp(t / 2 + 20 * (x - 0.5)^2) * a2 +
+           (20 * pi * alpha * sqrt(g * (eta0 * exp((x - 0.5)^2) + 4)) * (2 * x - 1.0) *
+            ((10 * x - 5.0) * a4 + 2 * pi * (eta0 * exp((x - 0.5)^2) + 4) * a3) *
+            exp(3 * t / 2 + 35 * (x - 0.5)^2 / 2) * a2 +
+            8 * pi^2 * alpha * sqrt(g * (eta0 * exp((x - 0.5)^2) + 4)) *
+            (eta0 * exp((x - 0.5)^2) + 4) *
+            ((10 * x - 5.0) * a4 + 2 * pi * (eta0 * exp((x - 0.5)^2) + 4) * a3) *
+            exp(3 * t / 2 + 35 * (x - 0.5)^2 / 2) * a1 +
+            8 * pi * alpha * sqrt(g * (eta0 * exp((x - 0.5)^2) + 4)) *
+            (10 * (x - 0.5)^2 * a4 - 2 * pi^2 * (eta0 * exp((x - 0.5)^2) + 4)^2 * a4 +
+             5 * (eta0 * exp((x - 0.5)^2) + 4) *
+             (2 * (x - 0.5)^2 * a4 + 2 * pi * (2 * x - 1.0) * a3 - a4)) *
+            exp(3 * t / 2 + 35 * (x - 0.5)^2 / 2) * a2 -
+            4 * pi * beta * (eta0 * exp((x - 0.5)^2) + 4)^2 *
+            ((6.0 - 12 * x) * a1 + 12 * pi * (2 * x - 1.0) * a2 +
+             pi * (eta0 * exp((x - 0.5)^2) + 4) * a2 +
+             2 * pi^2 * (eta0 * exp((x - 0.5)^2) + 4) * a1) *
+            exp(t / 2 + 17 * (x - 0.5)^2) +
+            pi * gamma * sqrt(g * (eta0 * exp((x - 0.5)^2) + 4)) *
+            (eta0 * exp((x - 0.5)^2) + 4) *
+            (-384.0 * (x - 0.5)^2 * a1 +
+             168.0 * pi * (2 * x - 1.0) * (eta0 * exp((x - 0.5)^2) + 4) * a2 +
+             16.0 * pi^2 * (eta0 * exp((x - 0.5)^2) + 4)^2 * a1 +
+             (32.0 * (x - 0.5)^2 -
+              8.0 * (eta0 * exp((x - 0.5)^2) + 4) * (2 * (x - 0.5)^2 - 1)) * a1 +
+             (48.0 * eta0 * exp((x - 0.5)^2) -
+              (x - 0.5)^2 * (96.0 * eta0 * exp((x - 0.5)^2) + 384.0) - 768.0 * (x - 0.5)^2 +
+              192.0) * a1) * exp(t / 2 + 33 * (x - 0.5)^2 / 2) +
+            2 * (4 * pi * a4 - a3) * exp(3 * t / 2 + 20 * (x - 0.5)^2) * a2 +
+            (4 * pi * g * (exp(t + (x - 0.5)^2) * a3 + 4) * exp(t) * a4 -
+             (exp(t + (x - 0.5)^2) * a3 + 4) * exp(t / 2) * a2 -
+             2 * pi * (exp(t + (x - 0.5)^2) * a3 + 4) * exp(t / 2) * a1 -
+             8 * pi * (exp(t + (x - 0.5)^2) * a3 + 4) * exp(t) * a2 * a1 +
+             (-16 * x + 4 * pi * exp(t + (x - 0.5)^2) * a4 + 8.0) * exp(t) * a2^2) *
+            exp(19 * (x - 0.5)^2)) * exp(39 * (x - 0.5)^2 / 4) / 2) *
+          exp(-119 * (x - 0.5)^2 / 4)# - 180.0
     return SVector(dq1, dq2, 0.0)
 end
-#
+
 function create_cache(mesh,
                       equations::SvaerdKalischEquations1D,
                       solver,
