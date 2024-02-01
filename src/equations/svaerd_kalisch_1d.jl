@@ -157,7 +157,7 @@ function source_terms_manufactured(q, x, t, equations::SvaerdKalischEquations1D)
           (a19) * a8 * a3 / 2 + 3 * pi * a18 * exp(t) * a3 * a4 -
           2.5 * a14 * a16 * a15 * a8 * a3 / (a13)
 
-    return SVector(dq1, dq2, 0.0)
+    return SVector(dq1, dq2, zero(dq1))
 end
 
 function create_cache(mesh,
