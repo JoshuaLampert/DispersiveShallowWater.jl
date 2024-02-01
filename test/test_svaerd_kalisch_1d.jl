@@ -16,7 +16,8 @@ EXAMPLES_DIR = joinpath(examples_dir(), "svaerd_kalisch_1d")
                             linf=[4.908886917176503e-6 3.888671399332466e-7 0.0],
                             cons_error=[2.42861286636753e-16 1.9224170696150768e-7 0.0],
                             change_waterheight=-2.42861286636753e-16,
-                            change_entropy=0.1868146724821993) # in order to make CI pass
+                            change_entropy=0.1868146724821993,
+                            atol=1e-9) # in order to make CI pass
     end
 
     @trixi_testset "svaerd_kalisch_1d_dingemans" begin
@@ -29,8 +30,7 @@ EXAMPLES_DIR = joinpath(examples_dir(), "svaerd_kalisch_1d")
                             cons_error=[3.979039320256561e-13 4.937137540373564e-5 0.0],
                             change_waterheight=-3.979039320256561e-13,
                             change_entropy=-0.00024362648639453255,
-                            change_entropy_modified=3.240868750253867e-6,
-                            atol=1e-9)
+                            change_entropy_modified=3.240868750253867e-6)
     end
 
     @trixi_testset "svaerd_kalisch_1d_dingemans_cg" begin
