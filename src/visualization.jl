@@ -187,7 +187,7 @@ end
                    label_extension = "", start_from = 1,
                    exclude = []) where {Condition, Affect! <: AnalysisCallback}
     t = tstops(cb)
-    @assert length(t) > start_from "The keyword argument `start_from` needs to be smaller than the number of timesteps: $(length(t))"
+    @assert length(t)>start_from "The keyword argument `start_from` needs to be smaller than the number of timesteps: $(length(t))"
     subplot = 1
     layout --> length(what)
     if :integrals in what
