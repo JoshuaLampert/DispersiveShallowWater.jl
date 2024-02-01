@@ -184,9 +184,10 @@ function pretty(name)
 end
 
 @recipe function f(cb::DiscreteCallback{Condition, Affect!}; what = (:integrals,),
-                   label_extension = "",
+                   label_extension = "", start_from = 1,
                    exclude = []) where {Condition, Affect! <: AnalysisCallback}
     t = tstops(cb)
+    @assert length(t) > start_from "The keyword argument `start_from` needs to be smaller than the number of timesteps: $(length(t))"
     subplot = 1
     layout --> length(what)
     if :integrals in what
@@ -200,7 +201,7 @@ end
                 title --> "change of invariants"
                 xguide --> "t"
                 yguide --> "change of invariants"
-                t, integral .- integral[1]
+                t[start_from:end], (integral .- integral[1])[start_from:end]
             end
         end
         subplot += 1
@@ -215,7 +216,7 @@ end
                 title --> "errors"
                 xguide --> "t"
                 yguide --> "sum of errors"
-                t, dropdims(sum(err, dims = 1), dims = 1)
+                t[start_from:end], dropdims(sum(err, dims = 1), dims = 1)[start_from:end]
             end
         end
     end
