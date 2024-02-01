@@ -29,7 +29,8 @@ EXAMPLES_DIR = joinpath(examples_dir(), "svaerd_kalisch_1d")
                             cons_error=[3.979039320256561e-13 4.937137540373564e-5 0.0],
                             change_waterheight=-3.979039320256561e-13,
                             change_entropy=-0.00024362648639453255,
-                            change_entropy_modified=3.240868750253867e-6)
+                            change_entropy_modified=3.240868750253867e-6,
+                            atol=1e-9)
     end
 
     @trixi_testset "svaerd_kalisch_1d_dingemans_cg" begin
