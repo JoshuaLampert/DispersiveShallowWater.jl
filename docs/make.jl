@@ -8,7 +8,7 @@ DocMeta.setdocmeta!(DispersiveShallowWater, :DocTestSetup, :(using DispersiveSha
 makedocs(;
          modules = [DispersiveShallowWater],
          authors = "Joshua Lampert <joshua.lampert@uni-hamburg.de>",
-         repo = "https://github.com/JoshuaLampert/DispersiveShallowWater.jl/blob/{commit}{path}#{line}",
+         repo = Remotes.GitHub("JoshuaLampert", "DispersiveShallowWater.jl"),
          sitename = "DispersiveShallowWater.jl",
          format = Documenter.HTML(;
                                   prettyurls = get(ENV, "CI", "false") == "true",
