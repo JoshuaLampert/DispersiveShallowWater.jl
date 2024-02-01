@@ -94,7 +94,7 @@ function initial_condition_manufactured(x, t,
                                         mesh)
     eta = exp(t) * cospi(2 * (x - 2 * t))
     v = exp(t / 2) * sinpi(2 * (x - t / 2))
-    D = 5.0 + 2.0*cospi(2*x)
+    D = 5.0 + 2.0 * cospi(2 * x)
     return SVector(eta, v, D)
 end
 
