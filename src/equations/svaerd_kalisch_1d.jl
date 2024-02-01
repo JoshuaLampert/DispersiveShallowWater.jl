@@ -94,8 +94,7 @@ function initial_condition_manufactured(x, t,
                                         mesh)
     eta = exp(t) * cospi(2 * (x - 2 * t))
     v = exp(t / 2) * sinpi(2 * (x - t / 2))
-#     D = 3.0
-    D = 4 * exp(-(x - 1 / 2)^2)
+    D = 5.0 + 2.0*cospi(2*x)
     return SVector(eta, v, D)
 end
 
@@ -106,86 +105,57 @@ A smooth manufactured solution in combination with [`initial_condition_manufactu
 """
 function source_terms_manufactured(q, x, t, equations::SvaerdKalischEquations1D)
     g = equations.gravity
-#     D = q[3, 1] # D is constant, thus simply take the first entry
     eta0 = equations.eta0
     alpha = equations.alpha
     beta = equations.beta
     gamma = equations.gamma
-    a1 = cospi(t - 2 * x)
-    a2 = sinpi(t - 2 * x)
-    a3 = cospi(4 * t - 2 * x)
-    a4 = sinpi(4 * t - 2 * x)
+    a1 = sinpi(2 * x)
+    a2 = cospi(2 * x)
+    a3 = sinpi(-t + 2 * x)
+    a4 = cospi(-t + 2 * x)
+    a5 = sinpi(t - 2 * x)
+    a6 = cospi(t - 2 * x)
+    a7 = sinpi(-4 * t + 2 * x)
+    a8 = exp(t / 2)
+    a9 = exp(t) * cospi(-4 * t + 2 * x)
+    a10 = eta0 + 2.0 * a2 + 5.0
+    a11 = sqrt(g * a10)
+    a12 = 0.2 * eta0 + 0.4 * a2 + 1
+    a13 = alpha * a11 * a12^2
+    a14 = sqrt(a13)
+    a15 = -1.0 * pi * a13 * a1 / a10 - 0.8 * pi * alpha * a11 * a12 * a1
+    a16 = -20.0 * pi^2 * a14 * a9 - 10.0 * pi * a14 * a15 * exp(t) * a7 / (a13)
+    a17 = -2 * pi * exp(t) * a7 - 4.0 * pi * a1
+    a18 = a9 + 2.0 * a2 + 5.0
+    a19 = a17 * a8 * a3 + 2 * pi * a18 * a8 * a4
+    a20 = a14 * (40.0 * pi^3 * a14 * exp(t) * a7 - 40.0 * pi^2 * a14 * a15 * a9 / (a13) -
+           20.0 * pi^2 * a14 * a15 * exp(t) * a1 * a7 / (a13 * a10) -
+           16.0 * pi^2 * a14 * a15 * exp(t) * a1 * a7 / (alpha * a11 * a12^3) -
+           10.0 * pi * a14 *
+           (-2.0 * pi^2 * a13 * a2 / a10 - 1.6 * pi^2 * alpha * a11 * a12 * a2 +
+            3.2 * pi^2 * alpha * a11 * a12 * a1^2 / a10 + 0.56 * pi^2 * alpha * a11 * a1^2) *
+           exp(t) * a7 / (a13) -
+           10.0 * pi * a14 * a15^2 * exp(t) * a7 / (alpha^2 * g * a12^4 * a10))
 
-    # Constant bathymetry:
-#     dq1 = 8 * pi^3 * alpha * sqrt(g * (D + eta0)) * (D + eta0)^2 * exp(t) * a4 +
-#           2 * pi * (D + exp(t) * a3) * exp(t / 2) * a1 - 2 * pi * exp(3 * t / 2) * a2 * a4 -
-#           4 * pi * exp(t) * a4 + exp(t) * a3
-    # When written in conservative variables:
-#     dq2 = 2 * pi * D * g * exp(t) * a4 - D * exp(t / 2) * a2 / 2 -
-#           pi * D * exp(t / 2) * a1 - 2 * pi * D * exp(t) * a2 * a1 +
-#           8 * pi^3 * alpha * (D + eta0)^2 * sqrt(D * g + eta0 * g) * exp(3 * t / 2) * a1 *
-#           a3 - 2 * pi^2 * beta * (D + eta0)^3 * exp(t / 2) * a2 -
-#           4 * pi^3 * beta * (D + eta0)^3 * exp(t / 2) * a1 +
-#           2 * pi * g * exp(2 * t) * a4 * a3 +
-#           8.0 * pi^3 * gamma * (D + eta0)^3 * sqrt(D * g + eta0 * g) * exp(t / 2) * a1 -
-#           exp(3 * t / 2) * a2 * a3 / 2 - pi * exp(3 * t / 2) * a1 * a3 -
-#           2 * pi * exp(2 * t) * a2 * a1 * a3
-#     # When written in primitive variables:
-#       dq2 = 8*pi^3*alpha*sqrt(g*(D + eta0))*(D + eta0)^2*exp(3*t/2)*a1*a3 - 2*pi^2*beta*(D + eta0)^3*(a2 + 2*pi*a1)*exp(t/2) + 2*pi*g*(D + exp(t)*a3)*exp(t)*a4 + 8*pi^3*gamma*sqrt(g*(D + eta0))*(D + eta0)^3*exp(t/2)*a1 - (D + exp(t)*a3)*(a2 + 2*pi*a1)*exp(t/2)/2 - 3*pi*(D + exp(t)*a3)*exp(t)*a2*a1 + pi*((D + exp(t)*a3)*a1 - exp(t)*a2*a4)*exp(t)*a2 + pi*exp(2*t)*a2^2*a4
+    dq1 = -5.0 * a20 + a19 + 4 * pi * exp(t) * a7 + a9 - 5.0 * a14 * a16 * a15 / (a13)
 
-    # Variable bathymetry:
-    dq1 = (-10*pi*alpha*sqrt(g*(eta0*exp((x - 0.5)^2) + 4))*(2*x - 1.0)*((10*x - 5.0)*a4 + 2*pi*(eta0*exp((x - 0.5)^2) + 4)*a3)*exp(t + 29*(x - 0.5)^2/4) + 4*pi*alpha*sqrt(g*(eta0*exp((x - 0.5)^2) + 4))*(-10*(x - 0.5)^2*a4 + 2*pi^2*(eta0*exp((x - 0.5)^2) + 4)^2*a4 + 5*(eta0*exp((x - 0.5)^2) + 4)*(-2*(x - 0.5)^2*a4 - 2*pi*(2*x - 1.0)*a3 + a4))*exp(t + 29*(x - 0.5)^2/4) + (-4*pi*a4 + a3)*exp(t + 39*(x - 0.5)^2/4) + (2*pi*(exp(t + (x - 0.5)^2)*a3 + 4)*a1 + (8*x - 2*pi*exp(t + (x - 0.5)^2)*a4 - 4.0)*a2)*exp(t/2 + 35*(x - 0.5)^2/4))*exp(-39*(x - 0.5)^2/4)
-
-    # When written in conservative variables:
-#         dq2 = (-(10 * pi * alpha * sqrt(g * (eta0 * exp((x - 0.5)^2) + 4)) * (2 * x - 1.0) *
-#                  ((10 * x - 5.0) * a4 + 2 * pi * (eta0 * exp((x - 0.5)^2) + 4) * a3) *
-#                  exp(t + 29 * (x - 0.5)^2 / 4) +
-#                  4 * pi * alpha * sqrt(g * (eta0 * exp((x - 0.5)^2) + 4)) *
-#                  (10 * (x - 0.5)^2 * a4 - 2 * pi^2 * (eta0 * exp((x - 0.5)^2) + 4)^2 * a4 +
-#                   5 * (eta0 * exp((x - 0.5)^2) + 4) *
-#                   (2 * (x - 0.5)^2 * a4 + 2 * pi * (2 * x - 1.0) * a3 - a4)) *
-#                  exp(t + 29 * (x - 0.5)^2 / 4) +
-#                  (4 * pi * a4 - a3) * exp(t + 39 * (x - 0.5)^2 / 4) +
-#                  (-2 * pi * (exp(t + (x - 0.5)^2) * a3 + 4) * a1 +
-#                   (-8 * x + 2 * pi * exp(t + (x - 0.5)^2) * a4 + 4.0) * a2) *
-#                  exp(t / 2 + 35 * (x - 0.5)^2 / 4)) * exp(t / 2 + 20 * (x - 0.5)^2) * a2 +
-#                (20 * pi * alpha * sqrt(g * (eta0 * exp((x - 0.5)^2) + 4)) * (2 * x - 1.0) *
-#                 ((10 * x - 5.0) * a4 + 2 * pi * (eta0 * exp((x - 0.5)^2) + 4) * a3) *
-#                 exp(3 * t / 2 + 35 * (x - 0.5)^2 / 2) * a2 +
-#                 8 * pi^2 * alpha * sqrt(g * (eta0 * exp((x - 0.5)^2) + 4)) *
-#                 (eta0 * exp((x - 0.5)^2) + 4) *
-#                 ((10 * x - 5.0) * a4 + 2 * pi * (eta0 * exp((x - 0.5)^2) + 4) * a3) *
-#                 exp(3 * t / 2 + 35 * (x - 0.5)^2 / 2) * a1 +
-#                 8 * pi * alpha * sqrt(g * (eta0 * exp((x - 0.5)^2) + 4)) *
-#                 (10 * (x - 0.5)^2 * a4 - 2 * pi^2 * (eta0 * exp((x - 0.5)^2) + 4)^2 * a4 +
-#                  5 * (eta0 * exp((x - 0.5)^2) + 4) *
-#                  (2 * (x - 0.5)^2 * a4 + 2 * pi * (2 * x - 1.0) * a3 - a4)) *
-#                 exp(3 * t / 2 + 35 * (x - 0.5)^2 / 2) * a2 -
-#                 4 * pi * beta * (eta0 * exp((x - 0.5)^2) + 4)^2 *
-#                 ((6.0 - 12 * x) * a1 + 12 * pi * (2 * x - 1.0) * a2 +
-#                  pi * (eta0 * exp((x - 0.5)^2) + 4) * a2 +
-#                  2 * pi^2 * (eta0 * exp((x - 0.5)^2) + 4) * a1) *
-#                 exp(t / 2 + 17 * (x - 0.5)^2) +
-#                 pi * gamma * sqrt(g * (eta0 * exp((x - 0.5)^2) + 4)) *
-#                 (eta0 * exp((x - 0.5)^2) + 4) *
-#                 (-384.0 * (x - 0.5)^2 * a1 +
-#                  168.0 * pi * (2 * x - 1.0) * (eta0 * exp((x - 0.5)^2) + 4) * a2 +
-#                  16.0 * pi^2 * (eta0 * exp((x - 0.5)^2) + 4)^2 * a1 +
-#                  (32.0 * (x - 0.5)^2 -
-#                   8.0 * (eta0 * exp((x - 0.5)^2) + 4) * (2 * (x - 0.5)^2 - 1)) * a1 +
-#                  (48.0 * eta0 * exp((x - 0.5)^2) -
-#                   (x - 0.5)^2 * (96.0 * eta0 * exp((x - 0.5)^2) + 384.0) - 768.0 * (x - 0.5)^2 +
-#                   192.0) * a1) * exp(t / 2 + 33 * (x - 0.5)^2 / 2) +
-#                 2 * (4 * pi * a4 - a3) * exp(3 * t / 2 + 20 * (x - 0.5)^2) * a2 +
-#                 (4 * pi * g * (exp(t + (x - 0.5)^2) * a3 + 4) * exp(t) * a4 -
-#                  (exp(t + (x - 0.5)^2) * a3 + 4) * exp(t / 2) * a2 -
-#                  2 * pi * (exp(t + (x - 0.5)^2) * a3 + 4) * exp(t / 2) * a1 -
-#                  8 * pi * (exp(t + (x - 0.5)^2) * a3 + 4) * exp(t) * a2 * a1 +
-#                  (-16 * x + 4 * pi * exp(t + (x - 0.5)^2) * a4 + 8.0) * exp(t) * a2^2) *
-#                 exp(19 * (x - 0.5)^2)) * exp(39 * (x - 0.5)^2 / 4) / 2) *
-#               exp(-119 * (x - 0.5)^2 / 4)# - 180.0
-    # When written in primitive variables:
-    dq2 = (5*pi*alpha*sqrt(g*(eta0*exp((x - 0.5)^2) + 4))*(2*x - 1.0)*((10*x - 5.0)*a4 + 2*pi*(eta0*exp((x - 0.5)^2) + 4)*a3)*exp(3*t/2 + 105*(x - 0.5)^2/4)*a2 + 4*pi^2*alpha*sqrt(g*(eta0*exp((x - 0.5)^2) + 4))*(eta0*exp((x - 0.5)^2) + 4)*((10*x - 5.0)*a4 + 2*pi*(eta0*exp((x - 0.5)^2) + 4)*a3)*exp(3*t/2 + 105*(x - 0.5)^2/4)*a1 + pi*alpha*sqrt(g*(eta0*exp((x - 0.5)^2) + 4))*(-5*(2*x - 1.0)*((10*x - 5.0)*a4 + 2*pi*(eta0*exp((x - 0.5)^2) + 4)*a3)*exp(t + 25*(x - 0.5)^2/4) + 2*(-10*(x - 0.5)^2*a4 + 2*pi^2*(eta0*exp((x - 0.5)^2) + 4)^2*a4 + 5*(eta0*exp((x - 0.5)^2) + 4)*(-2*(x - 0.5)^2*a4 - 2*pi*(2*x - 1.0)*a3 + a4))*exp(t + 25*(x - 0.5)^2/4))*exp(t/2 + 20*(x - 0.5)^2)*a2 + 2*pi*alpha*sqrt(g*(eta0*exp((x - 0.5)^2) + 4))*(10*(x - 0.5)^2*a4 - 2*pi^2*(eta0*exp((x - 0.5)^2) + 4)^2*a4 + 5*(eta0*exp((x - 0.5)^2) + 4)*(2*(x - 0.5)^2*a4 + 2*pi*(2*x - 1.0)*a3 - a4))*exp(3*t/2 + 105*(x - 0.5)^2/4)*a2 + 2*pi*beta*(eta0*exp((x - 0.5)^2) + 4)^2*((6.0 - 12*x)*(2*pi*a2 - a1) - pi*(eta0*exp((x - 0.5)^2) + 4)*(a2 + 2*pi*a1))*exp(t/2 + 103*(x - 0.5)^2/4) + 4*pi*gamma*sqrt(g*(eta0*exp((x - 0.5)^2) + 4))*(eta0*exp((x - 0.5)^2) + 4)*(-48*(x - 0.5)^2*a1 + 21*pi*(2*x - 1.0)*(eta0*exp((x - 0.5)^2) + 4)*a2 + 2*pi^2*(eta0*exp((x - 0.5)^2) + 4)^2*a1 + ((1 - 2*(x - 0.5)^2)*(eta0*exp((x - 0.5)^2) + 4) + 4*(x - 0.5)^2)*a1 + 6*(eta0*exp((x - 0.5)^2) - 2*(x - 0.5)^2*(eta0*exp((x - 0.5)^2) + 4) - 16*(x - 0.5)^2 + 4)*a1)*exp(t/2 + 101*(x - 0.5)^2/4) + (4*pi*g*(exp(t + (x - 0.5)^2)*a3 + 4)*exp(t)*a4 - (exp(t + (x - 0.5)^2)*a3 + 4)*(a2 + 2*pi*a1)*exp(t/2) - 6*pi*(exp(t + (x - 0.5)^2)*a3 + 4)*exp(t)*a2*a1 + (2*pi*(exp(t + (x - 0.5)^2)*a3 + 4)*a1 + (8*x - 2*pi*exp(t + (x - 0.5)^2)*a4 - 4.0)*a2)*exp(t)*a2 + (-8*x + 2*pi*exp(t + (x - 0.5)^2)*a4 + 4.0)*exp(t)*a2^2)*exp(111*(x - 0.5)^2/4)/2)*exp(-115*(x - 0.5)^2/4)
+    dq2 = -25.0 * beta * (-2 * pi^2 * a8 * a3 + 4 * pi^3 * a8 * a4) * a12^2 * a10 +
+          100.0 * pi * beta * (2 * pi^2 * a8 * a3 + pi * a8 * a4) * a12^2 * a1 +
+          40.0 * pi * beta * (2 * pi^2 * a8 * a3 + pi * a8 * a4) * a12 * a10 * a1 -
+          2 * pi * g * a18 * exp(t) * a7 +
+          100.0 * pi^3 * gamma * a11 * a12^2 * a10 * a8 * a4 -
+          300.0 * pi^3 * gamma * a11 * a12^2 * a8 * a1 * a3 -
+          80.0 * pi^3 * gamma * a11 * a12 * a10 * a8 * a1 * a3 -
+          pi^3 * gamma * a11 *
+          (-50.0 * (3.2 * a12 * a2 - 1.28 * a1^2) * a10 * a6 -
+           50.0 * (4.0 * a2 / a10 + 0.16 * a1^2 / a12^2) * a12^2 * a10 * a6 -
+           200.0 * a12^2 * a10 * a6 - 1200.0 * a12^2 * a1 * a5 - 400.0 * a12^2 * a2 * a6 +
+           800.0 * a12^2 * a1^2 * a6 / a10 - 320.0 * a12 * a10 * a1 * a5 +
+           960.0 * a12 * a1^2 * a6) * a8 / 2 - 10.0 * pi * a14 * a16 * a8 * a4 -
+          2.5 * a20 * a8 * a3 + (5.0 * a20 + 5.0 * a14 * a16 * a15 / (a13)) * a8 * a3 / 2 +
+          (a8 * a3 / 2 - pi * a8 * a4) * a18 + a17 * exp(t) * a3^2 / 2 -
+          (a19) * a8 * a3 / 2 + 3 * pi * a18 * exp(t) * a3 * a4 -
+          2.5 * a14 * a16 * a15 * a8 * a3 / (a13)
 
     return SVector(dq1, dq2, 0.0)
 end
