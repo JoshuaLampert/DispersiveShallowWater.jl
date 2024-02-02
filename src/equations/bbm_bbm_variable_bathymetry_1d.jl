@@ -67,7 +67,7 @@ function initial_condition_manufactured(x, t,
                                         mesh)
     eta = exp(t) * cospi(2 * (x - 2 * t))
     v = exp(t / 2) * sinpi(2 * (x - t / 2))
-    D = 5.0 + 2.0 * cospi(2 * x)
+    D = 5 + 2 * cospi(2 * x)
     return SVector(eta, v, D)
 end
 
@@ -97,7 +97,7 @@ function source_terms_manufactured(q, x, t, equations::BBMBBMVariableEquations1D
            4 * (a4 + 2 * pi * a3) * (16 * sinpi(x)^4 - 26 * sinpi(x)^2 + 7)) * exp(t / 2) /
           3 - exp(t / 2) * a4 / 2 - pi * exp(t / 2) * a3 - pi * exp(t) * a5
 
-    return SVector(dq1, dq2, 0.0)
+    return SVector(dq1, dq2, zero(dq1))
 end
 
 """
