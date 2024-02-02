@@ -94,7 +94,7 @@ function initial_condition_manufactured(x, t,
                                         mesh)
     eta = exp(t) * cospi(2 * (x - 2 * t))
     v = exp(t / 2) * sinpi(2 * (x - t / 2))
-    D = 3.0
+    D = 5 + 2 * cospi(2 * x)
     return SVector(eta, v, D)
 end
 
@@ -105,31 +105,61 @@ A smooth manufactured solution in combination with [`initial_condition_manufactu
 """
 function source_terms_manufactured(q, x, t, equations::SvaerdKalischEquations1D)
     g = equations.gravity
-    D = q[3, 1] # D is constant, thus simply take the first entry
     eta0 = equations.eta0
     alpha = equations.alpha
     beta = equations.beta
     gamma = equations.gamma
-    a1 = cospi(t - 2 * x)
-    a2 = sinpi(t - 2 * x)
-    a3 = cospi(4 * t - 2 * x)
-    a4 = sinpi(4 * t - 2 * x)
+    a1 = sinpi(2 * x)
+    a2 = cospi(2 * x)
+    a3 = sinpi(-t + 2 * x)
+    a4 = cospi(-t + 2 * x)
+    a5 = sinpi(t - 2 * x)
+    a6 = cospi(t - 2 * x)
+    a7 = sinpi(-4 * t + 2 * x)
+    a8 = exp(t / 2)
+    a9 = exp(t) * cospi(-4 * t + 2 * x)
+    a10 = eta0 + 2.0 * a2 + 5.0
+    a11 = sqrt(g * a10)
+    a12 = 0.2 * eta0 + 0.4 * a2 + 1
+    a13 = alpha * a11 * a12^2
+    a14 = sqrt(a13)
+    a15 = -1.0 * pi * a13 * a1 / a10 - 0.8 * pi * alpha * a11 * a12 * a1
+    a16 = -20.0 * pi^2 * a14 * a9 - 10.0 * pi * a14 * a15 * exp(t) * a7 / (a13)
+    a17 = -2 * pi * exp(t) * a7 - 4.0 * pi * a1
+    a18 = a9 + 2.0 * a2 + 5.0
+    a19 = a17 * a8 * a3 + 2 * pi * a18 * a8 * a4
+    a20 = a14 * (40.0 * pi^3 * a14 * exp(t) * a7 - 40.0 * pi^2 * a14 * a15 * a9 / (a13) -
+           20.0 * pi^2 * a14 * a15 * exp(t) * a1 * a7 / (a13 * a10) -
+           16.0 * pi^2 * a14 * a15 * exp(t) * a1 * a7 / (alpha * a11 * a12^3) -
+           10.0 * pi * a14 *
+           (-2.0 * pi^2 * a13 * a2 / a10 - 1.6 * pi^2 * alpha * a11 * a12 * a2 +
+            3.2 * pi^2 * alpha * a11 * a12 * a1^2 / a10 + 0.56 * pi^2 * alpha * a11 * a1^2) *
+           exp(t) * a7 / (a13) -
+           10.0 * pi * a14 * a15^2 * exp(t) * a7 / (alpha^2 * g * a12^4 * a10))
 
-    dq1 = 8 * pi^3 * alpha * sqrt(g * (D + eta0)) * (D + eta0)^2 * exp(t) * a4 +
-          2 * pi * (D + exp(t) * a3) * exp(t / 2) * a1 - 2 * pi * exp(3 * t / 2) * a2 * a4 -
-          4 * pi * exp(t) * a4 + exp(t) * a3
-    dq2 = 2 * pi * D * g * exp(t) * a4 - D * exp(t / 2) * a2 / 2 -
-          pi * D * exp(t / 2) * a1 - 2 * pi * D * exp(t) * a2 * a1 +
-          8 * pi^3 * alpha * (D + eta0)^2 * sqrt(D * g + eta0 * g) * exp(3 * t / 2) * a1 *
-          a3 - 2 * pi^2 * beta * (D + eta0)^3 * exp(t / 2) * a2 -
-          4 * pi^3 * beta * (D + eta0)^3 * exp(t / 2) * a1 +
-          2 * pi * g * exp(2 * t) * a4 * a3 +
-          8.0 * pi^3 * gamma * (D + eta0)^3 * sqrt(D * g + eta0 * g) * exp(t / 2) * a1 -
-          exp(3 * t / 2) * a2 * a3 / 2 - pi * exp(3 * t / 2) * a1 * a3 -
-          2 * pi * exp(2 * t) * a2 * a1 * a3
-    return SVector(dq1, dq2, 0.0)
+    dq1 = -5.0 * a20 + a19 + 4 * pi * exp(t) * a7 + a9 - 5.0 * a14 * a16 * a15 / (a13)
+
+    dq2 = -25.0 * beta * (-2 * pi^2 * a8 * a3 + 4 * pi^3 * a8 * a4) * a12^2 * a10 +
+          100.0 * pi * beta * (2 * pi^2 * a8 * a3 + pi * a8 * a4) * a12^2 * a1 +
+          40.0 * pi * beta * (2 * pi^2 * a8 * a3 + pi * a8 * a4) * a12 * a10 * a1 -
+          2 * pi * g * a18 * exp(t) * a7 +
+          100.0 * pi^3 * gamma * a11 * a12^2 * a10 * a8 * a4 -
+          300.0 * pi^3 * gamma * a11 * a12^2 * a8 * a1 * a3 -
+          80.0 * pi^3 * gamma * a11 * a12 * a10 * a8 * a1 * a3 -
+          pi^3 * gamma * a11 *
+          (-50.0 * (3.2 * a12 * a2 - 1.28 * a1^2) * a10 * a6 -
+           50.0 * (4.0 * a2 / a10 + 0.16 * a1^2 / a12^2) * a12^2 * a10 * a6 -
+           200.0 * a12^2 * a10 * a6 - 1200.0 * a12^2 * a1 * a5 - 400.0 * a12^2 * a2 * a6 +
+           800.0 * a12^2 * a1^2 * a6 / a10 - 320.0 * a12 * a10 * a1 * a5 +
+           960.0 * a12 * a1^2 * a6) * a8 / 2 - 10.0 * pi * a14 * a16 * a8 * a4 -
+          2.5 * a20 * a8 * a3 + (5.0 * a20 + 5.0 * a14 * a16 * a15 / (a13)) * a8 * a3 / 2 +
+          (a8 * a3 / 2 - pi * a8 * a4) * a18 + a17 * exp(t) * a3^2 / 2 -
+          (a19) * a8 * a3 / 2 + 3 * pi * a18 * exp(t) * a3 * a4 -
+          2.5 * a14 * a16 * a15 * a8 * a3 / (a13)
+
+    return SVector(dq1, dq2, zero(dq1))
 end
-#
+
 function create_cache(mesh,
                       equations::SvaerdKalischEquations1D,
                       solver,

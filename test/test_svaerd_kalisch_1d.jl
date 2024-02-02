@@ -12,12 +12,12 @@ EXAMPLES_DIR = joinpath(examples_dir(), "svaerd_kalisch_1d")
         @test_trixi_include(joinpath(EXAMPLES_DIR,
                                      "svaerd_kalisch_1d_manufactured.jl"),
                             tspan=(0.0, 0.1),
-                            l2=[7.467887060263923e-5 2.7796353838948894e-8 0.0],
-                            linf=[0.0001613144395267163 4.344495230235168e-8 0.0],
-                            cons_error=[2.3635607360183997e-16 8.084235123776567e-10 0.0],
-                            change_waterheight=-2.3635607360183997e-16,
-                            change_entropy=0.1342289500320556,
-                            atol=1e-4) # in order to make CI pass
+                            l2=[3.3755102050606554e-6 2.320896961343125e-7 0.0],
+                            linf=[4.908886917176503e-6 3.888671399332466e-7 0.0],
+                            cons_error=[2.42861286636753e-16 1.9224170696150768e-7 0.0],
+                            change_waterheight=-2.42861286636753e-16,
+                            change_entropy=0.1868146724821993,
+                            atol=1e-9) # in order to make CI pass
     end
 
     @trixi_testset "svaerd_kalisch_1d_dingemans" begin
