@@ -5,7 +5,7 @@ using TrixiBase
 # Define module-wide setups such that the respective modules are available in doctests
 DocMeta.setdocmeta!(DispersiveShallowWater, :DocTestSetup, :(using DispersiveShallowWater);
                     recursive = true)
-DocMeta.setdocmeta!(TrixiBase, :DocTestSetup, :(using TrixiBase); recursive=true)
+DocMeta.setdocmeta!(TrixiBase, :DocTestSetup, :(using TrixiBase); recursive = true)
 
 makedocs(;
          modules = [DispersiveShallowWater, TrixiBase],
@@ -21,9 +21,9 @@ makedocs(;
              "Home" => "index.md",
              "Overview" => "overview.md",
              "Reference" => [
-                             "TrixiBase" => "ref-trixibase.md",
-                             "DispersiveShallowWater" => "ref.md"
-                            ],
+                 "TrixiBase" => "ref-trixibase.md",
+                 "DispersiveShallowWater" => "ref.md",
+             ],
              "License" => "license.md",
          ])
 
