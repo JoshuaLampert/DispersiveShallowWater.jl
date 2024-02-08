@@ -18,6 +18,7 @@ SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 SummationByPartsOperators = "9f78cca6-572e-554e-b819-917d2f1cf240"
 TimerOutputs = "a759f4b9-e2f1-59dc-863e-4aeb61b1ea8f"
+TrixiBase = "9a0f1c46-06d5-4909-a5a3-ce25d3fa3284"
 
 [compat]
 DiffEqBase = "6.128"
@@ -34,4 +35,5 @@ SparseArrays = "1"
 StaticArrays = "1"
 SummationByPartsOperators = "0.5.41"
 TimerOutputs = "0.5.7"
+TrixiBase = "0.1"
 julia = "1.9"

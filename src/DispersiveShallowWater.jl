@@ -22,6 +22,7 @@ using SummationByPartsOperators: AbstractDerivativeOperator,
                                  derivative_order, integrate
 import SummationByPartsOperators: grid, xmin, xmax
 using TimerOutputs: TimerOutputs, TimerOutput, @timeit, print_timer, reset_timer!
+@reexport using TrixiBase: TrixiBase, trixi_include
 
 include("boundary_conditions.jl")
 include("mesh.jl")
@@ -32,7 +33,7 @@ include("callbacks_step/callbacks_step.jl")
 include("visualization.jl")
 include("util.jl")
 
-export examples_dir, get_examples, default_example, trixi_include, convergence_test
+export examples_dir, get_examples, default_example, convergence_test
 
 export BBMBBMEquations1D, BBMBBMVariableEquations1D, SvärdKalischEquations1D,
        SvaerdKalischEquations1D
