@@ -99,17 +99,15 @@ using SparseArrays: sparse, SparseMatrixCSC
         equations = @test_nowarn BBMBBMEquations1D(gravity_constant = 9.81, D = 2.0)
         @test_nowarn print(equations)
         @test_nowarn display(equations)
-        conversion_functions = [
-            waterheight_total,
-            waterheight,
-            velocity,
-            momentum,
-            discharge,
-            entropy,
-            energy_total,
-            prim2cons,
-            prim2prim,
-        ]
+        conversion_functions = [waterheight_total,
+                                waterheight,
+                                velocity,
+                                momentum,
+                                discharge,
+                                entropy,
+                                energy_total,
+                                prim2cons,
+                                prim2prim]
         for conversion in conversion_functions
             @test DispersiveShallowWater.varnames(conversion, equations) isa Tuple
         end
@@ -128,17 +126,15 @@ using SparseArrays: sparse, SparseMatrixCSC
         equations = @test_nowarn BBMBBMVariableEquations1D(gravity_constant = 9.81)
         @test_nowarn print(equations)
         @test_nowarn display(equations)
-        conversion_functions = [
-            waterheight_total,
-            waterheight,
-            velocity,
-            momentum,
-            discharge,
-            entropy,
-            energy_total,
-            prim2cons,
-            prim2prim,
-        ]
+        conversion_functions = [waterheight_total,
+                                waterheight,
+                                velocity,
+                                momentum,
+                                discharge,
+                                entropy,
+                                energy_total,
+                                prim2cons,
+                                prim2prim]
         for conversion in conversion_functions
             @test DispersiveShallowWater.varnames(conversion, equations) isa Tuple
         end
@@ -160,19 +156,17 @@ using SparseArrays: sparse, SparseMatrixCSC
                                                           gamma = 0.15707070707070708)
         @test_nowarn print(equations)
         @test_nowarn display(equations)
-        conversion_functions = [
-            waterheight_total,
-            waterheight,
-            velocity,
-            momentum,
-            discharge,
-            entropy,
-            energy_total,
-            prim2cons,
-            prim2prim,
-            energy_total_modified,
-            entropy_modified,
-        ]
+        conversion_functions = [waterheight_total,
+                                waterheight,
+                                velocity,
+                                momentum,
+                                discharge,
+                                entropy,
+                                energy_total,
+                                prim2cons,
+                                prim2prim,
+                                energy_total_modified,
+                                entropy_modified]
         for conversion in conversion_functions
             @test DispersiveShallowWater.varnames(conversion, equations) isa Tuple
         end
