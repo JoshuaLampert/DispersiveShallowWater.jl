@@ -100,14 +100,14 @@ using SparseArrays: sparse, SparseMatrixCSC
         @test_nowarn print(equations)
         @test_nowarn display(equations)
         conversion_functions = [waterheight_total,
-                                waterheight,
-                                velocity,
-                                momentum,
-                                discharge,
-                                entropy,
-                                energy_total,
-                                prim2cons,
-                                prim2prim]
+            waterheight,
+            velocity,
+            momentum,
+            discharge,
+            entropy,
+            energy_total,
+            prim2cons,
+            prim2prim]
         for conversion in conversion_functions
             @test DispersiveShallowWater.varnames(conversion, equations) isa Tuple
         end
@@ -127,14 +127,14 @@ using SparseArrays: sparse, SparseMatrixCSC
         @test_nowarn print(equations)
         @test_nowarn display(equations)
         conversion_functions = [waterheight_total,
-                                waterheight,
-                                velocity,
-                                momentum,
-                                discharge,
-                                entropy,
-                                energy_total,
-                                prim2cons,
-                                prim2prim]
+            waterheight,
+            velocity,
+            momentum,
+            discharge,
+            entropy,
+            energy_total,
+            prim2cons,
+            prim2prim]
         for conversion in conversion_functions
             @test DispersiveShallowWater.varnames(conversion, equations) isa Tuple
         end
@@ -157,16 +157,16 @@ using SparseArrays: sparse, SparseMatrixCSC
         @test_nowarn print(equations)
         @test_nowarn display(equations)
         conversion_functions = [waterheight_total,
-                                waterheight,
-                                velocity,
-                                momentum,
-                                discharge,
-                                entropy,
-                                energy_total,
-                                prim2cons,
-                                prim2prim,
-                                energy_total_modified,
-                                entropy_modified]
+            waterheight,
+            velocity,
+            momentum,
+            discharge,
+            entropy,
+            energy_total,
+            prim2cons,
+            prim2prim,
+            energy_total_modified,
+            entropy_modified]
         for conversion in conversion_functions
             @test DispersiveShallowWater.varnames(conversion, equations) isa Tuple
         end
