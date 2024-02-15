@@ -1,12 +1,14 @@
-using DispersiveShallowWater
 using Documenter
+using DispersiveShallowWater
+using TrixiBase
 
 # Define module-wide setups such that the respective modules are available in doctests
 DocMeta.setdocmeta!(DispersiveShallowWater, :DocTestSetup, :(using DispersiveShallowWater);
                     recursive = true)
+DocMeta.setdocmeta!(TrixiBase, :DocTestSetup, :(using TrixiBase); recursive = true)
 
 makedocs(;
-         modules = [DispersiveShallowWater],
+         modules = [DispersiveShallowWater, TrixiBase],
          authors = "Joshua Lampert <joshua.lampert@uni-hamburg.de>",
          repo = Remotes.GitHub("JoshuaLampert", "DispersiveShallowWater.jl"),
          sitename = "DispersiveShallowWater.jl",
@@ -18,7 +20,10 @@ makedocs(;
          pages = [
              "Home" => "index.md",
              "Overview" => "overview.md",
-             "Reference" => "ref.md",
+             "Reference" => [
+                 "TrixiBase" => "ref-trixibase.md",
+                 "DispersiveShallowWater" => "ref.md",
+             ],
              "License" => "license.md",
          ])
 
