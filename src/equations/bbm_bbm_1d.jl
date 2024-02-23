@@ -1,5 +1,5 @@
 @doc raw"""
-    BBMBBMEquations1D(gravity, D)
+    BBMBBMEquations1D(gravity, D, eta0 = 0.0)
 
 BBM-BBM (Benjamin–Bona–Mahony) system in one spatial dimension. The equations are given by
 ```math
@@ -9,8 +9,8 @@ BBM-BBM (Benjamin–Bona–Mahony) system in one spatial dimension. The equation
 \end{aligned}
 ```
 The unknown quantities of the BBM-BBM equations are the total water height ``\eta`` and the velocity ``v``.
-The gravitational constant is denoted by `g` and the constant bottom topography (bathymetry) ``b = -D``. The water height above the bathymetry is therefore given by
-``h = \eta + D``.
+The gravitational constant is denoted by `g` and the constant bottom topography (bathymetry) ``b = \eta_0 - D``. The water height above the bathymetry is therefore given by
+``h = \eta - \eta_0 + D``. The BBM-BBM equations are only implemented for ``\eta_0 = 0``.
 
 One reference for the BBM-BBM system can be found in
 - Jerry L. Bona, Min Chen (1998)
@@ -21,10 +21,12 @@ One reference for the BBM-BBM system can be found in
 struct BBMBBMEquations1D{RealT <: Real} <: AbstractBBMBBMEquations{1, 2}
     gravity::RealT # gravitational constant
     D::RealT       # constant bathymetry
+    eta0::RealT    # constant still-water surface
 end
 
-function BBMBBMEquations1D(; gravity_constant, D = 1.0)
-    BBMBBMEquations1D(gravity_constant, D)
+function BBMBBMEquations1D(; gravity_constant, D = 1.0, eta0 = 0.0)
+    eta0 == 0.0 || @warn "The still-water surface needs to be 0 for the BBM-BBM equations"
+    BBMBBMEquations1D(gravity_constant, D, eta0)
 end
 
 varnames(::typeof(prim2prim), ::BBMBBMEquations1D) = ("η", "v")
@@ -94,11 +96,12 @@ function create_cache(mesh,
                       initial_condition,
                       RealT,
                       uEltype)
+    D = equations.D
     if solver.D1 isa PeriodicDerivativeOperator ||
        solver.D1 isa UniformPeriodicCoupledOperator
-        invImD2 = inv(I - 1 / 6 * equations.D^2 * Matrix(solver.D2))
+        invImD2 = inv(I - 1 / 6 * D^2 * Matrix(solver.D2))
     elseif solver.D1 isa PeriodicUpwindOperators
-        invImD2 = inv(I - 1 / 6 * equations.D^2 * Matrix(solver.D2))
+        invImD2 = inv(I - 1 / 6 * D^2 * Matrix(solver.D2))
     else
         @error "unknown type of first-derivative operator"
     end
@@ -122,15 +125,15 @@ function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMEquations1D, initial_cond
     deta = view(dq, 1, :)
     dv = view(dq, 2, :)
 
+    D = equations.D
     # energy and mass conservative semidiscretization
     if solver.D1 isa PeriodicDerivativeOperator ||
        solver.D1 isa UniformPeriodicCoupledOperator
-        @timeit timer() "deta hyperbolic" deta[:]=-solver.D1 * (equations.D * v + eta .* v)
+        @timeit timer() "deta hyperbolic" deta[:]=-solver.D1 * (D * v + eta .* v)
         @timeit timer() "dv hyperbolic" dv[:]=-solver.D1 *
                                               (equations.gravity * eta + 0.5 * v .^ 2)
     elseif solver.D1 isa PeriodicUpwindOperators
-        @timeit timer() "deta hyperbolic" deta[:]=-solver.D1.central *
-                                                  (equations.D * v + eta .* v)
+        @timeit timer() "deta hyperbolic" deta[:]=-solver.D1.central * (D * v + eta .* v)
         @timeit timer() "dv hyperbolic" dv[:]=-solver.D1.central *
                                               (equations.gravity * eta + 0.5 * v .^ 2)
     else
@@ -148,7 +151,7 @@ end
 @inline function prim2cons(q, equations::BBMBBMEquations1D)
     eta, v = q
 
-    h = eta + equations.D
+    h = eta - equations.eta0 + equations.D
     hv = h * v
     return SVector(h, hv)
 end
@@ -156,7 +159,7 @@ end
 @inline function cons2prim(u, equations::BBMBBMEquations1D)
     h, hv = u
 
-    eta = h - equations.D
+    eta = h + equations.eta0 - equations.D
     v = hv / h
     return SVector(eta, v)
 end
@@ -170,7 +173,7 @@ end
 end
 
 @inline function bathymetry(q, equations::BBMBBMEquations1D)
-    return -equations.D
+    return equations.eta0 - equations.D
 end
 
 @inline function waterheight(q, equations::BBMBBMEquations1D)
@@ -179,7 +182,8 @@ end
 
 @inline function energy_total(q, equations::BBMBBMEquations1D)
     eta, v = q
-    e = 0.5 * (equations.gravity * eta^2 + (equations.D + eta) * v^2)
+    D = still_waterdepth(q, equations)
+    e = 0.5 * (equations.gravity * eta^2 + (D + eta - equations.eta0) * v^2)
     return e
 end
 

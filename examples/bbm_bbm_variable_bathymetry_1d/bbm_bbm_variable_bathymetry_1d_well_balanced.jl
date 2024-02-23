@@ -6,7 +6,7 @@ using SparseArrays: sparse
 ###############################################################################
 # Semidiscretization of the BBM-BBM equations
 
-equations = BBMBBMVariableEquations1D(gravity_constant = 1.0, eta0 = 2.0)
+equations = BBMBBMVariableEquations1D(gravity_constant = 1.0)
 
 # Setup a truly discontinuous bottom topography function for this academic
 # testcase of well-balancedness. The errors from the analysis callback are
@@ -18,11 +18,11 @@ function initial_condition_discontinuous_well_balancedness(x, t,
     # Set the background values
     eta = equations.eta0
     v = 0.0
-    D = -1.0
+    D = equations.eta0 - 1.0
 
     # Setup a discontinuous bottom topography
     if x >= 0.5 && x <= 0.75
-        D = -1.5 - 0.5 * sinpi(2.0 * x)
+        D = equations.eta0 - 1.5 - 0.5 * sinpi(2.0 * x)
     end
 
     return SVector(eta, v, D)

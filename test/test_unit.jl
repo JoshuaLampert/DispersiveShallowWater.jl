@@ -108,7 +108,7 @@ using SparseArrays: sparse, SparseMatrixCSC
             entropy,
             energy_total,
             prim2cons,
-            prim2prim,
+            prim2prim
         ]
         for conversion in conversion_functions
             @test DispersiveShallowWater.varnames(conversion, equations) isa Tuple
@@ -137,7 +137,7 @@ using SparseArrays: sparse, SparseMatrixCSC
             entropy,
             energy_total,
             prim2cons,
-            prim2prim,
+            prim2prim
         ]
         for conversion in conversion_functions
             @test DispersiveShallowWater.varnames(conversion, equations) isa Tuple
@@ -171,7 +171,7 @@ using SparseArrays: sparse, SparseMatrixCSC
             prim2cons,
             prim2prim,
             energy_total_modified,
-            entropy_modified,
+            entropy_modified
         ]
         for conversion in conversion_functions
             @test DispersiveShallowWater.varnames(conversion, equations) isa Tuple
