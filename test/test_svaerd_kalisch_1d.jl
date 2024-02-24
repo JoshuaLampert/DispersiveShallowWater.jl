@@ -30,7 +30,7 @@ EXAMPLES_DIR = joinpath(examples_dir(), "svaerd_kalisch_1d")
                             cons_error=[3.979039320256561e-13 4.937137540373564e-5 0.0],
                             change_waterheight=-3.979039320256561e-13,
                             change_entropy=-0.00024362648639453255,
-                            change_entropy_modified=3.240868750253867e-6)
+                            change_entropy_modified=-6.311893230304122e-9)
     end
 
     @trixi_testset "svaerd_kalisch_1d_dingemans_cg" begin
@@ -42,7 +42,7 @@ EXAMPLES_DIR = joinpath(examples_dir(), "svaerd_kalisch_1d")
                             cons_error=[1.4210854715202004e-13 4.953054817174909e-5 0.0],
                             change_waterheight=-1.4210854715202004e-13,
                             change_entropy=-0.0002425303440531934,
-                            change_entropy_modified=2.9729466177741415e-6)
+                            change_entropy_modified=-2.6815314413397573e-9)
     end
 
     @trixi_testset "svaerd_kalisch_1d_dingemans_upwind" begin
@@ -54,7 +54,7 @@ EXAMPLES_DIR = joinpath(examples_dir(), "svaerd_kalisch_1d")
                             cons_error=[1.1368683772161603e-13 4.871598417571836e-5 0.0],
                             change_waterheight=-1.1368683772161603e-13,
                             change_entropy=-0.00023645232727176335,
-                            change_entropy_modified=2.0682244894487667e-6)
+                            change_entropy_modified=-6.654090611846186e-9)
     end
 
     @trixi_testset "svaerd_kalisch_1d_dingemans_relaxation" begin
@@ -62,11 +62,11 @@ EXAMPLES_DIR = joinpath(examples_dir(), "svaerd_kalisch_1d")
                                      "svaerd_kalisch_1d_dingemans_relaxation.jl"),
                             tspan=(0.0, 1.0),
                             N=512,
-                            l2=[0.2279601359992612 0.7519295302772953 0.0],
-                            linf=[0.03670816991272552 0.12141112705223758 0.0],
-                            cons_error=[3.979039320256561e-13 4.937017087502672e-5 0.0],
+                            l2=[0.22796107242561717 0.7519327155905444 0.0],
+                            linf=[0.03670834831604197 0.12141172368792873 0.0],
+                            cons_error=[3.979039320256561e-13 4.937137655207271e-5 0.0],
                             change_waterheight=-3.979039320256561e-13,
-                            change_entropy=-0.0002466715038735856,
+                            change_entropy=-0.00024362054875837202,
                             change_entropy_modified=0.0)
     end
 

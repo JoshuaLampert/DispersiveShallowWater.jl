@@ -133,6 +133,12 @@ See [`momentum`](@ref).
 
 varnames(::typeof(discharge), equations) = ("P",)
 
+@inline function still_waterdepth(q, equations::AbstractEquations)
+    b = bathymetry(q, equations)
+    D = equations.eta0 - b
+    return D
+end
+
 """
     entropy(q, equations)
 

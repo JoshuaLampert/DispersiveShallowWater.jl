@@ -8,7 +8,7 @@ Dispersive system by Svärd and Kalisch in one spatial dimension with spatially 
   (hv)_t + (hv^2)_x + gh(h + b)_x &= (\hat\alpha v(\hat\alpha(h + b)_x)_x)_x + (\hat\beta v_x)_{xt} + \frac{1}{2}(\hat\gamma v_x)_{xx} + \frac{1}{2}(\hat\gamma v_{xx})_x,
 \end{aligned}
 ```
-where ``\hat\alpha^2 = \alpha\sqrt{gd}d^2``, ``\hat\beta = \beta d^3``, ``\hat\gamma = \gamma\sqrt{gd}d^3``. The coefficients ``\alpha``, ``\beta`` and ``\gamma`` are provided in dimensionless form and ``d = \eta_0 - b`` is the still-water depth and `eta0` is the still-water surface (lake-at-rest).
+where ``\hat\alpha^2 = \alpha\sqrt{gD}D^2``, ``\hat\beta = \beta D^3``, ``\hat\gamma = \gamma\sqrt{gD}D^3``. The coefficients ``\alpha``, ``\beta`` and ``\gamma`` are provided in dimensionless form and ``D = \eta_0 - b`` is the still-water depth and `eta0` is the still-water surface (lake-at-rest).
 The equations can be rewritten in primitive variables as
 ```math
 \begin{aligned}
@@ -17,8 +17,8 @@ The equations can be rewritten in primitive variables as
 \end{aligned}
 ```
 The unknown quantities of the Svärd-Kalisch equations are the total water height ``\eta`` and the velocity ``v``.
-The gravitational constant is denoted by `g` and the bottom topography (bathymetry) ``b = -D``. The water height above the bathymetry is therefore given by
-``h = \eta + D``.
+The gravitational constant is denoted by `g` and the bottom topography (bathymetry) ``b = \eta_0 - D``. The water height above the bathymetry is therefore given by
+``h = \eta - \eta_0 + D``.
 
 The equations by Svärd and Kalisch are presented and analyzed in
 - Magnus Svärd, Henrik Kalisch (2023)
@@ -28,7 +28,7 @@ The equations by Svärd and Kalisch are presented and analyzed in
 """
 struct SvaerdKalischEquations1D{RealT <: Real} <: AbstractSvaerdKalischEquations{1, 3}
     gravity::RealT # gravitational constant
-    eta0::RealT    # constant "lake-at-rest" total water height
+    eta0::RealT    # constant still-water surface
     alpha::RealT   # coefficient
     beta::RealT    # coefficient
     gamma::RealT   # coefficient
@@ -36,7 +36,7 @@ end
 
 const SvärdKalischEquations1D = SvaerdKalischEquations1D
 
-function SvaerdKalischEquations1D(; gravity_constant, eta0 = 1.0, alpha = 0.0,
+function SvaerdKalischEquations1D(; gravity_constant, eta0 = 0.0, alpha = 0.0,
                                   beta = 0.2308939393939394, gamma = 0.04034343434343434)
     SvaerdKalischEquations1D(gravity_constant, eta0, alpha, beta, gamma)
 end
@@ -60,16 +60,16 @@ References:
   [link](https://repository.tudelft.nl/islandora/object/uuid:c2091d53-f455-48af-a84b-ac86680455e9/datastream/OBJ/download)
 """
 function initial_condition_dingemans(x, t, equations::SvaerdKalischEquations1D, mesh)
-    eta0 = 0.8
+    h0 = 0.8
     A = 0.02
     # omega = 2*pi/(2.02*sqrt(2))
-    k = 0.8406220896381442 # precomputed result of find_zero(k -> omega^2 - equations.gravity * k * tanh(k * eta0), 1.0) using Roots.jl
+    k = 0.8406220896381442 # precomputed result of find_zero(k -> omega^2 - equations.gravity * k * tanh(k * h0), 1.0) using Roots.jl
     if x < -30.5 * pi / k || x > -8.5 * pi / k
         h = 0.0
     else
         h = A * cos(k * x)
     end
-    v = sqrt(equations.gravity / k * tanh(k * eta0)) * h / eta0
+    v = sqrt(equations.gravity / k * tanh(k * h0)) * h / h0
     if 11.01 <= x && x < 23.04
         b = 0.6 * (x - 11.01) / (23.04 - 11.01)
     elseif 23.04 <= x && x < 27.04
@@ -79,8 +79,8 @@ function initial_condition_dingemans(x, t, equations::SvaerdKalischEquations1D, 
     else
         b = 0.0
     end
-    eta = h + eta0
-    D = -b
+    eta = h + h0
+    D = equations.eta0 - b
     return SVector(eta, v, D)
 end
 
@@ -170,14 +170,13 @@ function create_cache(mesh,
     D = Array{RealT}(undef, nnodes(mesh))
     x = grid(solver)
     for i in eachnode(solver)
-        D[i] = initial_condition(x[i], 0.0, equations, mesh)[3]
+        D[i] = still_waterdepth(initial_condition(x[i], 0.0, equations, mesh), equations)
     end
-    d = equations.eta0 .+ D
     h = Array{RealT}(undef, nnodes(mesh))
     hv = similar(h)
-    alpha_hat = sqrt.(equations.alpha * sqrt.(equations.gravity * d) .* d .^ 2)
-    beta_hat = equations.beta * d .^ 3
-    gamma_hat = equations.gamma * sqrt.(equations.gravity * d) .* d .^ 3
+    alpha_hat = sqrt.(equations.alpha * sqrt.(equations.gravity * D) .* D .^ 2)
+    beta_hat = equations.beta * D .^ 3
+    gamma_hat = equations.gamma * sqrt.(equations.gravity * D) .* D .^ 3
     tmp1 = similar(h)
     tmp2 = similar(h)
     hmD1betaD1 = Array{RealT}(undef, nnodes(mesh), nnodes(mesh))
@@ -192,7 +191,7 @@ function create_cache(mesh,
     else
         @error "unknown type of first-derivative operator"
     end
-    return (hmD1betaD1 = hmD1betaD1, D1betaD1 = D1betaD1, d = d, h = h, hv = hv,
+    return (hmD1betaD1 = hmD1betaD1, D1betaD1 = D1betaD1, D = D, h = h, hv = hv,
             alpha_hat = alpha_hat, beta_hat = beta_hat, gamma_hat = gamma_hat,
             tmp1 = tmp1, tmp2 = tmp2, D1_central = D1_central, D1 = solver.D1)
 end
@@ -201,20 +200,19 @@ end
 function rhs!(du_ode, u_ode, t, mesh, equations::SvaerdKalischEquations1D,
               initial_condition, ::BoundaryConditionPeriodic, source_terms,
               solver, cache)
-    @unpack hmD1betaD1, D1betaD1, d, h, hv, alpha_hat, beta_hat, gamma_hat, tmp1, tmp2, D1_central = cache
+    @unpack hmD1betaD1, D1betaD1, D, h, hv, alpha_hat, beta_hat, gamma_hat, tmp1, tmp2, D1_central = cache
     q = wrap_array(u_ode, mesh, equations, solver)
     dq = wrap_array(du_ode, mesh, equations, solver)
 
     eta = view(q, 1, :)
     v = view(q, 2, :)
-    D = view(q, 3, :)
     deta = view(dq, 1, :)
     dv = view(dq, 2, :)
     dD = view(dq, 3, :)
     fill!(dD, zero(eltype(dD)))
 
     @timeit timer() "deta hyperbolic" begin
-        h = eta .+ D
+        h = eta .+ D .- equations.eta0
         hv = h .* v
 
         if solver.D1 isa PeriodicDerivativeOperator ||
@@ -268,9 +266,9 @@ end
 @inline function prim2cons(q, equations::SvaerdKalischEquations1D)
     eta, v, D = q
 
-    h = eta + D
+    b = bathymetry(q, equations)
+    h = eta - b
     hv = h * v
-    b = -D
     return SVector(h, hv, b)
 end
 
@@ -279,7 +277,7 @@ end
 
     eta = h + b
     v = hv / h
-    D = -b
+    D = equations.eta0 - b
     return SVector(eta, v, D)
 end
 
@@ -292,7 +290,8 @@ end
 end
 
 @inline function bathymetry(q, equations::SvaerdKalischEquations1D)
-    return -q[3]
+    D = q[3]
+    return equations.eta0 - D
 end
 
 @inline function waterheight(q, equations::SvaerdKalischEquations1D)
@@ -301,7 +300,7 @@ end
 
 @inline function energy_total(q, equations::SvaerdKalischEquations1D)
     eta, v, D = q
-    e = 0.5 * (equations.gravity * eta^2 + (D + eta) * v^2)
+    e = 0.5 * (equations.gravity * eta^2 + (D + eta - equations.eta0) * v^2)
     return e
 end
 
@@ -327,7 +326,7 @@ number of nodes as length of the second dimension.
     eta = view(q, 1, :)
     v = view(q, 2, :)
     D = view(q, 3, :)
-    beta_hat = equations.beta * (eta .+ D) .^ 3
+    beta_hat = equations.beta * D .^ 3
     if cache.D1 isa PeriodicDerivativeOperator ||
        cache.D1 isa UniformPeriodicCoupledOperator
         tmp = 0.5 * beta_hat .* ((cache.D1 * v) .^ 2)

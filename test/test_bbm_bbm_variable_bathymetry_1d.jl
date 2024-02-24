@@ -90,12 +90,12 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_variable_bathymetry_1d")
                                      "bbm_bbm_variable_bathymetry_1d_dingemans.jl"),
                             tspan=(0.0, 1.0),
                             N=512,
-                            l2=[0.2322073114427607 0.7753458687737584 0.0],
-                            linf=[0.037222719015511885 0.124336213226626 0.0],
+                            l2=[0.2229215734522602 0.750492441160796 0.0],
+                            linf=[0.03584030574058169 0.1202292994661 0.0],
                             cons_error=[1.4210854715202004e-13 3.1478183774857893e-15 0.0],
                             change_waterheight=-1.4210854715202004e-13,
                             change_velocity=-3.1478183774857893e-15,
-                            change_entropy=-1.442231223336421e-9)
+                            change_entropy=3.417533493699221e-7)
     end
 end
 
