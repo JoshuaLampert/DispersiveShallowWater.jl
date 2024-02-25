@@ -94,7 +94,8 @@ function initial_condition_manufactured(x, t,
                                         mesh)
     eta = exp(t) * cospi(2 * (x - 2 * t))
     v = exp(t / 2) * sinpi(2 * (x - t / 2))
-    D = 5 + 2 * cospi(2 * x)
+    b = -5 - 2 * cospi(2 * x)
+    D = equations.eta0 - b
     return SVector(eta, v, D)
 end
 
