@@ -176,10 +176,9 @@ function create_cache(mesh,
 end
 
 # Discretization that conserves the mass (for eta and v) and the energy for periodic boundary conditions, see
-# - Hendrik Ranocha, Dimitrios Mitsotakis and David I. Ketcheson (2020)
-#   A Broad Class of Conservative Numerical Methods for Dispersive Wave Equations
-#   [DOI: 10.4208/cicp.OA-2020-0119](https://doi.org/10.4208/cicp.OA-2020-0119)
-# Here, adapted for spatially varying bathymetry.
+# - Joshua Lampert and Hendrik Ranocha (2024)
+#   Structure-Preserving Numerical Methods for Two Nonlinear Systems of Dispersive Wave Equations
+#   [DOI: 10.48550/arXiv.2402.16669](https://doi.org/10.48550/arXiv.2402.16669)
 function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMVariableEquations1D,
               initial_condition, ::BoundaryConditionPeriodic, source_terms,
               solver, cache)
