@@ -197,7 +197,10 @@ function create_cache(mesh,
             tmp1 = tmp1, tmp2 = tmp2, D1_central = D1_central, D1 = solver.D1)
 end
 
-# Discretization that conserves the mass (for eta and v) and is energy-bounded for periodic boundary conditions
+# Discretization that conserves the mass (for eta and for flat bottom hv) and the energy for periodic boundary conditions, see
+# - Joshua Lampert and Hendrik Ranocha (2024)
+#   Structure-Preserving Numerical Methods for Two Nonlinear Systems of Dispersive Wave Equations
+#   [DOI: 10.48550/arXiv.2402.16669](https://doi.org/10.48550/arXiv.2402.16669)
 function rhs!(du_ode, u_ode, t, mesh, equations::SvaerdKalischEquations1D,
               initial_condition, ::BoundaryConditionPeriodic, source_terms,
               solver, cache)
