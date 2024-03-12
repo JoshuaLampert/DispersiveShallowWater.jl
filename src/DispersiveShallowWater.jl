@@ -1,16 +1,16 @@
 module DispersiveShallowWater
 
-using DiffEqBase
-using Interpolations
-using LinearAlgebra: mul!, ldiv!, factorize, I, Diagonal
-using PolynomialBases
+using DiffEqBase: DiffEqBase, SciMLBase, terminate!
+using Interpolations: Interpolations, linear_interpolation
+using LinearAlgebra: mul!, I, Diagonal
+using PolynomialBases: PolynomialBases
 using Printf: @printf, @sprintf
-using RecipesBase
+using RecipesBase: RecipesBase, @recipe, @series
 using Reexport: @reexport
 using Roots: AlefeldPotraShi, find_zero
 
-using SciMLBase: CallbackSet, DiscreteCallback, ODEProblem, ODESolution
-import SciMLBase: get_tmp_cache, u_modified!
+using SciMLBase: DiscreteCallback, ODEProblem, ODESolution
+import SciMLBase: u_modified!
 
 @reexport using StaticArrays: SVector
 using SimpleUnPack: @unpack
