@@ -1,7 +1,7 @@
 module TestAqua
 
 using Aqua
-using ExplicitImports
+using ExplicitImports: check_no_implicit_imports, check_no_stale_explicit_imports
 using Test
 using DispersiveShallowWater
 
