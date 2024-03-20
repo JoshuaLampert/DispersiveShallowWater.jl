@@ -6,3 +6,5 @@
 **/Manifest.toml
 out*/
 /docs/build/
+run
+run/*

@@ -190,7 +190,7 @@ function create_cache(mesh,
         D1_central = solver.D1.central
         D1betaD1 = sparse(solver.D1.plus) * Diagonal(beta_hat) * sparse(solver.D1.minus)
     else
-        @error "unknown type of first-derivative operator"
+        @error "unknown type of first-derivative operator: $(typeof(solver.D1))"
     end
     return (hmD1betaD1 = hmD1betaD1, D1betaD1 = D1betaD1, D = D, h = h, hv = hv,
             alpha_hat = alpha_hat, beta_hat = beta_hat, gamma_hat = gamma_hat,
@@ -238,7 +238,7 @@ function rhs!(du_ode, u_ode, t, mesh, equations::SvaerdKalischEquations1D,
             yD1v = tmp1 .* (solver.D1.plus * v)
             deta[:] = solver.D1.minus * tmp1 - D1_central * hv
         else
-            @error "unknown type of first derivative operator"
+            @error "unknown type of first derivative operator: $(typeof(solver.D1))"
         end
     end
 

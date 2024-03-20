@@ -1,8 +1,9 @@
 module DispersiveShallowWater
 
+using BandedMatrices: BandedMatrix
 using DiffEqBase: DiffEqBase, SciMLBase, terminate!
 using Interpolations: Interpolations, linear_interpolation
-using LinearAlgebra: mul!, I, Diagonal
+using LinearAlgebra: mul!, I, Diagonal, diag
 using PolynomialBases: PolynomialBases
 using Printf: @printf, @sprintf
 using RecipesBase: RecipesBase, @recipe, @series
@@ -18,8 +19,10 @@ using SparseArrays: sparse
 using SummationByPartsOperators: AbstractDerivativeOperator,
                                  PeriodicDerivativeOperator, PeriodicUpwindOperators,
                                  UniformPeriodicCoupledOperator,
+                                 DerivativeOperator, UpwindOperators,
+                                 UniformCoupledOperator,
                                  periodic_derivative_operator,
-                                 derivative_order, integrate
+                                 derivative_order, integrate, mass_matrix
 import SummationByPartsOperators: grid, xmin, xmax
 using TimerOutputs: TimerOutputs, TimerOutput, @timeit, print_timer, reset_timer!
 @reexport using TrixiBase: TrixiBase, trixi_include
@@ -48,10 +51,11 @@ export Solver
 
 export Semidiscretization, semidiscretize, grid
 
-export boundary_condition_periodic
+export boundary_condition_periodic, boundary_condition_reflecting
 
 export initial_condition_convergence_test,
        initial_condition_manufactured, source_terms_manufactured,
+       initial_condition_manufactured_reflecting, source_terms_manufactured_reflecting,
        initial_condition_dingemans
 
 export AnalysisCallback, RelaxationCallback, SummaryCallback
