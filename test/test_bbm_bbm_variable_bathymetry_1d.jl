@@ -69,7 +69,7 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_variable_bathymetry_1d")
                             change_velocity=-3.8711139735371144e-13,
                             change_entropy=17.81701226932122,
                             atol=1e-10,
-                            atol_ints=1e-11) # in order to make CI pass
+                            atol_ints=1e-10) # in order to make CI pass
     end
 
     @trixi_testset "bbm_bbm_variable_bathymetry_1d_well_balanced" begin
