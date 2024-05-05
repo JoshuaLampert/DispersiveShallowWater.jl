@@ -152,7 +152,7 @@ function analyze_convergence(errors, iterations,
         mean_values = zeros(nvariables)
         for v in 1:nvariables
             mean_values[v] = sum(eocs[kind][:, v]) ./ length(eocs[kind][:, v])
-            @printf("%-10s", "mean")
+            @printf("%-15s", "mean")
             @printf("%-10.2f", mean_values[v])
         end
         eoc_mean_values[kind] = mean_values
