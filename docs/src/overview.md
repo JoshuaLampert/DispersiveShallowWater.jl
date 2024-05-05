@@ -11,9 +11,9 @@ In this tutorial we describe how to numerically solve the BBM-BBM (Benjamin-Bona
 \end{aligned}
 ```
 
-Here, ``\eta = h + b`` describes the total water height, ``h`` the water height above the bottom topography (bathymetry), ``b = -D`` the bathymetry and ``v`` the velocity in horizontal direction. The gravitational acceleration is denoted as ``g``. A sketch of the water height and the bathymetry can be found below.
+Here, ``\eta = h + b`` describes the total water height, ``h`` the water height above the bottom topography (bathymetry), ``b = \eta_0 - D`` the bathymetry and ``v`` the velocity in horizontal direction. Here, ``\eta_0`` is a reference water height also called still water height. In the case of the BBM-BBM equations, ``\eta_0`` is usually taken to be 0. The gravitational acceleration is denoted as ``g``. A sketch of the water height and the bathymetry can be found below.
 
-![](bathymetry.png)
+![water height and bathymetry](bathymetry.png)
 
 In order to conduct a numerical simulation with DispersiveShallowWater.jl, we perform the following steps.
 
@@ -101,10 +101,11 @@ After running the simulation, the results can be visualized using [Plots.jl](htt
 using Plots
 
 plot(semi => sol)
-savefig("shoaling_solution.png")
+savefig("shoaling_solution.png") # hide
+nothing # hide
 ```
 
-![](shoaling_solution.png)
+![shoaling solution](shoaling_solution.png)
 
 By default, this will plot the bathymetry, but not the initial (analytical) solution. You can adjust this by passing the boolean values `plot_bathymetry` (if `true` always plot to first subplot) and `plot_initial`. You can also provide a `conversion` function that converts the solution. A conversion function should take the values of the primitive variables `q` at one node, and the `equations` as input and should return an `SVector` of any length as output. For a user defined conversion function, there should also exist a function `varnames(conversion, equations)` that returns a `Tuple` of the variable names used for labelling. The conversion function can, e.g., be [`prim2cons`](@ref) or [`waterheight_total`](@ref) if one only wants to plot the total waterheight. The resulting plot will have one subplot for each of the returned variables of the conversion variable. By default, the conversion function is just [`prim2prim`](@ref), i.e. the identity.
 
@@ -112,10 +113,13 @@ Plotting an animation over time can, e.g., be done by the following command, whi
 
 ```@example overview
 anim = @animate for step in 1:length(sol.u)
-    plot(semi => sol, plot_initial = true, conversion = waterheight_total, step = step, xlim = (-50, 20), ylims = [(-0.8, 0.1)])
+    plot(semi => sol, plot_initial = true, conversion = waterheight_total, step = step, xlim = (-50, 20), ylims = (-0.8, 0.1))
 end
 gif(anim, "shoaling_solution.gif", fps = 25)
+nothing # hide
 ```
+
+![shoaling solution](shoaling_solution.gif)
 
 It is also possible to plot the solution variables at a fixed spatial point over time by calling `plot(semi => sol, x)` for some `x`-value, see [plot_examples.jl](https://github.com/JoshuaLampert/2023-master-thesis/blob/main/code/plot_examples.jl) from
 the reproducibility repository of the master thesis of Joshua Lampert for some examples.
@@ -124,12 +128,13 @@ Often, it is interesting to have a look at how the quantities that are recorded 
 
 ```@example overview
 plot(analysis_callback)
-savefig("analysis_callback.png")
+savefig("analysis_callback.png") # hide
+nothing # hide
 ```
 
 This creates the following figure:
 
-![](analysis_callback.png)
+![analysis callback](analysis_callback.png)
 
 You can see that the linear invariants ``\int_\Omega\eta\textrm{d}x`` and ``\int_\Omega v\textrm{d}x`` are indeed conserved exactly. The entropy, however, starts growing at around ``t = 17``  and rises up to approximately ``5e-5``. This is because of the fact that, during the time integration, a nonlinear invariant is not necessarily conserved, even if the semidiscretization conserves the quantity exactly. How to obtain a fully-discrete structure-preserving numerical scheme is explained in the following section.
 
@@ -154,11 +159,12 @@ When you use both, an `AnalysisCallback` and a `RelaxationCallback`, note that t
 Plotting the `analysis_callback` again, we can see that now also the `entropy` is conserved up to machine precision.
 
 ```@example overview
-plot(analysis_callback)
-savefig("analysis_callback_relaxation.png")
+plot(analysis_callback, ylims = (-5e-16, 5e-16))
+savefig("analysis_callback_relaxation.png") # hide
+nothing # hide
 ```
 
-![](analysis_callback_relaxation.png)
+![analysis callback relaxation](analysis_callback_relaxation.png)
 
 
 ## [Customize solver](@id customize_solver)
@@ -214,10 +220,13 @@ callbacks = CallbackSet(relaxation_callback, analysis_callback)
 sol = solve(ode, Tsit5(), abstol = 1e-7, reltol = 1e-7,
             save_everystep = false, callback = callbacks, saveat = saveat)
 anim = @animate for step in 1:length(sol.u)
-    plot(semi => sol, plot_initial = true, conversion = waterheight_total, step = step, xlim = (-50, 20), ylims = [(-0.8, 0.1)])
+    plot(semi => sol, plot_initial = true, conversion = waterheight_total, step = step, xlim = (-50, 20), ylims = (-0.8, 0.1))
 end
 gif(anim, "shoaling_solution_dg.gif", fps = 25)
+nothing # hide
 ```
+
+![shoaling solution DG](shoaling_solution_dg.gif)
 
 For more details see also the [documentation of SummationByPartsOperators.jl](https://ranocha.de/SummationByPartsOperators.jl/stable/)
 
