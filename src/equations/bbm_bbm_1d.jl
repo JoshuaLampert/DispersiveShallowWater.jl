@@ -90,23 +90,6 @@ function source_terms_manufactured(q, x, t, equations::BBMBBMEquations1D)
     return SVector(dq1, dq2)
 end
 
-function initial_condition_dingemans(x, t, equations::BBMBBMEquations1D, mesh)
-    h0 = 0.8
-    A = 0.02
-    # omega = 2*pi/(2.02*sqrt(2))
-    k = 0.8406220896381442 # precomputed result of find_zero(k -> omega^2 - equations.gravity * k * tanh(k * h0), 1.0) using Roots.jl
-    if x < -10.5 * pi / k || x > -8.5 * pi / k
-        h = 0.0
-    else
-        h = A * cos(k * x)
-    end
-    v = sqrt(equations.gravity / k * tanh(k * h0)) * h / h0
-    # Here, we compute eta - h0!! To obtain the original eta, h0 = 0.8 needs to be added again!
-    # This is because the BBM-BBM equations are only implemented for eta0 = 0
-    eta = h
-    return SVector(eta, v)
-end
-
 """
     initial_condition_manufactured_reflecting(x, t, equations::BBMBBMEquations1D, mesh)
 
@@ -164,12 +147,10 @@ function create_cache(mesh,
         D2d = (sparse(solver.D2) * Pd)[2:end - 1, :]
         # homogeneous Dirichtlet boundary conditions
         invImD2d = inv(I - 1 / 6 * D^2 * D2d)
-#         invImD2d = inv(I - 1 / 6 * D^2 * Matrix(solver.D2))
         m = diag(M); m[1] = 0; m[end] = 0
         PdM = Diagonal(m)
         # homogeneous Neumann boundary conditions
         invImD2n = inv(I + 1 / 6 * D^2 * inv(M) * D1_b' * PdM * D1_b)
-#         invImD2n = inv(I - 1 / 6 * D^2 * Matrix(solver.D2))
         return (invImD2d = invImD2d, invImD2n = invImD2n, tmp1 = tmp1)
     else
         @error "unknown type of first-derivative operator: $(typeof(solver.D1))"
@@ -252,7 +233,6 @@ function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMEquations1D, initial_cond
     @timeit timer() "dv elliptic" begin
         dv[2:end - 1] = invImD2d * dv[2:end - 1]
         dv[1] = dv[end] = zero(eltype(dv))
-#         dv[:] = invImD2d * dv[:]
     end
 
     return nothing

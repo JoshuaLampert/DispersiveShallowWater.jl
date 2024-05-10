@@ -156,7 +156,7 @@ function integrate_quantity!(quantity, func, u_ode, semi::Semidiscretization; wr
     integrate(quantity, semi; wrap = false)
 end
 
-# modified entropy from Svärd-Kalisch equations need to take the whole vector `u` for every point in space
+# modified entropy from Svärd-Kalisch equations need to take the whole vector `q` for every point in space
 function integrate_quantity(func::Union{typeof(energy_total_modified),
                                         typeof(entropy_modified)}, u_ode,
                             semi::Semidiscretization; wrap = true)
