@@ -16,4 +16,6 @@ A singleton struct indicating reflecting boundary conditions.
 """
 const boundary_condition_reflecting = BoundaryConditionReflecting()
 
-Base.show(io::IO, ::BoundaryConditionReflecting) = print(io, "boundary_condition_reflecting")
+function Base.show(io::IO, ::BoundaryConditionReflecting)
+    print(io, "boundary_condition_reflecting")
+end

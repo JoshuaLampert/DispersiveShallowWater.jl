@@ -119,8 +119,10 @@ function source_terms_manufactured_reflecting(q, x, t, equations::BBMBBMEquation
     a9 = sinpi(x)
     a10 = exp(t)
     a11 = exp(2 * t)
-    dq1 = (pi^2 * D^2 * a10 * a8 / 3 + pi * D * x * a8 + D * a9 + pi * x * a11 * a1 + a11 * a2 / 2 + 2 * a10 * a8) * a10
-    dq2 = (pi * D^2 * (pi * x * a9 - 2 * a8) / 6 - pi * g * a10 * a9 + pi * x^2 * a10 * a2 / 2 + x * a10 * a9^2 + x * a9) * a10
+    dq1 = (pi^2 * D^2 * a10 * a8 / 3 + pi * D * x * a8 + D * a9 + pi * x * a11 * a1 +
+           a11 * a2 / 2 + 2 * a10 * a8) * a10
+    dq2 = (pi * D^2 * (pi * x * a9 - 2 * a8) / 6 - pi * g * a10 * a9 +
+           pi * x^2 * a10 * a2 / 2 + x * a10 * a9^2 + x * a9) * a10
 
     return SVector(dq1, dq2)
 end
@@ -143,11 +145,14 @@ function create_cache(mesh,
            solver.D1 isa UpwindOperators
         D1_b = BandedMatrix(solver.D1)
         M = mass_matrix(solver.D1)
-        Pd = BandedMatrix((-1 => fill(one(eltype(D1_b)), size(D1_b, 1) - 2),), (size(D1_b, 1), size(D1_b, 1) - 2))
-        D2d = (sparse(solver.D2) * Pd)[2:end - 1, :]
+        Pd = BandedMatrix((-1 => fill(one(eltype(D1_b)), size(D1_b, 1) - 2),),
+                          (size(D1_b, 1), size(D1_b, 1) - 2))
+        D2d = (sparse(solver.D2) * Pd)[2:(end - 1), :]
         # homogeneous Dirichtlet boundary conditions
         invImD2d = inv(I - 1 / 6 * D^2 * D2d)
-        m = diag(M); m[1] = 0; m[end] = 0
+        m = diag(M)
+        m[1] = 0
+        m[end] = 0
         PdM = Diagonal(m)
         # homogeneous Neumann boundary conditions
         invImD2n = inv(I + 1 / 6 * D^2 * inv(M) * D1_b' * PdM * D1_b)
@@ -231,7 +236,7 @@ function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMEquations1D, initial_cond
 
     @timeit timer() "deta elliptic" deta[:]=invImD2n * deta
     @timeit timer() "dv elliptic" begin
-        dv[2:end - 1] = invImD2d * dv[2:end - 1]
+        dv[2:(end - 1)] = invImD2d * dv[2:(end - 1)]
         dv[1] = dv[end] = zero(eltype(dv))
     end
 
