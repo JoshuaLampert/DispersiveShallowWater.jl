@@ -16,10 +16,13 @@ makedocs(;
                                   prettyurls = get(ENV, "CI", "false") == "true",
                                   canonical = "https://JoshuaLampert.github.io/DispersiveShallowWater.jl/stable",
                                   edit_link = "main",
-                                  assets = String[]),
+                                  assets = String[],
+                                  size_threshold = 1200 * 1024, # the generated .gif files can be too large
+                                  size_threshold_warn = 1000 * 1024),
          pages = [
              "Home" => "index.md",
              "Overview" => "overview.md",
+             "Development" => "development.md",
              "Reference" => [
                  "TrixiBase" => "ref-trixibase.md",
                  "DispersiveShallowWater" => "ref.md",
