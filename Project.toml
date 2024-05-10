@@ -22,7 +22,7 @@ TimerOutputs = "a759f4b9-e2f1-59dc-863e-4aeb61b1ea8f"
 TrixiBase = "9a0f1c46-06d5-4909-a5a3-ce25d3fa3284"
 
 [compat]
-BandedMatrices = "1.0"
+BandedMatrices = "0.17, 1"
 DiffEqBase = "6.128"
 Interpolations = "0.14.2, 0.15"
 LinearAlgebra = "1"
