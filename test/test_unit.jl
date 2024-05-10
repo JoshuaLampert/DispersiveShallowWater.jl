@@ -93,6 +93,9 @@ using SparseArrays: sparse, SparseMatrixCSC
         boundary_conditions = boundary_condition_periodic
         @test_nowarn print(boundary_conditions)
         @test_nowarn display(boundary_conditions)
+        boundary_conditions = boundary_condition_reflecting
+        @test_nowarn print(boundary_conditions)
+        @test_nowarn display(boundary_conditions)
     end
 
     @testset "BBMBBMEquations1D" begin
