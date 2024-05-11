@@ -169,7 +169,7 @@ function create_cache(mesh,
         invImDKD = inv(I - 1 / 6 * Matrix(solver.D1.minus) * K * Matrix(solver.D1.plus))
         invImD2K = inv(I - 1 / 6 * Matrix(solver.D2) * K)
     else
-        @error "unknown type of first-derivative operator"
+        @error "unknown type of first-derivative operator: $(typeof(solver.D1))"
     end
     tmp1 = Array{RealT}(undef, nnodes(mesh)) # tmp1 is needed for the `RelaxationCallback`
     return (invImDKD = invImDKD, invImD2K = invImD2K, D = D, tmp1 = tmp1)
@@ -204,7 +204,7 @@ function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMVariableEquations1D,
         @timeit timer() "dv hyperbolic" dv[:]=-solver.D1.plus *
                                               (equations.gravity * eta + 0.5 * v .^ 2)
     else
-        @error "unknown type of first-derivative operator"
+        @error "unknown type of first-derivative operator: $(typeof(solver.D1))"
     end
 
     @timeit timer() "source terms" calc_sources!(dq, q, t, source_terms, equations, solver)

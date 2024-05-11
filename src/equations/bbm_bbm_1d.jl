@@ -89,24 +89,77 @@ function source_terms_manufactured(q, x, t, equations::BBMBBMEquations1D)
 
     return SVector(dq1, dq2)
 end
-#
+
+"""
+    initial_condition_manufactured_reflecting(x, t, equations::BBMBBMEquations1D, mesh)
+
+A smooth manufactured solution for reflecting boundary conditions in combination
+with [`source_terms_manufactured_reflecting`](@ref).
+"""
+function initial_condition_manufactured_reflecting(x, t,
+                                                   equations::BBMBBMEquations1D,
+                                                   mesh)
+    eta = exp(2 * t) * cospi(x)
+    v = exp(t) * x * sinpi(x)
+    return SVector(eta, v)
+end
+
+"""
+    source_terms_manufactured_reflecting(q, x, t, equations::BBMBBMEquations1D, mesh)
+
+A smooth manufactured solution for reflecting boundary conditions in combination
+with [`initial_condition_manufactured_reflecting`](@ref).
+"""
+function source_terms_manufactured_reflecting(q, x, t, equations::BBMBBMEquations1D)
+    g = equations.gravity
+    D = equations.D
+    a1 = cospi(2 * x)
+    a2 = sinpi(2 * x)
+    a8 = cospi(x)
+    a9 = sinpi(x)
+    a10 = exp(t)
+    a11 = exp(2 * t)
+    dq1 = (pi^2 * D^2 * a10 * a8 / 3 + pi * D * x * a8 + D * a9 + pi * x * a11 * a1 +
+           a11 * a2 / 2 + 2 * a10 * a8) * a10
+    dq2 = (pi * D^2 * (pi * x * a9 - 2 * a8) / 6 - pi * g * a10 * a9 +
+           pi * x^2 * a10 * a2 / 2 + x * a10 * a9^2 + x * a9) * a10
+
+    return SVector(dq1, dq2)
+end
+
 function create_cache(mesh,
                       equations::BBMBBMEquations1D,
                       solver,
                       initial_condition,
                       RealT,
                       uEltype)
+    tmp1 = Array{RealT}(undef, nnodes(mesh)) # tmp1 is needed for the `RelaxationCallback`
     D = equations.D
     if solver.D1 isa PeriodicDerivativeOperator ||
-       solver.D1 isa UniformPeriodicCoupledOperator
+       solver.D1 isa UniformPeriodicCoupledOperator ||
+       solver.D1 isa PeriodicUpwindOperators
         invImD2 = inv(I - 1 / 6 * D^2 * Matrix(solver.D2))
-    elseif solver.D1 isa PeriodicUpwindOperators
-        invImD2 = inv(I - 1 / 6 * D^2 * Matrix(solver.D2))
+        return (invImD2 = invImD2, tmp1 = tmp1)
+    elseif solver.D1 isa DerivativeOperator ||
+           solver.D1 isa UniformCoupledOperator ||
+           solver.D1 isa UpwindOperators
+        D1_b = BandedMatrix(solver.D1)
+        M = mass_matrix(solver.D1)
+        Pd = BandedMatrix((-1 => fill(one(eltype(D1_b)), size(D1_b, 1) - 2),),
+                          (size(D1_b, 1), size(D1_b, 1) - 2))
+        D2d = (sparse(solver.D2) * Pd)[2:(end - 1), :]
+        # homogeneous Dirichtlet boundary conditions
+        invImD2d = inv(I - 1 / 6 * D^2 * D2d)
+        m = diag(M)
+        m[1] = 0
+        m[end] = 0
+        PdM = Diagonal(m)
+        # homogeneous Neumann boundary conditions
+        invImD2n = inv(I + 1 / 6 * D^2 * inv(M) * D1_b' * PdM * D1_b)
+        return (invImD2d = invImD2d, invImD2n = invImD2n, tmp1 = tmp1)
     else
-        @error "unknown type of first-derivative operator"
+        @error "unknown type of first-derivative operator: $(typeof(solver.D1))"
     end
-    tmp1 = Array{RealT}(undef, nnodes(mesh)) # tmp1 is needed for the `RelaxationCallback`
-    return (invImD2 = invImD2, tmp1 = tmp1)
 end
 
 # Discretization that conserves the mass (for eta and v) and the energy for periodic boundary conditions, see
@@ -137,13 +190,55 @@ function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMEquations1D, initial_cond
         @timeit timer() "dv hyperbolic" dv[:]=-solver.D1.central *
                                               (equations.gravity * eta + 0.5 * v .^ 2)
     else
-        @error "unknown type of first-derivative operator"
+        @error "unknown type of first-derivative operator: $(typeof(solver.D1))"
     end
 
     @timeit timer() "source terms" calc_sources!(dq, q, t, source_terms, equations, solver)
 
     @timeit timer() "deta elliptic" deta[:]=invImD2 * deta
     @timeit timer() "dv elliptic" dv[:]=invImD2 * dv
+
+    return nothing
+end
+
+# Discretization that conserves the mass (for eta) and the energy for periodic boundary conditions, see
+# - Hendrik Ranocha, Dimitrios Mitsotakis and David I. Ketcheson (2020)
+#   A Broad Class of Conservative Numerical Methods for Dispersive Wave Equations
+#   [DOI: 10.4208/cicp.OA-2020-0119](https://doi.org/10.4208/cicp.OA-2020-0119)
+function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMEquations1D, initial_condition,
+              ::BoundaryConditionReflecting, source_terms, solver, cache)
+    @unpack invImD2d, invImD2n = cache
+
+    q = wrap_array(u_ode, mesh, equations, solver)
+    dq = wrap_array(du_ode, mesh, equations, solver)
+
+    eta = view(q, 1, :)
+    v = view(q, 2, :)
+    deta = view(dq, 1, :)
+    dv = view(dq, 2, :)
+
+    D = equations.D
+    # energy and mass conservative semidiscretization
+    if solver.D1 isa DerivativeOperator ||
+       solver.D1 isa UniformCoupledOperator
+        @timeit timer() "deta hyperbolic" deta[:]=-solver.D1 * (D * v + eta .* v)
+        @timeit timer() "dv hyperbolic" dv[:]=-solver.D1 *
+                                              (equations.gravity * eta + 0.5 * v .^ 2)
+    elseif solver.D1 isa UpwindOperators
+        @timeit timer() "deta hyperbolic" deta[:]=-solver.D1.central * (D * v + eta .* v)
+        @timeit timer() "dv hyperbolic" dv[:]=-solver.D1.central *
+                                              (equations.gravity * eta + 0.5 * v .^ 2)
+    else
+        @error "unknown type of first-derivative operator: $(typeof(solver.D1))"
+    end
+
+    @timeit timer() "source terms" calc_sources!(dq, q, t, source_terms, equations, solver)
+
+    @timeit timer() "deta elliptic" deta[:]=invImD2n * deta
+    @timeit timer() "dv elliptic" begin
+        dv[2:(end - 1)] = invImD2d * dv[2:(end - 1)]
+        dv[1] = dv[end] = zero(eltype(dv))
+    end
 
     return nothing
 end
