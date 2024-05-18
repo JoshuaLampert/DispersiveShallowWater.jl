@@ -35,22 +35,28 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_1d")
         using SummationByPartsOperators: upwind_operators, periodic_derivative_operator
         @test_trixi_include(joinpath(EXAMPLES_DIR, "bbm_bbm_1d_dg.jl"),
                             tspan=(0.0, 1.0),
-                            D1=upwind_operators(periodic_derivative_operator; derivative_order = 1,
-                              accuracy_order = 4, xmin = -35.0, xmax = 35.0,
-                              N = 512),
-                            D_pl=upwind_operators(periodic_derivative_operator; derivative_order = 1,
-                              accuracy_order = 4, xmin = -35.0, xmax = 35.0,
-                              N = 512).plus,
-                            D_min=upwind_operators(periodic_derivative_operator; derivative_order = 1,
-                              accuracy_order = 4, xmin = -35.0, xmax = 35.0,
-                              N = 512).minus,
+                            D1=upwind_operators(periodic_derivative_operator;
+                                                derivative_order = 1,
+                                                accuracy_order = 4, xmin = -35.0,
+                                                xmax = 35.0,
+                                                N = 512),
+                            D_pl=upwind_operators(periodic_derivative_operator;
+                                                  derivative_order = 1,
+                                                  accuracy_order = 4, xmin = -35.0,
+                                                  xmax = 35.0,
+                                                  N = 512).plus,
+                            D_min=upwind_operators(periodic_derivative_operator;
+                                                   derivative_order = 1,
+                                                   accuracy_order = 4, xmin = -35.0,
+                                                   xmax = 35.0,
+                                                   N = 512).minus,
                             l2=[0.007085629990523023 0.0051028439138702366],
                             linf=[0.009028336927360048 0.003957954184665269],
                             cons_error=[1.803286289420118e-15 7.105427357601002e-15],
                             change_waterheight=-1.803286289420118e-15,
                             change_velocity=-7.105427357601002e-15,
                             change_entropy=1.8964752364070137e-6)
-        end
+    end
 
     @trixi_testset "bbm_bbm_1d_relaxation" begin
         @test_trixi_include(joinpath(EXAMPLES_DIR, "bbm_bbm_1d_relaxation.jl"),
