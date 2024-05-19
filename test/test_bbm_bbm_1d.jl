@@ -18,6 +18,35 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_1d")
                             change_velocity=-5.684341886080801e-13,
                             change_entropy=0.00019552914864107152,
                             atol_ints=1e-10) # in order to make CI pass
+
+        # test upwind operators
+        using SummationByPartsOperators: upwind_operators, periodic_derivative_operator
+        using SparseArrays: sparse
+        using OrdinaryDiffEq: solve
+        D1 = upwind_operators(periodic_derivative_operator; derivative_order = 1,
+                              accuracy_order = accuracy_order, xmin = mesh.xmin,
+                              xmax = mesh.xmax,
+                              N = mesh.N)
+        D2 = sparse(D1.plus) * sparse(D1.minus)
+        solver = Solver(D1, D2)
+        semi = Semidiscretization(mesh, equations, initial_condition, solver,
+                                  boundary_conditions = boundary_conditions)
+        ode = semidiscretize(semi, (0.0, 1.0))
+        sol = solve(ode, Tsit5(), abstol = 1e-7, reltol = 1e-7,
+                    save_everystep = false, callback = callbacks, saveat = saveat)
+        atol = 1e-12
+        rtol = 1e-12
+        errs = errors(analysis_callback)
+        l2 = [0.0024468371799030923 0.004954294234265212]
+        l2_measured = errs.l2_error[:, end]
+        for (l2_expected, l2_actual) in zip(l2, l2_measured)
+            @test isapprox(l2_expected, l2_actual, atol = atol, rtol = rtol)
+        end
+        linf = [0.002095653257311536 0.002611037468199129]
+        linf_measured = errs.linf_error[:, end]
+        for (linf_expected, linf_actual) in zip(linf, linf_measured)
+            @test isapprox(linf_expected, linf_actual, atol = atol, rtol = rtol)
+        end
     end
 
     @trixi_testset "bbm_bbm_1d_dg" begin
