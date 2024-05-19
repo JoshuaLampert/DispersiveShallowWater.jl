@@ -99,7 +99,8 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_1d")
         using SparseArrays: sparse
         using OrdinaryDiffEq: solve
         D1 = upwind_operators(Mattsson2017; derivative_order = 1,
-                              accuracy_order = accuracy_order, xmin = mesh.xmin, xmax = mesh.xmax,
+                              accuracy_order = accuracy_order, xmin = mesh.xmin,
+                              xmax = mesh.xmax,
                               N = mesh.N)
         D2 = sparse(D1.plus) * sparse(D1.minus)
         solver = Solver(D1, D2)

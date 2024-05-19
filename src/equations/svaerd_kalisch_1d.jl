@@ -164,7 +164,7 @@ end
 function create_cache(mesh, equations::SvaerdKalischEquations1D,
                       solver, initial_condition,
                       ::BoundaryConditionPeriodic,
-                      RealT,  uEltype)
+                      RealT, uEltype)
     #  Assume D is independent of time and compute D evaluated at mesh points once.
     D = Array{RealT}(undef, nnodes(mesh))
     x = grid(solver)

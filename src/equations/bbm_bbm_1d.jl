@@ -154,15 +154,15 @@ function create_cache(mesh, equations::BBMBBMEquations1D,
 
     # homogeneous Neumann boundary conditions
     if solver.D1 isa DerivativeOperator ||
-        solver.D1 isa UniformCoupledOperator
+       solver.D1 isa UniformCoupledOperator
         D1_b = BandedMatrix(solver.D1)
         invImD2n = inv(I + 1 / 6 * D^2 * inv(M) * D1_b' * PdM * D1_b)
-     elseif solver.D1 isa UpwindOperators
+    elseif solver.D1 isa UpwindOperators
         D1plus_b = BandedMatrix(solver.D1.plus)
         invImD2n = inv(I + 1 / 6 * D^2 * inv(M) * D1plus_b' * PdM * D1plus_b)
-     else
-         @error "unknown type of first-derivative operator: $(typeof(solver.D1))"
-     end
+    else
+        @error "unknown type of first-derivative operator: $(typeof(solver.D1))"
+    end
     return (invImD2d = invImD2d, invImD2n = invImD2n)
 end
 

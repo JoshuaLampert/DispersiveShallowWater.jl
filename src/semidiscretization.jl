@@ -59,7 +59,8 @@ function Semidiscretization(mesh, equations, initial_condition, solver;
                             # tmp1 is needed for the `RelaxationCallback`
                             initial_cache = (tmp1 = Array{RealT}(undef, nnodes(mesh)),))
     cache = (;
-             create_cache(mesh, equations, solver, initial_condition, boundary_conditions, RealT, uEltype)...,
+             create_cache(mesh, equations, solver, initial_condition, boundary_conditions,
+                          RealT, uEltype)...,
              initial_cache...)
 
     Semidiscretization{typeof(mesh), typeof(equations), typeof(initial_condition),
