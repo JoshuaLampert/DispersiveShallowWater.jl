@@ -148,12 +148,10 @@ function initial_condition_dingemans(x, t, equations::BBMBBMVariableEquations1D,
     return SVector(eta, v, D)
 end
 
-function create_cache(mesh,
-                      equations::BBMBBMVariableEquations1D,
-                      solver,
-                      initial_condition,
-                      RealT,
-                      uEltype)
+function create_cache(mesh, equations::BBMBBMVariableEquations1D,
+                      solver, initial_condition,
+                      ::BoundaryConditionPeriodic,
+                      RealT, uEltype)
     #  Assume D is independent of time and compute D evaluated at mesh points once.
     D = Array{RealT}(undef, nnodes(mesh))
     x = grid(solver)
@@ -164,15 +162,13 @@ function create_cache(mesh,
     if solver.D1 isa PeriodicDerivativeOperator ||
        solver.D1 isa UniformPeriodicCoupledOperator
         invImDKD = inv(I - 1 / 6 * Matrix(solver.D1) * K * Matrix(solver.D1))
-        invImD2K = inv(I - 1 / 6 * Matrix(solver.D2) * K)
     elseif solver.D1 isa PeriodicUpwindOperators
         invImDKD = inv(I - 1 / 6 * Matrix(solver.D1.minus) * K * Matrix(solver.D1.plus))
-        invImD2K = inv(I - 1 / 6 * Matrix(solver.D2) * K)
     else
         @error "unknown type of first-derivative operator: $(typeof(solver.D1))"
     end
-    tmp1 = Array{RealT}(undef, nnodes(mesh)) # tmp1 is needed for the `RelaxationCallback`
-    return (invImDKD = invImDKD, invImD2K = invImD2K, D = D, tmp1 = tmp1)
+    invImD2K = inv(I - 1 / 6 * Matrix(solver.D2) * K)
+    return (invImDKD = invImDKD, invImD2K = invImD2K, D = D)
 end
 
 # Discretization that conserves the mass (for eta and v) and the energy for periodic boundary conditions, see

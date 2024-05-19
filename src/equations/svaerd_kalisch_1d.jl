@@ -161,12 +161,10 @@ function source_terms_manufactured(q, x, t, equations::SvaerdKalischEquations1D)
     return SVector(dq1, dq2, zero(dq1))
 end
 
-function create_cache(mesh,
-                      equations::SvaerdKalischEquations1D,
-                      solver,
-                      initial_condition,
-                      RealT,
-                      uEltype)
+function create_cache(mesh, equations::SvaerdKalischEquations1D,
+                      solver, initial_condition,
+                      ::BoundaryConditionPeriodic,
+                      RealT,  uEltype)
     #  Assume D is independent of time and compute D evaluated at mesh points once.
     D = Array{RealT}(undef, nnodes(mesh))
     x = grid(solver)
@@ -178,7 +176,6 @@ function create_cache(mesh,
     alpha_hat = sqrt.(equations.alpha * sqrt.(equations.gravity * D) .* D .^ 2)
     beta_hat = equations.beta * D .^ 3
     gamma_hat = equations.gamma * sqrt.(equations.gravity * D) .* D .^ 3
-    tmp1 = similar(h)
     tmp2 = similar(h)
     hmD1betaD1 = Array{RealT}(undef, nnodes(mesh), nnodes(mesh))
     if solver.D1 isa PeriodicDerivativeOperator ||
@@ -194,7 +191,7 @@ function create_cache(mesh,
     end
     return (hmD1betaD1 = hmD1betaD1, D1betaD1 = D1betaD1, D = D, h = h, hv = hv,
             alpha_hat = alpha_hat, beta_hat = beta_hat, gamma_hat = gamma_hat,
-            tmp1 = tmp1, tmp2 = tmp2, D1_central = D1_central, D1 = solver.D1)
+            tmp2 = tmp2, D1_central = D1_central, D1 = solver.D1)
 end
 
 # Discretization that conserves the mass (for eta and for flat bottom hv) and the energy for periodic boundary conditions, see
