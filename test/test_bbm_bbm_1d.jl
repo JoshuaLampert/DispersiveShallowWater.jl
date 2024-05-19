@@ -24,12 +24,13 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_1d")
         using SparseArrays: sparse
         using OrdinaryDiffEq: solve
         D1 = upwind_operators(periodic_derivative_operator; derivative_order = 1,
-                      accuracy_order = accuracy_order, xmin = mesh.xmin, xmax = mesh.xmax,
-                      N = mesh.N)
+                              accuracy_order = accuracy_order, xmin = mesh.xmin,
+                              xmax = mesh.xmax,
+                              N = mesh.N)
         D2 = sparse(D1.plus) * sparse(D1.minus)
         solver = Solver(D1, D2)
         semi = Semidiscretization(mesh, equations, initial_condition, solver,
-                          boundary_conditions = boundary_conditions)
+                                  boundary_conditions = boundary_conditions)
         ode = semidiscretize(semi, (0.0, 1.0))
         sol = solve(ode, Tsit5(), abstol = 1e-7, reltol = 1e-7,
                     save_everystep = false, callback = callbacks, saveat = saveat)
