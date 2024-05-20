@@ -46,7 +46,7 @@ end
                        boundary_conditions=boundary_condition_periodic,
                        RealT=real(solver),
                        uEltype=RealT,
-                       initial_cache=NamedTuple())
+                       initial_cache=(tmp1 = Array{RealT}(undef, nnodes(mesh)),))
 
 Construct a semidiscretization of a PDE.
 """
@@ -56,9 +56,11 @@ function Semidiscretization(mesh, equations, initial_condition, solver;
                             # `RealT` is used as real type for node locations etc.
                             # while `uEltype` is used as element type of solutions etc.
                             RealT = real(solver), uEltype = RealT,
-                            initial_cache = NamedTuple())
+                            # tmp1 is needed for the `RelaxationCallback`
+                            initial_cache = (tmp1 = Array{RealT}(undef, nnodes(mesh)),))
     cache = (;
-             create_cache(mesh, equations, solver, initial_condition, RealT, uEltype)...,
+             create_cache(mesh, equations, solver, initial_condition, boundary_conditions,
+                          RealT, uEltype)...,
              initial_cache...)
 
     Semidiscretization{typeof(mesh), typeof(equations), typeof(initial_condition),

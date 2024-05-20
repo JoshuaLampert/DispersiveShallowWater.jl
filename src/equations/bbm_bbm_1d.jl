@@ -127,39 +127,43 @@ function source_terms_manufactured_reflecting(q, x, t, equations::BBMBBMEquation
     return SVector(dq1, dq2)
 end
 
-function create_cache(mesh,
-                      equations::BBMBBMEquations1D,
-                      solver,
-                      initial_condition,
-                      RealT,
-                      uEltype)
-    tmp1 = Array{RealT}(undef, nnodes(mesh)) # tmp1 is needed for the `RelaxationCallback`
+function create_cache(mesh, equations::BBMBBMEquations1D,
+                      solver, initial_condition,
+                      ::BoundaryConditionPeriodic,
+                      RealT, uEltype)
     D = equations.D
-    if solver.D1 isa PeriodicDerivativeOperator ||
-       solver.D1 isa UniformPeriodicCoupledOperator ||
-       solver.D1 isa PeriodicUpwindOperators
-        invImD2 = inv(I - 1 / 6 * D^2 * Matrix(solver.D2))
-        return (invImD2 = invImD2, tmp1 = tmp1)
-    elseif solver.D1 isa DerivativeOperator ||
-           solver.D1 isa UniformCoupledOperator ||
-           solver.D1 isa UpwindOperators
+    invImD2 = inv(I - 1 / 6 * D^2 * Matrix(solver.D2))
+    return (invImD2 = invImD2,)
+end
+
+function create_cache(mesh, equations::BBMBBMEquations1D,
+                      solver, initial_condition,
+                      ::BoundaryConditionReflecting,
+                      RealT, uEltype)
+    D = equations.D
+    N = nnodes(mesh)
+    M = mass_matrix(solver.D1)
+    Pd = BandedMatrix((-1 => fill(one(real(mesh)), N - 2),), (N, N - 2))
+    D2d = (sparse(solver.D2) * Pd)[2:(end - 1), :]
+    # homogeneous Dirichlet boundary conditions
+    invImD2d = inv(I - 1 / 6 * D^2 * D2d)
+    m = diag(M)
+    m[1] = 0
+    m[end] = 0
+    PdM = Diagonal(m)
+
+    # homogeneous Neumann boundary conditions
+    if solver.D1 isa DerivativeOperator ||
+       solver.D1 isa UniformCoupledOperator
         D1_b = BandedMatrix(solver.D1)
-        M = mass_matrix(solver.D1)
-        Pd = BandedMatrix((-1 => fill(one(eltype(D1_b)), size(D1_b, 1) - 2),),
-                          (size(D1_b, 1), size(D1_b, 1) - 2))
-        D2d = (sparse(solver.D2) * Pd)[2:(end - 1), :]
-        # homogeneous Dirichtlet boundary conditions
-        invImD2d = inv(I - 1 / 6 * D^2 * D2d)
-        m = diag(M)
-        m[1] = 0
-        m[end] = 0
-        PdM = Diagonal(m)
-        # homogeneous Neumann boundary conditions
         invImD2n = inv(I + 1 / 6 * D^2 * inv(M) * D1_b' * PdM * D1_b)
-        return (invImD2d = invImD2d, invImD2n = invImD2n, tmp1 = tmp1)
+    elseif solver.D1 isa UpwindOperators
+        D1plus_b = BandedMatrix(solver.D1.plus)
+        invImD2n = inv(I + 1 / 6 * D^2 * inv(M) * D1plus_b' * PdM * D1plus_b)
     else
         @error "unknown type of first-derivative operator: $(typeof(solver.D1))"
     end
+    return (invImD2d = invImD2d, invImD2n = invImD2n)
 end
 
 # Discretization that conserves the mass (for eta and v) and the energy for periodic boundary conditions, see
@@ -186,6 +190,9 @@ function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMEquations1D, initial_cond
         @timeit timer() "dv hyperbolic" dv[:]=-solver.D1 *
                                               (equations.gravity * eta + 0.5 * v .^ 2)
     elseif solver.D1 isa PeriodicUpwindOperators
+        # Note that the upwind operators here are not actually used
+        # We would need to define two different matrices `invImD2` for eta and v for energy conservation
+        # To really use the upwind operators, we can use them with `BBMBBMVariableEquations1D`
         @timeit timer() "deta hyperbolic" deta[:]=-solver.D1.central * (D * v + eta .* v)
         @timeit timer() "dv hyperbolic" dv[:]=-solver.D1.central *
                                               (equations.gravity * eta + 0.5 * v .^ 2)
@@ -225,8 +232,8 @@ function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMEquations1D, initial_cond
         @timeit timer() "dv hyperbolic" dv[:]=-solver.D1 *
                                               (equations.gravity * eta + 0.5 * v .^ 2)
     elseif solver.D1 isa UpwindOperators
-        @timeit timer() "deta hyperbolic" deta[:]=-solver.D1.central * (D * v + eta .* v)
-        @timeit timer() "dv hyperbolic" dv[:]=-solver.D1.central *
+        @timeit timer() "deta hyperbolic" deta[:]=-solver.D1.minus * (D * v + eta .* v)
+        @timeit timer() "dv hyperbolic" dv[:]=-solver.D1.plus *
                                               (equations.gravity * eta + 0.5 * v .^ 2)
     else
         @error "unknown type of first-derivative operator: $(typeof(solver.D1))"

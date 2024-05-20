@@ -93,6 +93,36 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_1d")
                             change_waterheight=4.2697991261385974e-11,
                             change_velocity=0.5469460931577577,
                             change_entropy=130.69415963528576)
+
+        # test upwind operators
+        using SummationByPartsOperators: upwind_operators, Mattsson2017
+        using SparseArrays: sparse
+        using OrdinaryDiffEq: solve
+        D1 = upwind_operators(Mattsson2017; derivative_order = 1,
+                              accuracy_order = accuracy_order, xmin = mesh.xmin,
+                              xmax = mesh.xmax,
+                              N = mesh.N)
+        D2 = sparse(D1.plus) * sparse(D1.minus)
+        solver = Solver(D1, D2)
+        semi = Semidiscretization(mesh, equations, initial_condition, solver,
+                                  boundary_conditions = boundary_conditions,
+                                  source_terms = source_terms)
+        ode = semidiscretize(semi, (0.0, 1.0))
+        sol = solve(ode, Tsit5(), abstol = 1e-7, reltol = 1e-7,
+                    save_everystep = false, callback = callbacks, saveat = saveat)
+        atol = 1e-12
+        rtol = 1e-12
+        errs = errors(analysis_callback)
+        l2 = [6.465599803116574e-6 2.268226230557415e-8]
+        l2_measured = errs.l2_error[:, end]
+        for (l2_expected, l2_actual) in zip(l2, l2_measured)
+            @test isapprox(l2_expected, l2_actual, atol = atol, rtol = rtol)
+        end
+        linf = [0.00015506984862057038 8.639888086914294e-8]
+        linf_measured = errs.linf_error[:, end]
+        for (linf_expected, linf_actual) in zip(linf, linf_measured)
+            @test isapprox(linf_expected, linf_actual, atol = atol, rtol = rtol)
+        end
     end
 end
 
