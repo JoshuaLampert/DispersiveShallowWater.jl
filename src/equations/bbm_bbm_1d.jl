@@ -145,7 +145,7 @@ function create_cache(mesh, equations::BBMBBMEquations1D,
     M = mass_matrix(solver.D1)
     Pd = BandedMatrix((-1 => fill(one(real(mesh)), N - 2),), (N, N - 2))
     D2d = (sparse(solver.D2) * Pd)[2:(end - 1), :]
-    # homogeneous Dirichtlet boundary conditions
+    # homogeneous Dirichlet boundary conditions
     invImD2d = inv(I - 1 / 6 * D^2 * D2d)
     m = diag(M)
     m[1] = 0
