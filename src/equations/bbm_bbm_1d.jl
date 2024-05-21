@@ -132,7 +132,7 @@ function create_cache(mesh, equations::BBMBBMEquations1D,
                       ::BoundaryConditionPeriodic,
                       RealT, uEltype)
     D = equations.D
-    invImD2 = inv(I - 1 / 6 * D^2 * Matrix(solver.D2))
+    invImD2 = factorize(I - 1 / 6 * D^2 * sparse(solver.D2))
     return (invImD2 = invImD2,)
 end
 
@@ -146,7 +146,7 @@ function create_cache(mesh, equations::BBMBBMEquations1D,
     Pd = BandedMatrix((-1 => fill(one(real(mesh)), N - 2),), (N, N - 2))
     D2d = (sparse(solver.D2) * Pd)[2:(end - 1), :]
     # homogeneous Dirichlet boundary conditions
-    invImD2d = inv(I - 1 / 6 * D^2 * D2d)
+    invImD2d = factorize(I - 1 / 6 * D^2 * D2d)
     m = diag(M)
     m[1] = 0
     m[end] = 0
@@ -156,10 +156,10 @@ function create_cache(mesh, equations::BBMBBMEquations1D,
     if solver.D1 isa DerivativeOperator ||
        solver.D1 isa UniformCoupledOperator
         D1_b = BandedMatrix(solver.D1)
-        invImD2n = inv(I + 1 / 6 * D^2 * inv(M) * D1_b' * PdM * D1_b)
+        invImD2n = factorize(I + 1 / 6 * D^2 * inv(M) * D1_b' * PdM * D1_b)
     elseif solver.D1 isa UpwindOperators
         D1plus_b = BandedMatrix(solver.D1.plus)
-        invImD2n = inv(I + 1 / 6 * D^2 * inv(M) * D1plus_b' * PdM * D1plus_b)
+        invImD2n = factorize(I + 1 / 6 * D^2 * inv(M) * D1plus_b' * PdM * D1plus_b)
     else
         @error "unknown type of first-derivative operator: $(typeof(solver.D1))"
     end
@@ -202,8 +202,8 @@ function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMEquations1D, initial_cond
 
     @timeit timer() "source terms" calc_sources!(dq, q, t, source_terms, equations, solver)
 
-    @timeit timer() "deta elliptic" deta[:]=invImD2 * deta
-    @timeit timer() "dv elliptic" dv[:]=invImD2 * dv
+    @timeit timer() "deta elliptic" deta[:]=invImD2 \ deta
+    @timeit timer() "dv elliptic" dv[:]=invImD2 \ dv
 
     return nothing
 end
@@ -241,9 +241,9 @@ function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMEquations1D, initial_cond
 
     @timeit timer() "source terms" calc_sources!(dq, q, t, source_terms, equations, solver)
 
-    @timeit timer() "deta elliptic" deta[:]=invImD2n * deta
+    @timeit timer() "deta elliptic" deta[:]=invImD2n \ deta
     @timeit timer() "dv elliptic" begin
-        dv[2:(end - 1)] = invImD2d * dv[2:(end - 1)]
+        dv[2:(end - 1)] = invImD2d \ dv[2:(end - 1)]
         dv[1] = dv[end] = zero(eltype(dv))
     end
 
