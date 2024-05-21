@@ -149,7 +149,7 @@ function create_cache(mesh, equations::BBMBBMEquations1D,
     Pd = BandedMatrix((-1 => fill(one(real(mesh)), N - 2),), (N, N - 2))
     D2d = (sparse(solver.D2) * Pd)[2:(end - 1), :]
     # homogeneous Dirichlet boundary conditions
-    invImD2d = cholesky(Symmetric(I - 1 / 6 * D^2 * D2d))
+    invImD2d = lu(I - 1 / 6 * D^2 * D2d)
     m = diag(M)
     m[1] = 0
     m[end] = 0
@@ -159,15 +159,17 @@ function create_cache(mesh, equations::BBMBBMEquations1D,
     if solver.D1 isa DerivativeOperator ||
        solver.D1 isa UniformCoupledOperator
         D1_b = BandedMatrix(solver.D1)
-        invImD2n = factorize(I + 1 / 6 * D^2 * inv(M) * D1_b' * PdM * D1_b)
+        invImD2n = lu(I + 1 / 6 * D^2 * inv(M) * D1_b' * PdM * D1_b)
     elseif solver.D1 isa UpwindOperators
         D1plus_b = BandedMatrix(solver.D1.plus)
-        invImD2n = factorize(I + 1 / 6 * D^2 * inv(M) * D1plus_b' * PdM * D1plus_b)
+        invImD2n = lu(I + 1 / 6 * D^2 * inv(M) * D1plus_b' * PdM * D1plus_b)
     else
         @error "unknown type of first-derivative operator: $(typeof(solver.D1))"
     end
     tmp2 = Array{RealT}(undef, nnodes(mesh))
-    return (invImD2d = invImD2d, invImD2n = invImD2n, tmp2 = tmp2)
+    tmp3 = similar(tmp2)
+    tmp4 = Array{RealT}(undef, nnodes(mesh) - 2)
+    return (invImD2d = invImD2d, invImD2n = invImD2n, tmp2 = tmp2, tmp3 = tmp3, tmp4 = tmp4)
 end
 
 # Discretization that conserves the mass (for eta and v) and the energy for periodic boundary conditions, see
@@ -220,7 +222,7 @@ end
 #   [DOI: 10.4208/cicp.OA-2020-0119](https://doi.org/10.4208/cicp.OA-2020-0119)
 function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMEquations1D, initial_condition,
               ::BoundaryConditionReflecting, source_terms, solver, cache)
-    @unpack invImD2d, invImD2n, tmp1, tmp2 = cache
+    @unpack invImD2d, invImD2n, tmp1, tmp2, tmp3, tmp4 = cache
 
     q = wrap_array(u_ode, mesh, equations, solver)
     dq = wrap_array(du_ode, mesh, equations, solver)
@@ -247,14 +249,16 @@ function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMEquations1D, initial_cond
 
     @timeit timer() "source terms" calc_sources!(dq, q, t, source_terms, equations, solver)
 
-    @timeit timer() "deta elliptic" ldiv!(invImD2n, tmp1)
+    @timeit timer() "deta elliptic" begin
+        ldiv!(tmp3, invImD2n, tmp1)
+        deta[:] = tmp3
+    end
     @timeit timer() "dv elliptic" begin
-        tmp2[2:(end - 1)] = invImD2d \ dv[2:(end - 1)]
-        tmp2[1] = tmp2[end] = zero(eltype(dv))
+        ldiv!(tmp4, invImD2d, tmp2[2:(end - 1)])
+        dv[1] = dv[end] = zero(eltype(dv))
+        dv[2:(end - 1)] = tmp4
     end
 
-    deta[:] = tmp1
-    dv[:] = tmp2
     return nothing
 end
 
