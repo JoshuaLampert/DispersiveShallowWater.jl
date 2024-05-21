@@ -194,14 +194,14 @@ function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMEquations1D, initial_cond
        solver.D1 isa UniformPeriodicCoupledOperator
         @timeit timer() "deta hyperbolic" tmp1=-solver.D1 * (D * v + eta .* v)
         @timeit timer() "dv hyperbolic" tmp2=-solver.D1 *
-                                              (equations.gravity * eta + 0.5 * v .^ 2)
+                                             (equations.gravity * eta + 0.5 * v .^ 2)
     elseif solver.D1 isa PeriodicUpwindOperators
         # Note that the upwind operators here are not actually used
         # We would need to define two different matrices `invImD2` for eta and v for energy conservation
         # To really use the upwind operators, we can use them with `BBMBBMVariableEquations1D`
         @timeit timer() "deta hyperbolic" tmp1=-solver.D1.central * (D * v + eta .* v)
         @timeit timer() "dv hyperbolic" tmp2=-solver.D1.central *
-                                              (equations.gravity * eta + 0.5 * v .^ 2)
+                                             (equations.gravity * eta + 0.5 * v .^ 2)
     else
         @error "unknown type of first-derivative operator: $(typeof(solver.D1))"
     end
@@ -247,11 +247,11 @@ function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMEquations1D, initial_cond
        solver.D1 isa UniformCoupledOperator
         @timeit timer() "deta hyperbolic" tmp1=-solver.D1 * (D * v + eta .* v)
         @timeit timer() "dv hyperbolic" tmp2=-solver.D1 *
-                                              (equations.gravity * eta + 0.5 * v .^ 2)
+                                             (equations.gravity * eta + 0.5 * v .^ 2)
     elseif solver.D1 isa UpwindOperators
         @timeit timer() "deta hyperbolic" tmp1=-solver.D1.minus * (D * v + eta .* v)
         @timeit timer() "dv hyperbolic" tmp2=-solver.D1.plus *
-                                              (equations.gravity * eta + 0.5 * v .^ 2)
+                                             (equations.gravity * eta + 0.5 * v .^ 2)
     else
         @error "unknown type of first-derivative operator: $(typeof(solver.D1))"
     end
