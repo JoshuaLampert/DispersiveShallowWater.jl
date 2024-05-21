@@ -3,7 +3,7 @@ module DispersiveShallowWater
 using BandedMatrices: BandedMatrix
 using DiffEqBase: DiffEqBase, SciMLBase, terminate!
 using Interpolations: Interpolations, linear_interpolation
-using LinearAlgebra: mul!, ldiv!, I, Diagonal, Symmetric, diag, cholesky
+using LinearAlgebra: mul!, ldiv!, I, Diagonal, diag, lu
 using PolynomialBases: PolynomialBases
 using Printf: @printf, @sprintf
 using RecipesBase: RecipesBase, @recipe, @series

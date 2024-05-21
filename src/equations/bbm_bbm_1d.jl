@@ -132,7 +132,7 @@ function create_cache(mesh, equations::BBMBBMEquations1D,
                       ::BoundaryConditionPeriodic,
                       RealT, uEltype)
     D = equations.D
-    invImD2 = cholesky(Symmetric(I - 1 / 6 * D^2 * sparse(solver.D2)))
+    invImD2 = lu(I - 1 / 6 * D^2 * sparse(solver.D2))
     tmp2 = Array{RealT}(undef, nnodes(mesh))
     tmp3 = similar(tmp2)
     tmp4 = similar(tmp2)
