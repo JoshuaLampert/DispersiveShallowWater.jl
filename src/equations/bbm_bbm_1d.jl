@@ -134,7 +134,9 @@ function create_cache(mesh, equations::BBMBBMEquations1D,
     D = equations.D
     invImD2 = cholesky(Symmetric(I - 1 / 6 * D^2 * sparse(solver.D2)))
     tmp2 = Array{RealT}(undef, nnodes(mesh))
-    return (invImD2 = invImD2, tmp2 = tmp2)
+    tmp3 = similar(tmp2)
+    tmp4 = similar(tmp2)
+    return (invImD2 = invImD2, tmp2 = tmp2, tmp3 = tmp3, tmp4 = tmp4)
 end
 
 function create_cache(mesh, equations::BBMBBMEquations1D,
@@ -174,7 +176,7 @@ end
 #   [DOI: 10.4208/cicp.OA-2020-0119](https://doi.org/10.4208/cicp.OA-2020-0119)
 function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMEquations1D, initial_condition,
               ::BoundaryConditionPeriodic, source_terms, solver, cache)
-    @unpack invImD2, tmp1, tmp2 = cache
+    @unpack invImD2, tmp1, tmp2, tmp3, tmp4 = cache
 
     q = wrap_array(u_ode, mesh, equations, solver)
     dq = wrap_array(du_ode, mesh, equations, solver)
@@ -204,11 +206,11 @@ function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMEquations1D, initial_cond
 
     @timeit timer() "source terms" calc_sources!(dq, q, t, source_terms, equations, solver)
 
-    @timeit timer() "deta elliptic" ldiv!(tmp1, invImD2, tmp1)
-    @timeit timer() "dv elliptic" ldiv!(tmp2, invImD2, tmp2)
+    @timeit timer() "deta elliptic" ldiv!(tmp3, invImD2, tmp1)
+    @timeit timer() "dv elliptic" ldiv!(tmp4, invImD2, tmp2)
 
-    deta[:] = tmp1
-    dv[:] = tmp2
+    deta[:] = tmp3
+    dv[:] = tmp4
     return nothing
 end
 
