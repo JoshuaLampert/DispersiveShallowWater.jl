@@ -134,9 +134,7 @@ function create_cache(mesh, equations::BBMBBMEquations1D,
     D = equations.D
     invImD2 = lu(I - 1 / 6 * D^2 * sparse(solver.D2))
     tmp2 = Array{RealT}(undef, nnodes(mesh))
-    tmp3 = similar(tmp2)
-    tmp4 = similar(tmp2)
-    return (invImD2 = invImD2, tmp2 = tmp2, tmp3 = tmp3, tmp4 = tmp4)
+    return (invImD2 = invImD2, tmp2 = tmp2)
 end
 
 function create_cache(mesh, equations::BBMBBMEquations1D,
@@ -167,9 +165,8 @@ function create_cache(mesh, equations::BBMBBMEquations1D,
         @error "unknown type of first-derivative operator: $(typeof(solver.D1))"
     end
     tmp2 = Array{RealT}(undef, nnodes(mesh))
-    tmp3 = similar(tmp2)
-    tmp4 = Array{RealT}(undef, nnodes(mesh) - 2)
-    return (invImD2d = invImD2d, invImD2n = invImD2n, tmp2 = tmp2, tmp3 = tmp3, tmp4 = tmp4)
+    tmp3 = Array{RealT}(undef, nnodes(mesh) - 2)
+    return (invImD2d = invImD2d, invImD2n = invImD2n, tmp2 = tmp2, tmp3 = tmp3)
 end
 
 # Discretization that conserves the mass (for eta and v) and the energy for periodic boundary conditions, see
@@ -178,7 +175,7 @@ end
 #   [DOI: 10.4208/cicp.OA-2020-0119](https://doi.org/10.4208/cicp.OA-2020-0119)
 function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMEquations1D, initial_condition,
               ::BoundaryConditionPeriodic, source_terms, solver, cache)
-    @unpack invImD2, tmp1, tmp2, tmp3, tmp4 = cache
+    @unpack invImD2, tmp1, tmp2 = cache
 
     q = wrap_array(u_ode, mesh, equations, solver)
     dq = wrap_array(du_ode, mesh, equations, solver)
@@ -212,13 +209,13 @@ function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMEquations1D, initial_cond
     # since `deta` and `dv` are not stored contiguously
     @timeit timer() "deta elliptic" begin
         tmp1[:] = deta
-        ldiv!(tmp3, invImD2, tmp1)
-        deta[:] = tmp3
+        ldiv!(tmp2, invImD2, tmp1)
+        deta[:] = tmp2
     end
     @timeit timer() "dv elliptic" begin
         tmp2[:] = dv
-        ldiv!(tmp4, invImD2, tmp2)
-        dv[:] = tmp4
+        ldiv!(tmp1, invImD2, tmp2)
+        dv[:] = tmp1
     end
     return nothing
 end
@@ -229,7 +226,7 @@ end
 #   [DOI: 10.4208/cicp.OA-2020-0119](https://doi.org/10.4208/cicp.OA-2020-0119)
 function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMEquations1D, initial_condition,
               ::BoundaryConditionReflecting, source_terms, solver, cache)
-    @unpack invImD2d, invImD2n, tmp1, tmp2, tmp3, tmp4 = cache
+    @unpack invImD2d, invImD2n, tmp1, tmp2, tmp3 = cache
 
     q = wrap_array(u_ode, mesh, equations, solver)
     dq = wrap_array(du_ode, mesh, equations, solver)
@@ -260,14 +257,14 @@ function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMEquations1D, initial_cond
     # since `deta` and `dv` are not stored contiguously
     @timeit timer() "deta elliptic" begin
         tmp1[:] = deta
-        ldiv!(tmp3, invImD2n, tmp1)
-        deta[:] = tmp3
+        ldiv!(tmp2, invImD2n, tmp1)
+        deta[:] = tmp2
     end
     @timeit timer() "dv elliptic" begin
         tmp2[:] = dv
-        ldiv!(tmp4, invImD2d, tmp2[2:(end - 1)])
+        ldiv!(tmp3, invImD2d, tmp2[2:(end - 1)])
         dv[1] = dv[end] = zero(eltype(dv))
-        dv[2:(end - 1)] = tmp4
+        dv[2:(end - 1)] = tmp3
     end
 
     return nothing
