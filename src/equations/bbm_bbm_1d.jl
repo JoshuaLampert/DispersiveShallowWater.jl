@@ -206,13 +206,22 @@ function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMEquations1D, initial_cond
         @error "unknown type of first-derivative operator: $(typeof(solver.D1))"
     end
 
-    @timeit timer() "source terms" calc_sources!(dq, q, t, source_terms, equations, solver)
+    @timeit timer() "source terms" begin
+        deta[:] = tmp1
+        dv[:] = tmp2
+        calc_sources!(dq, q, t, source_terms, equations, solver)
+    end
 
-    @timeit timer() "deta elliptic" ldiv!(tmp3, invImD2, tmp1)
-    @timeit timer() "dv elliptic" ldiv!(tmp4, invImD2, tmp2)
-
-    deta[:] = tmp3
-    dv[:] = tmp4
+    @timeit timer() "deta elliptic" begin
+        tmp1[:] = deta
+        ldiv!(tmp3, invImD2, tmp1)
+        deta[:] = tmp3
+    end
+    @timeit timer() "dv elliptic" begin
+        tmp2[:] = dv
+        ldiv!(tmp4, invImD2, tmp2)
+        dv[:] = tmp4
+    end
     return nothing
 end
 
@@ -247,13 +256,19 @@ function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMEquations1D, initial_cond
         @error "unknown type of first-derivative operator: $(typeof(solver.D1))"
     end
 
-    @timeit timer() "source terms" calc_sources!(dq, q, t, source_terms, equations, solver)
+    @timeit timer() "source terms" begin
+        deta[:] = tmp1
+        dv[:] = tmp2
+        calc_sources!(dq, q, t, source_terms, equations, solver)
+    end
 
     @timeit timer() "deta elliptic" begin
+        tmp1[:] = deta
         ldiv!(tmp3, invImD2n, tmp1)
         deta[:] = tmp3
     end
     @timeit timer() "dv elliptic" begin
+        tmp2[:] = dv
         ldiv!(tmp4, invImD2d, tmp2[2:(end - 1)])
         dv[1] = dv[end] = zero(eltype(dv))
         dv[2:(end - 1)] = tmp4
