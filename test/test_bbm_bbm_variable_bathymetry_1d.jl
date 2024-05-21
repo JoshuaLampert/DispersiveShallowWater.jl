@@ -97,6 +97,47 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_variable_bathymetry_1d")
                             change_velocity=-3.1478183774857893e-15,
                             change_entropy=3.417533493699221e-7)
     end
+
+    @trixi_testset "bbm_bbm_variable_bathymetry_1d_basic_reflecting" begin
+        @test_trixi_include(joinpath(EXAMPLES_DIR, "bbm_bbm_variable_bathymetry_1d_basic_reflecting.jl"),
+                            tspan=(0.0, 1.0),
+                            l2=[0.00022223640634220205 7.62845117195942e-9 0.0],
+                            linf=[0.00029474379052363275 1.7386610817737846e-8 0.0],
+                            cons_error=[9.711471991876855e-10 0.5469460962477994 0.0],
+                            change_waterheight=9.711471991876855e-10,
+                            change_velocity=0.5469460962477994,
+                            change_entropy=132.10935771964688)
+
+        # test upwind operators
+        using SummationByPartsOperators: upwind_operators, Mattsson2017
+        using SparseArrays: sparse
+        using OrdinaryDiffEq: solve
+        D1 = upwind_operators(Mattsson2017; derivative_order = 1,
+                              accuracy_order = accuracy_order, xmin = mesh.xmin,
+                              xmax = mesh.xmax,
+                              N = mesh.N)
+        D2 = sparse(D1.plus) * sparse(D1.minus)
+        solver = Solver(D1, D2)
+        semi = Semidiscretization(mesh, equations, initial_condition, solver,
+                                  boundary_conditions = boundary_conditions,
+                                  source_terms = source_terms)
+        ode = semidiscretize(semi, (0.0, 1.0))
+        sol = solve(ode, Tsit5(), abstol = 1e-7, reltol = 1e-7,
+                    save_everystep = false, callback = callbacks, saveat = saveat)
+        atol = 1e-12
+        rtol = 1e-12
+        errs = errors(analysis_callback)
+        l2 = [0.0023458014985457366 3.261497256675908e-8]
+        l2_measured = errs.l2_error[:, end]
+        for (l2_expected, l2_actual) in zip(l2, l2_measured)
+            @test isapprox(l2_expected, l2_actual, atol = atol, rtol = rtol)
+        end
+        linf = [0.05625954556488111 6.815520172120948e-7]
+        linf_measured = errs.linf_error[:, end]
+        for (linf_expected, linf_actual) in zip(linf, linf_measured)
+            @test isapprox(linf_expected, linf_actual, atol = atol, rtol = rtol)
+        end
+    end
 end
 
 end # module
