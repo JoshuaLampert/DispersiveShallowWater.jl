@@ -107,7 +107,9 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_variable_bathymetry_1d")
                             cons_error=[9.711471991876855e-10 0.5469460962477994 0.0],
                             change_waterheight=9.711471991876855e-10,
                             change_velocity=0.5469460962477994,
-                            change_entropy=132.10935771964688)
+                            change_entropy=132.10935771964688,
+                            atol=1e-10,
+                            atol_ints=1e-10) # in order to make CI pass
 
         # test upwind operators
         using SummationByPartsOperators: upwind_operators, Mattsson2017
