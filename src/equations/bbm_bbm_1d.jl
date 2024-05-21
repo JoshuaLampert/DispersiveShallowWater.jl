@@ -132,7 +132,7 @@ function create_cache(mesh, equations::BBMBBMEquations1D,
                       ::BoundaryConditionPeriodic,
                       RealT, uEltype)
     D = equations.D
-    invImD2 = cholesky(Symmetric(I - 1 / 6 * D^2 * Matrix(solver.D2)))
+    invImD2 = cholesky(Symmetric(I - 1 / 6 * D^2 * sparse(solver.D2)))
     tmp2 = Array{RealT}(undef, nnodes(mesh))
     return (invImD2 = invImD2, tmp2 = tmp2)
 end
@@ -204,8 +204,8 @@ function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMEquations1D, initial_cond
 
     @timeit timer() "source terms" calc_sources!(dq, q, t, source_terms, equations, solver)
 
-    @timeit timer() "deta elliptic" ldiv!(invImD2, tmp1)
-    @timeit timer() "dv elliptic" ldiv!(invImD2, tmp2)
+    @timeit timer() "deta elliptic" ldiv!(tmp1, invImD2, tmp1)
+    @timeit timer() "dv elliptic" ldiv!(tmp2, invImD2, tmp2)
 
     deta[:] = tmp1
     dv[:] = tmp2
