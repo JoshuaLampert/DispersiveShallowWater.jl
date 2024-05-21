@@ -130,10 +130,14 @@ function source_terms_manufactured_reflecting(q, x, t, equations::BBMBBMVariable
     a9 = sinpi(x)
     a10 = exp(t)
     a11 = exp(2 * t)
-    a12 = cospi(3*x)
-    a13 = sinpi(3*x)
-    dq1 = (pi*x*a11*a1 + 4*pi*x*a8 + 3*pi*x*a12 + 20*pi^2*(1 - a1)^2*a10*a8/3 + a11*a2/2 + 2*a10*a8 + 7*pi^2*a10*a8/3 + 14*pi^2*a10*a12 + 4*a9 + a13)*a10
-    dq2 = (-pi*g*a10*a9 + pi*x^2*a10*a2/2 + x*a10*a9^2 + x*a9 + pi*(400*pi*x*a9^5 - 824*pi*x*a9^3 + 385*pi*x*a9 - 160*a9^4*a8 + 336*a9^2*a8 - 98*a8)/6)*a10
+    a12 = cospi(3 * x)
+    a13 = sinpi(3 * x)
+    dq1 = (pi * x * a11 * a1 + 4 * pi * x * a8 + 3 * pi * x * a12 +
+           20 * pi^2 * (1 - a1)^2 * a10 * a8 / 3 + a11 * a2 / 2 + 2 * a10 * a8 +
+           7 * pi^2 * a10 * a8 / 3 + 14 * pi^2 * a10 * a12 + 4 * a9 + a13) * a10
+    dq2 = (-pi * g * a10 * a9 + pi * x^2 * a10 * a2 / 2 + x * a10 * a9^2 + x * a9 +
+           pi * (400 * pi * x * a9^5 - 824 * pi * x * a9^3 + 385 * pi * x * a9 -
+            160 * a9^4 * a8 + 336 * a9^2 * a8 - 98 * a8) / 6) * a10
 
     return SVector(dq1, dq2, zero(dq1))
 end
@@ -233,7 +237,7 @@ function create_cache(mesh, equations::BBMBBMVariableEquations1D,
 
     # homogeneous Neumann boundary conditions
     if solver.D1 isa DerivativeOperator ||
-        solver.D1 isa UniformCoupledOperator
+       solver.D1 isa UniformCoupledOperator
         D1_b = BandedMatrix(solver.D1)
         invImDKDn = inv(I + 1 / 6 * inv(M) * D1_b' * PdM * K * D1_b)
     elseif solver.D1 isa UpwindOperators
@@ -305,11 +309,11 @@ function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMVariableEquations1D,
        solver.D1 isa UniformCoupledOperator
         @timeit timer() "deta hyperbolic" deta[:]=-solver.D1 * (D .* v + eta .* v)
         @timeit timer() "dv hyperbolic" dv[:]=-solver.D1 *
-                                            (equations.gravity * eta + 0.5 * v .^ 2)
+                                              (equations.gravity * eta + 0.5 * v .^ 2)
     elseif solver.D1 isa UpwindOperators
         @timeit timer() "deta hyperbolic" deta[:]=-solver.D1.minus * (D .* v + eta .* v)
         @timeit timer() "dv hyperbolic" dv[:]=-solver.D1.plus *
-                                            (equations.gravity * eta + 0.5 * v .^ 2)
+                                              (equations.gravity * eta + 0.5 * v .^ 2)
     else
         @error "unknown type of first-derivative operator: $(typeof(solver.D1))"
     end
@@ -318,11 +322,11 @@ function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMVariableEquations1D,
 
     @timeit timer() "deta elliptic" deta[:]=invImDKDn * deta
     @timeit timer() "dv elliptic" begin
-    dv[2:(end - 1)] = invImD2Kd * dv[2:(end - 1)]
-    dv[1] = dv[end] = zero(eltype(dv))
-end
+        dv[2:(end - 1)] = invImD2Kd * dv[2:(end - 1)]
+        dv[1] = dv[end] = zero(eltype(dv))
+    end
 
-return nothing
+    return nothing
 end
 
 @inline function prim2cons(q, equations::BBMBBMVariableEquations1D)

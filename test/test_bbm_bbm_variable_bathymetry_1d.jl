@@ -99,7 +99,8 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_variable_bathymetry_1d")
     end
 
     @trixi_testset "bbm_bbm_variable_bathymetry_1d_basic_reflecting" begin
-        @test_trixi_include(joinpath(EXAMPLES_DIR, "bbm_bbm_variable_bathymetry_1d_basic_reflecting.jl"),
+        @test_trixi_include(joinpath(EXAMPLES_DIR,
+                                     "bbm_bbm_variable_bathymetry_1d_basic_reflecting.jl"),
                             tspan=(0.0, 1.0),
                             l2=[0.00022223640634220205 7.62845117195942e-9 0.0],
                             linf=[0.00029474379052363275 1.7386610817737846e-8 0.0],
