@@ -132,8 +132,9 @@ function create_cache(mesh, equations::BBMBBMEquations1D,
                       ::BoundaryConditionPeriodic,
                       RealT, uEltype)
     D = equations.D
-    invImD2 = factorize(I - 1 / 6 * D^2 * sparse(solver.D2))
-    return (invImD2 = invImD2,)
+    invImD2 = cholesky(Symmetric(I - 1 / 6 * D^2 * Matrix(solver.D2)))
+    tmp2 = Array{RealT}(undef, nnodes(mesh))
+    return (invImD2 = invImD2, tmp2 = tmp2)
 end
 
 function create_cache(mesh, equations::BBMBBMEquations1D,
@@ -146,7 +147,7 @@ function create_cache(mesh, equations::BBMBBMEquations1D,
     Pd = BandedMatrix((-1 => fill(one(real(mesh)), N - 2),), (N, N - 2))
     D2d = (sparse(solver.D2) * Pd)[2:(end - 1), :]
     # homogeneous Dirichlet boundary conditions
-    invImD2d = factorize(I - 1 / 6 * D^2 * D2d)
+    invImD2d = cholesky(Symmetric(I - 1 / 6 * D^2 * D2d))
     m = diag(M)
     m[1] = 0
     m[end] = 0
@@ -163,7 +164,8 @@ function create_cache(mesh, equations::BBMBBMEquations1D,
     else
         @error "unknown type of first-derivative operator: $(typeof(solver.D1))"
     end
-    return (invImD2d = invImD2d, invImD2n = invImD2n)
+    tmp2 = Array{RealT}(undef, nnodes(mesh))
+    return (invImD2d = invImD2d, invImD2n = invImD2n, tmp2 = tmp2)
 end
 
 # Discretization that conserves the mass (for eta and v) and the energy for periodic boundary conditions, see
@@ -172,7 +174,7 @@ end
 #   [DOI: 10.4208/cicp.OA-2020-0119](https://doi.org/10.4208/cicp.OA-2020-0119)
 function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMEquations1D, initial_condition,
               ::BoundaryConditionPeriodic, source_terms, solver, cache)
-    @unpack invImD2 = cache
+    @unpack invImD2, tmp1, tmp2 = cache
 
     q = wrap_array(u_ode, mesh, equations, solver)
     dq = wrap_array(du_ode, mesh, equations, solver)
@@ -186,15 +188,15 @@ function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMEquations1D, initial_cond
     # energy and mass conservative semidiscretization
     if solver.D1 isa PeriodicDerivativeOperator ||
        solver.D1 isa UniformPeriodicCoupledOperator
-        @timeit timer() "deta hyperbolic" deta[:]=-solver.D1 * (D * v + eta .* v)
-        @timeit timer() "dv hyperbolic" dv[:]=-solver.D1 *
+        @timeit timer() "deta hyperbolic" tmp1=-solver.D1 * (D * v + eta .* v)
+        @timeit timer() "dv hyperbolic" tmp2=-solver.D1 *
                                               (equations.gravity * eta + 0.5 * v .^ 2)
     elseif solver.D1 isa PeriodicUpwindOperators
         # Note that the upwind operators here are not actually used
         # We would need to define two different matrices `invImD2` for eta and v for energy conservation
         # To really use the upwind operators, we can use them with `BBMBBMVariableEquations1D`
-        @timeit timer() "deta hyperbolic" deta[:]=-solver.D1.central * (D * v + eta .* v)
-        @timeit timer() "dv hyperbolic" dv[:]=-solver.D1.central *
+        @timeit timer() "deta hyperbolic" tmp1=-solver.D1.central * (D * v + eta .* v)
+        @timeit timer() "dv hyperbolic" tmp2=-solver.D1.central *
                                               (equations.gravity * eta + 0.5 * v .^ 2)
     else
         @error "unknown type of first-derivative operator: $(typeof(solver.D1))"
@@ -202,9 +204,11 @@ function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMEquations1D, initial_cond
 
     @timeit timer() "source terms" calc_sources!(dq, q, t, source_terms, equations, solver)
 
-    @timeit timer() "deta elliptic" deta[:]=invImD2 \ deta
-    @timeit timer() "dv elliptic" dv[:]=invImD2 \ dv
+    @timeit timer() "deta elliptic" ldiv!(invImD2, tmp1)
+    @timeit timer() "dv elliptic" ldiv!(invImD2, tmp2)
 
+    deta[:] = tmp1
+    dv[:] = tmp2
     return nothing
 end
 
@@ -214,7 +218,7 @@ end
 #   [DOI: 10.4208/cicp.OA-2020-0119](https://doi.org/10.4208/cicp.OA-2020-0119)
 function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMEquations1D, initial_condition,
               ::BoundaryConditionReflecting, source_terms, solver, cache)
-    @unpack invImD2d, invImD2n = cache
+    @unpack invImD2d, invImD2n, tmp1, tmp2 = cache
 
     q = wrap_array(u_ode, mesh, equations, solver)
     dq = wrap_array(du_ode, mesh, equations, solver)
@@ -228,12 +232,12 @@ function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMEquations1D, initial_cond
     # energy and mass conservative semidiscretization
     if solver.D1 isa DerivativeOperator ||
        solver.D1 isa UniformCoupledOperator
-        @timeit timer() "deta hyperbolic" deta[:]=-solver.D1 * (D * v + eta .* v)
-        @timeit timer() "dv hyperbolic" dv[:]=-solver.D1 *
+        @timeit timer() "deta hyperbolic" tmp1=-solver.D1 * (D * v + eta .* v)
+        @timeit timer() "dv hyperbolic" tmp2=-solver.D1 *
                                               (equations.gravity * eta + 0.5 * v .^ 2)
     elseif solver.D1 isa UpwindOperators
-        @timeit timer() "deta hyperbolic" deta[:]=-solver.D1.minus * (D * v + eta .* v)
-        @timeit timer() "dv hyperbolic" dv[:]=-solver.D1.plus *
+        @timeit timer() "deta hyperbolic" tmp1=-solver.D1.minus * (D * v + eta .* v)
+        @timeit timer() "dv hyperbolic" tmp2=-solver.D1.plus *
                                               (equations.gravity * eta + 0.5 * v .^ 2)
     else
         @error "unknown type of first-derivative operator: $(typeof(solver.D1))"
@@ -241,12 +245,14 @@ function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMEquations1D, initial_cond
 
     @timeit timer() "source terms" calc_sources!(dq, q, t, source_terms, equations, solver)
 
-    @timeit timer() "deta elliptic" deta[:]=invImD2n \ deta
+    @timeit timer() "deta elliptic" ldiv!(invImD2n, tmp1)
     @timeit timer() "dv elliptic" begin
-        dv[2:(end - 1)] = invImD2d \ dv[2:(end - 1)]
-        dv[1] = dv[end] = zero(eltype(dv))
+        tmp2[2:(end - 1)] = invImD2d \ dv[2:(end - 1)]
+        tmp2[1] = tmp2[end] = zero(eltype(dv))
     end
 
+    deta[:] = tmp1
+    dv[:] = tmp2
     return nothing
 end
 
