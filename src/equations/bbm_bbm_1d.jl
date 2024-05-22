@@ -132,8 +132,9 @@ function create_cache(mesh, equations::BBMBBMEquations1D,
                       ::BoundaryConditionPeriodic,
                       RealT, uEltype)
     D = equations.D
-    invImD2 = inv(I - 1 / 6 * D^2 * Matrix(solver.D2))
-    return (invImD2 = invImD2,)
+    invImD2 = lu(I - 1 / 6 * D^2 * sparse(solver.D2))
+    tmp2 = Array{RealT}(undef, nnodes(mesh))
+    return (invImD2 = invImD2, tmp2 = tmp2)
 end
 
 function create_cache(mesh, equations::BBMBBMEquations1D,
@@ -146,7 +147,7 @@ function create_cache(mesh, equations::BBMBBMEquations1D,
     Pd = BandedMatrix((-1 => fill(one(real(mesh)), N - 2),), (N, N - 2))
     D2d = (sparse(solver.D2) * Pd)[2:(end - 1), :]
     # homogeneous Dirichlet boundary conditions
-    invImD2d = inv(I - 1 / 6 * D^2 * D2d)
+    invImD2d = lu(I - 1 / 6 * D^2 * D2d)
     m = diag(M)
     m[1] = 0
     m[end] = 0
@@ -156,14 +157,16 @@ function create_cache(mesh, equations::BBMBBMEquations1D,
     if solver.D1 isa DerivativeOperator ||
        solver.D1 isa UniformCoupledOperator
         D1_b = BandedMatrix(solver.D1)
-        invImD2n = inv(I + 1 / 6 * D^2 * inv(M) * D1_b' * PdM * D1_b)
+        invImD2n = lu(I + 1 / 6 * D^2 * inv(M) * D1_b' * PdM * D1_b)
     elseif solver.D1 isa UpwindOperators
         D1plus_b = BandedMatrix(solver.D1.plus)
-        invImD2n = inv(I + 1 / 6 * D^2 * inv(M) * D1plus_b' * PdM * D1plus_b)
+        invImD2n = lu(I + 1 / 6 * D^2 * inv(M) * D1plus_b' * PdM * D1plus_b)
     else
         @error "unknown type of first-derivative operator: $(typeof(solver.D1))"
     end
-    return (invImD2d = invImD2d, invImD2n = invImD2n)
+    tmp2 = Array{RealT}(undef, nnodes(mesh))
+    tmp3 = Array{RealT}(undef, nnodes(mesh) - 2)
+    return (invImD2d = invImD2d, invImD2n = invImD2n, tmp2 = tmp2, tmp3 = tmp3)
 end
 
 # Discretization that conserves the mass (for eta and v) and the energy for periodic boundary conditions, see
@@ -172,7 +175,7 @@ end
 #   [DOI: 10.4208/cicp.OA-2020-0119](https://doi.org/10.4208/cicp.OA-2020-0119)
 function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMEquations1D, initial_condition,
               ::BoundaryConditionPeriodic, source_terms, solver, cache)
-    @unpack invImD2 = cache
+    @unpack invImD2, tmp1, tmp2 = cache
 
     q = wrap_array(u_ode, mesh, equations, solver)
     dq = wrap_array(du_ode, mesh, equations, solver)
@@ -202,9 +205,18 @@ function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMEquations1D, initial_cond
 
     @timeit timer() "source terms" calc_sources!(dq, q, t, source_terms, equations, solver)
 
-    @timeit timer() "deta elliptic" deta[:]=invImD2 * deta
-    @timeit timer() "dv elliptic" dv[:]=invImD2 * dv
-
+    # To use the in-place version `ldiv!` instead of `\`, we need temporary arrays
+    # since `deta` and `dv` are not stored contiguously
+    @timeit timer() "deta elliptic" begin
+        tmp1[:] = deta
+        ldiv!(tmp2, invImD2, tmp1)
+        deta[:] = tmp2
+    end
+    @timeit timer() "dv elliptic" begin
+        tmp2[:] = dv
+        ldiv!(tmp1, invImD2, tmp2)
+        dv[:] = tmp1
+    end
     return nothing
 end
 
@@ -214,7 +226,7 @@ end
 #   [DOI: 10.4208/cicp.OA-2020-0119](https://doi.org/10.4208/cicp.OA-2020-0119)
 function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMEquations1D, initial_condition,
               ::BoundaryConditionReflecting, source_terms, solver, cache)
-    @unpack invImD2d, invImD2n = cache
+    @unpack invImD2d, invImD2n, tmp1, tmp2, tmp3 = cache
 
     q = wrap_array(u_ode, mesh, equations, solver)
     dq = wrap_array(du_ode, mesh, equations, solver)
@@ -241,10 +253,18 @@ function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMEquations1D, initial_cond
 
     @timeit timer() "source terms" calc_sources!(dq, q, t, source_terms, equations, solver)
 
-    @timeit timer() "deta elliptic" deta[:]=invImD2n * deta
+    # To use the in-place version `ldiv!` instead of `\`, we need temporary arrays
+    # since `deta` and `dv` are not stored contiguously
+    @timeit timer() "deta elliptic" begin
+        tmp1[:] = deta
+        ldiv!(tmp2, invImD2n, tmp1)
+        deta[:] = tmp2
+    end
     @timeit timer() "dv elliptic" begin
-        dv[2:(end - 1)] = invImD2d * dv[2:(end - 1)]
+        tmp2[:] = dv
+        ldiv!(tmp3, invImD2d, tmp2[2:(end - 1)])
         dv[1] = dv[end] = zero(eltype(dv))
+        dv[2:(end - 1)] = tmp3
     end
 
     return nothing
