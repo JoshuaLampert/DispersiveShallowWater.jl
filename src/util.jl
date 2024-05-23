@@ -74,7 +74,8 @@ function convergence_test(mod::Module, example::AbstractString, iterations; kwar
     convergence_test(mod, example, Ns; kwargs...)
 end
 
-function convergence_test(mod::Module, example::AbstractString, Ns::AbstractVector; kwargs...)
+function convergence_test(mod::Module, example::AbstractString, Ns::AbstractVector;
+                          kwargs...)
     # Types of errors to be calculated
     errors = Dict(:l2 => Float64[], :linf => Float64[])
 
