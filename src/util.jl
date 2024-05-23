@@ -65,7 +65,8 @@ to [`trixi_include`](@ref).
 
 Adjusted from [Trixi.jl](https://github.com/trixi-framework/Trixi.jl).
 """
-function convergence_test(mod::Module, example::AbstractString, iterations; io::IO = stdout, kwargs...)
+function convergence_test(mod::Module, example::AbstractString, iterations; io::IO = stdout,
+                          kwargs...)
     @assert(iterations>1,
             "Number of iterations must be bigger than 1 for a convergence analysis")
 
