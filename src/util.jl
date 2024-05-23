@@ -80,6 +80,7 @@ function convergence_test(mod::Module, example::AbstractString, Ns::AbstractVect
     # Types of errors to be calculated
     errors = Dict(:l2 => Float64[], :linf => Float64[])
 
+    Base.require_one_based_indexing(Ns)
     sort!(Ns)
     iterations = length(Ns)
     # run simulations and extract errors
