@@ -79,6 +79,7 @@ function convergence_test(mod::Module, example::AbstractString, Ns::AbstractVect
     # Types of errors to be calculated
     errors = Dict(:l2 => Float64[], :linf => Float64[])
 
+    sort!(Ns)
     iterations = length(Ns)
     # run simulations and extract errors
     for iter in 1:iterations
