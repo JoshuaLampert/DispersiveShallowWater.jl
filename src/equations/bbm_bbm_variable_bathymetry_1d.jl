@@ -202,7 +202,8 @@ function create_cache(mesh, equations::BBMBBMVariableEquations1D,
     K = Diagonal(D .^ 2)
     if solver.D1 isa PeriodicDerivativeOperator ||
        solver.D1 isa UniformPeriodicCoupledOperator
-        invImDKD = lu(I - 1 / 6 * sparse(solver.D1) * K * sparse(solver.D1))
+        sparse_D1 = sparse(solver.D1)
+        invImDKD = lu(I - 1 / 6 * sparse_D1 * K * sparse_D1)
     elseif solver.D1 isa PeriodicUpwindOperators
         invImDKD = lu(I - 1 / 6 * sparse(solver.D1.minus) * K * sparse(solver.D1.plus))
     else
