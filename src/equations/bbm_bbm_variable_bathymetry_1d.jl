@@ -202,14 +202,16 @@ function create_cache(mesh, equations::BBMBBMVariableEquations1D,
     K = Diagonal(D .^ 2)
     if solver.D1 isa PeriodicDerivativeOperator ||
        solver.D1 isa UniformPeriodicCoupledOperator
-        invImDKD = inv(I - 1 / 6 * Matrix(solver.D1) * K * Matrix(solver.D1))
+        sparse_D1 = sparse(solver.D1)
+        invImDKD = lu(I - 1 / 6 * sparse_D1 * K * sparse_D1)
     elseif solver.D1 isa PeriodicUpwindOperators
-        invImDKD = inv(I - 1 / 6 * Matrix(solver.D1.minus) * K * Matrix(solver.D1.plus))
+        invImDKD = lu(I - 1 / 6 * sparse(solver.D1.minus) * K * sparse(solver.D1.plus))
     else
         @error "unknown type of first-derivative operator: $(typeof(solver.D1))"
     end
-    invImD2K = inv(I - 1 / 6 * Matrix(solver.D2) * K)
-    return (invImDKD = invImDKD, invImD2K = invImD2K, D = D)
+    invImD2K = lu(I - 1 / 6 * sparse(solver.D2) * K)
+    tmp2 = Array{RealT}(undef, nnodes(mesh))
+    return (invImDKD = invImDKD, invImD2K = invImD2K, D = D, tmp2 = tmp2)
 end
 
 function create_cache(mesh, equations::BBMBBMVariableEquations1D,
@@ -229,7 +231,7 @@ function create_cache(mesh, equations::BBMBBMVariableEquations1D,
     Pd = BandedMatrix((-1 => fill(one(real(mesh)), N - 2),), (N, N - 2))
     D2d = (sparse(solver.D2) * Pd)[2:(end - 1), :]
     # homogeneous Dirichlet boundary conditions
-    invImD2Kd = inv(I - 1 / 6 * D2d * K_i)
+    invImD2Kd = lu(I - 1 / 6 * D2d * K_i)
     m = diag(M)
     m[1] = 0
     m[end] = 0
@@ -239,14 +241,16 @@ function create_cache(mesh, equations::BBMBBMVariableEquations1D,
     if solver.D1 isa DerivativeOperator ||
        solver.D1 isa UniformCoupledOperator
         D1_b = BandedMatrix(solver.D1)
-        invImDKDn = inv(I + 1 / 6 * inv(M) * D1_b' * PdM * K * D1_b)
+        invImDKDn = lu(I + 1 / 6 * inv(M) * D1_b' * PdM * K * D1_b)
     elseif solver.D1 isa UpwindOperators
         D1plus_b = BandedMatrix(solver.D1.plus)
-        invImDKDn = inv(I + 1 / 6 * inv(M) * D1plus_b' * PdM * K * D1plus_b)
+        invImDKDn = lu(I + 1 / 6 * inv(M) * D1plus_b' * PdM * K * D1plus_b)
     else
         @error "unknown type of first-derivative operator: $(typeof(solver.D1))"
     end
-    return (invImD2Kd = invImD2Kd, invImDKDn = invImDKDn, D = D)
+    tmp2 = Array{RealT}(undef, nnodes(mesh))
+    tmp3 = Array{RealT}(undef, nnodes(mesh) - 2)
+    return (invImD2Kd = invImD2Kd, invImDKDn = invImDKDn, D = D, tmp2 = tmp2, tmp3 = tmp3)
 end
 
 # Discretization that conserves the mass (for eta and v) and the energy for periodic boundary conditions, see
@@ -256,7 +260,7 @@ end
 function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMVariableEquations1D,
               initial_condition, ::BoundaryConditionPeriodic, source_terms,
               solver, cache)
-    @unpack invImDKD, invImD2K, D = cache
+    @unpack invImDKD, invImD2K, D, tmp1, tmp2 = cache
 
     q = wrap_array(u_ode, mesh, equations, solver)
     dq = wrap_array(du_ode, mesh, equations, solver)
@@ -283,8 +287,18 @@ function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMVariableEquations1D,
 
     @timeit timer() "source terms" calc_sources!(dq, q, t, source_terms, equations, solver)
 
-    @timeit timer() "deta elliptic" deta[:]=invImDKD * deta
-    @timeit timer() "dv elliptic" dv[:]=invImD2K * dv
+    # To use the in-place version `ldiv!` instead of `\`, we need temporary arrays
+    # since `deta` and `dv` are not stored contiguously
+    @timeit timer() "deta elliptic" begin
+        tmp1[:] = deta
+        ldiv!(tmp2, invImDKD, tmp1)
+        deta[:] = tmp2
+    end
+    @timeit timer() "dv elliptic" begin
+        tmp2[:] = dv
+        ldiv!(tmp1, invImD2K, tmp2)
+        dv[:] = tmp1
+    end
 
     return nothing
 end
@@ -292,7 +306,7 @@ end
 function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMVariableEquations1D,
               initial_condition, ::BoundaryConditionReflecting, source_terms,
               solver, cache)
-    @unpack invImDKDn, invImD2Kd, D = cache
+    @unpack invImDKDn, invImD2Kd, D, tmp1, tmp2, tmp3 = cache
 
     q = wrap_array(u_ode, mesh, equations, solver)
     dq = wrap_array(du_ode, mesh, equations, solver)
@@ -320,10 +334,18 @@ function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMVariableEquations1D,
 
     @timeit timer() "source terms" calc_sources!(dq, q, t, source_terms, equations, solver)
 
-    @timeit timer() "deta elliptic" deta[:]=invImDKDn * deta
+    # To use the in-place version `ldiv!` instead of `\`, we need temporary arrays
+    # since `deta` and `dv` are not stored contiguously
+    @timeit timer() "deta elliptic" begin
+        tmp1[:] = deta
+        ldiv!(tmp2, invImDKDn, tmp1)
+        deta[:] = tmp2
+    end
     @timeit timer() "dv elliptic" begin
-        dv[2:(end - 1)] = invImD2Kd * dv[2:(end - 1)]
+        tmp2[:] = dv
+        ldiv!(tmp3, invImD2Kd, tmp2[2:(end - 1)])
         dv[1] = dv[end] = zero(eltype(dv))
+        dv[2:(end - 1)] = tmp3
     end
 
     return nothing
