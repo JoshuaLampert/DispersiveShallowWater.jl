@@ -48,12 +48,18 @@ function default_example()
              "bbm_bbm_variable_bathymetry_1d_basic.jl")
 end
 
+function convergence_test(example::AbstractString, iterations_or_Ns; kwargs...)
+    convergence_test(Main, example::AbstractString, iterations_or_Ns; kwargs...)
+end
+
 """
     convergence_test([mod::Module=Main,] example::AbstractString, iterations; kwargs...)
+    convergence_test([mod::Module=Main,] example::AbstractString, Ns::AbstractVector; kwargs...)
 
-Run `iterations` simulations using the setup given in `example` and compute
+Run multiple simulations using the setup given in `example` and compute
 the experimental order of convergence (EOC) in the ``L^2`` and ``L^\\infty`` norm.
-In each iteration, the resolution of the respective mesh will be doubled.
+If `iterations` is passed as integer, in each iteration, the resolution of the respective mesh
+will be doubled. If `Ns` is passed as vector, the simulations will be run for each value of `Ns`.
 Additional keyword arguments `kwargs...` and the optional module `mod` are passed directly
 to [`trixi_include`](@ref).
 
@@ -63,16 +69,21 @@ function convergence_test(mod::Module, example::AbstractString, iterations; kwar
     @assert(iterations>1,
             "Number of iterations must be bigger than 1 for a convergence analysis")
 
+    initial_N = extract_initial_N(example, kwargs)
+    Ns = initial_N * 2 .^ (0:(iterations - 1))
+    convergence_test(mod, example, Ns; kwargs...)
+end
+
+function convergence_test(mod::Module, example::AbstractString, Ns::AbstractVector; kwargs...)
     # Types of errors to be calculated
     errors = Dict(:l2 => Float64[], :linf => Float64[])
 
-    initial_N = extract_initial_N(example, kwargs)
-
+    iterations = length(Ns)
     # run simulations and extract errors
     for iter in 1:iterations
         println("Running convtest iteration ", iter, "/", iterations)
 
-        trixi_include(mod, example; kwargs..., N = initial_N * 2^(iter - 1))
+        trixi_include(mod, example; kwargs..., N = Ns[iter])
 
         l2_error, linf_error = mod.analysis_callback(mod.sol)
 
@@ -85,20 +96,20 @@ function convergence_test(mod::Module, example::AbstractString, iterations; kwar
     end
 
     # Use raw error values to compute EOC
-    analyze_convergence(errors, iterations, mod.semi, initial_N)
+    analyze_convergence(errors, iterations, mod.semi, Ns)
 end
 
 # Analyze convergence for any semidiscretization
 # Note: this intermediate method is to allow dispatching on the semidiscretization
-function analyze_convergence(errors, iterations, semi::Semidiscretization, initial_N)
+function analyze_convergence(errors, iterations, semi::Semidiscretization, Ns)
     _, equations, _, _ = mesh_equations_solver_cache(semi)
     variablenames = varnames(prim2prim, equations)
-    analyze_convergence(errors, iterations, variablenames, initial_N)
+    analyze_convergence(errors, iterations, variablenames, Ns)
 end
 
 # This method is called with the collected error values to actually compute and print the EOC
 function analyze_convergence(errors, iterations,
-                             variablenames::Union{Tuple, AbstractArray}, initial_N)
+                             variablenames::Union{Tuple, AbstractArray}, Ns)
     nvariables = length(variablenames)
 
     # Reshape errors to get a matrix where the i-th row represents the i-th iteration
@@ -131,7 +142,7 @@ function analyze_convergence(errors, iterations,
 
         # Print errors for the first iteration
         for k in 1:nvariables
-            @printf("%-5d", initial_N)
+            @printf("%-5d", Ns[1])
             @printf("%-10.2e", error[1, k])
             @printf("%-10s", "-")
         end
@@ -140,7 +151,7 @@ function analyze_convergence(errors, iterations,
         # For the following iterations print errors and EOCs
         for j in 2:iterations
             for k in 1:nvariables
-                @printf("%-5d", initial_N*2^(j - 1))
+                @printf("%-5d", Ns[j])
                 @printf("%-10.2e", error[j, k])
                 @printf("%-10.2f", eocs[kind][j - 1, k])
             end
@@ -161,10 +172,6 @@ function analyze_convergence(errors, iterations,
     end
 
     return eoc_mean_values, errorsmatrix
-end
-
-function convergence_test(example::AbstractString, iterations; kwargs...)
-    convergence_test(Main, example::AbstractString, iterations; kwargs...)
 end
 
 function extract_initial_N(example, kwargs)
