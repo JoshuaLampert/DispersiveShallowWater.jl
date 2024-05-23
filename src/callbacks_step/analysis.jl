@@ -73,7 +73,7 @@ function AnalysisCallback(mesh, equations::AbstractEquations, solver;
                           extra_analysis_integrals = (),
                           analysis_integrals = union(default_analysis_integrals(equations),
                                                      extra_analysis_integrals),
-                          io = stdout)
+                          io::IO = stdout)
     # Decide when the callback is activated.
     # With error-based step size control, some steps can be rejected. Thus,
     #   `integrator.iter >= integrator.stats.naccept`

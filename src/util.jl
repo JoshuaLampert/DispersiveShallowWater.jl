@@ -48,31 +48,46 @@ function default_example()
              "bbm_bbm_variable_bathymetry_1d_basic.jl")
 end
 
-"""
-    convergence_test([mod::Module=Main,] example::AbstractString, iterations; kwargs...)
+function convergence_test(example::AbstractString, iterations_or_Ns; kwargs...)
+    convergence_test(Main, example::AbstractString, iterations_or_Ns; kwargs...)
+end
 
-Run `iterations` simulations using the setup given in `example` and compute
+"""
+    convergence_test([mod::Module=Main,] example::AbstractString, iterations; io::IO = stdout, kwargs...)
+    convergence_test([mod::Module=Main,] example::AbstractString, Ns::AbstractVector; io::IO = stdout, kwargs...)
+
+Run multiple simulations using the setup given in `example` and compute
 the experimental order of convergence (EOC) in the ``L^2`` and ``L^\\infty`` norm.
-In each iteration, the resolution of the respective mesh will be doubled.
+If `iterations` is passed as integer, in each iteration, the resolution of the respective mesh
+will be doubled. If `Ns` is passed as vector, the simulations will be run for each value of `Ns`.
 Additional keyword arguments `kwargs...` and the optional module `mod` are passed directly
 to [`trixi_include`](@ref).
 
 Adjusted from [Trixi.jl](https://github.com/trixi-framework/Trixi.jl).
 """
-function convergence_test(mod::Module, example::AbstractString, iterations; kwargs...)
+function convergence_test(mod::Module, example::AbstractString, iterations; io::IO = stdout,
+                          kwargs...)
     @assert(iterations>1,
             "Number of iterations must be bigger than 1 for a convergence analysis")
 
+    initial_N = extract_initial_N(example, kwargs)
+    Ns = initial_N * 2 .^ (0:(iterations - 1))
+    convergence_test(mod, example, Ns; io = io, kwargs...)
+end
+
+function convergence_test(mod::Module, example::AbstractString, Ns::AbstractVector;
+                          io::IO = stdout, kwargs...)
     # Types of errors to be calculated
     errors = Dict(:l2 => Float64[], :linf => Float64[])
 
-    initial_N = extract_initial_N(example, kwargs)
-
+    Base.require_one_based_indexing(Ns)
+    sort!(Ns)
+    iterations = length(Ns)
     # run simulations and extract errors
     for iter in 1:iterations
         println("Running convtest iteration ", iter, "/", iterations)
 
-        trixi_include(mod, example; kwargs..., N = initial_N * 2^(iter - 1))
+        trixi_include(mod, example; kwargs..., N = Ns[iter])
 
         l2_error, linf_error = mod.analysis_callback(mod.sol)
 
@@ -85,20 +100,20 @@ function convergence_test(mod::Module, example::AbstractString, iterations; kwar
     end
 
     # Use raw error values to compute EOC
-    analyze_convergence(errors, iterations, mod.semi, initial_N)
+    analyze_convergence(io, errors, iterations, mod.semi, Ns)
 end
 
 # Analyze convergence for any semidiscretization
 # Note: this intermediate method is to allow dispatching on the semidiscretization
-function analyze_convergence(errors, iterations, semi::Semidiscretization, initial_N)
+function analyze_convergence(io, errors, iterations, semi::Semidiscretization, Ns)
     _, equations, _, _ = mesh_equations_solver_cache(semi)
     variablenames = varnames(prim2prim, equations)
-    analyze_convergence(errors, iterations, variablenames, initial_N)
+    analyze_convergence(io, errors, iterations, variablenames, Ns)
 end
 
 # This method is called with the collected error values to actually compute and print the EOC
-function analyze_convergence(errors, iterations,
-                             variablenames::Union{Tuple, AbstractArray}, initial_N)
+function analyze_convergence(io, errors, iterations,
+                             variablenames::Union{Tuple, AbstractArray}, Ns)
     nvariables = length(variablenames)
 
     # Reshape errors to get a matrix where the i-th row represents the i-th iteration
@@ -107,64 +122,60 @@ function analyze_convergence(errors, iterations,
                         for (kind, error) in errors)
 
     # Calculate EOCs where the columns represent the variables
-    # As dx halves in every iteration the denominator needs to be log(1/2)
-    eocs = Dict(kind => log.(error[2:end, :] ./ error[1:(end - 1), :]) ./ log(1 / 2)
+    eocs = Dict(kind => log.(error[2:end, :] ./ error[1:(end - 1), :]) ./
+                        log.(Ns[1:(end - 1)] ./ Ns[2:end])
                 for (kind, error) in errorsmatrix)
 
     eoc_mean_values = Dict{Symbol, Any}()
     eoc_mean_values[:variables] = variablenames
 
     for (kind, error) in errorsmatrix
-        println(kind)
+        println(io, kind)
 
         for v in variablenames
-            @printf("%-25s", v)
+            @printf(io, "%-25s", v)
         end
-        println("")
+        println(io, "")
 
         for k in 1:nvariables
-            @printf("%-5s", "N")
-            @printf("%-10s", "error")
-            @printf("%-10s", "EOC")
+            @printf(io, "%-5s", "N")
+            @printf(io, "%-10s", "error")
+            @printf(io, "%-10s", "EOC")
         end
-        println("")
+        println(io, "")
 
         # Print errors for the first iteration
         for k in 1:nvariables
-            @printf("%-5d", initial_N)
-            @printf("%-10.2e", error[1, k])
-            @printf("%-10s", "-")
+            @printf(io, "%-5d", Ns[1])
+            @printf(io, "%-10.2e", error[1, k])
+            @printf(io, "%-10s", "-")
         end
-        println("")
+        println(io, "")
 
         # For the following iterations print errors and EOCs
         for j in 2:iterations
             for k in 1:nvariables
-                @printf("%-5d", initial_N*2^(j - 1))
-                @printf("%-10.2e", error[j, k])
-                @printf("%-10.2f", eocs[kind][j - 1, k])
+                @printf(io, "%-5d", Ns[j])
+                @printf(io, "%-10.2e", error[j, k])
+                @printf(io, "%-10.2f", eocs[kind][j - 1, k])
             end
-            println("")
+            println(io, "")
         end
-        println("")
+        println(io, "")
 
         # Print mean EOCs
         mean_values = zeros(nvariables)
         for v in 1:nvariables
             mean_values[v] = sum(eocs[kind][:, v]) ./ length(eocs[kind][:, v])
-            @printf("%-15s", "mean")
-            @printf("%-10.2f", mean_values[v])
+            @printf(io, "%-15s", "mean")
+            @printf(io, "%-10.2f", mean_values[v])
         end
         eoc_mean_values[kind] = mean_values
-        println("")
-        println("-"^100)
+        println(io, "")
+        println(io, "-"^100)
     end
 
     return eoc_mean_values, errorsmatrix
-end
-
-function convergence_test(example::AbstractString, iterations; kwargs...)
-    convergence_test(Main, example::AbstractString, iterations; kwargs...)
 end
 
 function extract_initial_N(example, kwargs)

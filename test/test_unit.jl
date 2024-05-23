@@ -235,6 +235,13 @@ using SparseArrays: sparse, SparseMatrixCSC
             @test isapprox(eoc_mean_values[:linf][2], accuracy_order, atol = 0.5)
             @test isapprox(eoc_mean_values[:l2][1], accuracy_order, atol = 0.5)
             @test isapprox(eoc_mean_values[:linf][2], accuracy_order, atol = 0.5)
+
+            eoc_mean_values2, _ = convergence_test(default_example(), [512, 1024],
+                                                   tspan = (0.0, 1.0),
+                                                   accuracy_order = accuracy_order)
+            for kind in (:l2, :linf), variable in (1, 2)
+                eoc_mean_values[kind][variable] == eoc_mean_values2[kind][variable]
+            end
         end
     end
 end
