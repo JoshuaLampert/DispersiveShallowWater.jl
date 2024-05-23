@@ -240,7 +240,7 @@ using SparseArrays: sparse, SparseMatrixCSC
                                                    tspan = (0.0, 1.0),
                                                    accuracy_order = accuracy_order)
             for kind in (:l2, :linf), variable in (1, 2)
-                eoc_mean_values[kind, variable] == eoc_mean_values2[kind, variable]
+                eoc_mean_values[kind][variable] == eoc_mean_values2[kind][variable]
             end
         end
     end
