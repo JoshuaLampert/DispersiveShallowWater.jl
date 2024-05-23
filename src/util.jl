@@ -53,8 +53,8 @@ function convergence_test(example::AbstractString, iterations_or_Ns; kwargs...)
 end
 
 """
-    convergence_test([mod::Module=Main,] example::AbstractString, iterations; kwargs...)
-    convergence_test([mod::Module=Main,] example::AbstractString, Ns::AbstractVector; kwargs...)
+    convergence_test([mod::Module=Main,] example::AbstractString, iterations; io::IO = stdout, kwargs...)
+    convergence_test([mod::Module=Main,] example::AbstractString, Ns::AbstractVector; io::IO = stdout, kwargs...)
 
 Run multiple simulations using the setup given in `example` and compute
 the experimental order of convergence (EOC) in the ``L^2`` and ``L^\\infty`` norm.
@@ -65,7 +65,7 @@ to [`trixi_include`](@ref).
 
 Adjusted from [Trixi.jl](https://github.com/trixi-framework/Trixi.jl).
 """
-function convergence_test(mod::Module, example::AbstractString, iterations; io = stdout, kwargs...)
+function convergence_test(mod::Module, example::AbstractString, iterations; io::IO = stdout, kwargs...)
     @assert(iterations>1,
             "Number of iterations must be bigger than 1 for a convergence analysis")
 
@@ -75,7 +75,7 @@ function convergence_test(mod::Module, example::AbstractString, iterations; io =
 end
 
 function convergence_test(mod::Module, example::AbstractString, Ns::AbstractVector;
-                          io = stdout, kwargs...)
+                          io::IO = stdout, kwargs...)
     # Types of errors to be calculated
     errors = Dict(:l2 => Float64[], :linf => Float64[])
 
