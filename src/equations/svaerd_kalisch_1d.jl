@@ -188,7 +188,7 @@ function create_cache(mesh, equations::SvaerdKalischEquations1D,
     else
         @error "unknown type of first-derivative operator: $(typeof(solver.D1))"
     end
-    factorization = cholesky(Diagonal(ones(nnodes(mesh))) - D1betaD1)
+    factorization = cholesky(Symmetric(Diagonal(ones(nnodes(mesh))) - D1betaD1))
     return (factorization = factorization, D1betaD1 = D1betaD1, D = D, h = h, hv = hv,
             alpha_hat = alpha_hat, beta_hat = beta_hat, gamma_hat = gamma_hat,
             tmp2 = tmp2, D1_central = D1_central, D1 = solver.D1)
