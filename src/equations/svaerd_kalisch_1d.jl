@@ -177,7 +177,6 @@ function create_cache(mesh, equations::SvaerdKalischEquations1D,
     beta_hat = equations.beta * D .^ 3
     gamma_hat = equations.gamma * sqrt.(equations.gravity * D) .* D .^ 3
     tmp2 = similar(h)
-    hmD1betaD1 = Array{RealT}(undef, nnodes(mesh), nnodes(mesh))
     if solver.D1 isa PeriodicDerivativeOperator ||
        solver.D1 isa UniformPeriodicCoupledOperator
         D1_central = solver.D1
@@ -189,7 +188,8 @@ function create_cache(mesh, equations::SvaerdKalischEquations1D,
     else
         @error "unknown type of first-derivative operator: $(typeof(solver.D1))"
     end
-    return (hmD1betaD1 = hmD1betaD1, D1betaD1 = D1betaD1, D = D, h = h, hv = hv,
+    factorization = cholesky(Diagonal(ones(nnodes(mesh))) - D1betaD1)
+    return (factorization = factorization, D1betaD1 = D1betaD1, D = D, h = h, hv = hv,
             alpha_hat = alpha_hat, beta_hat = beta_hat, gamma_hat = gamma_hat,
             tmp2 = tmp2, D1_central = D1_central, D1 = solver.D1)
 end
@@ -201,7 +201,7 @@ end
 function rhs!(du_ode, u_ode, t, mesh, equations::SvaerdKalischEquations1D,
               initial_condition, ::BoundaryConditionPeriodic, source_terms,
               solver, cache)
-    @unpack hmD1betaD1, D1betaD1, D, h, hv, alpha_hat, beta_hat, gamma_hat, tmp1, tmp2, D1_central = cache
+    @unpack factorization, D1betaD1, D, h, hv, alpha_hat, beta_hat, gamma_hat, tmp1, tmp2, D1_central = cache
     q = wrap_array(u_ode, mesh, equations, solver)
     dq = wrap_array(du_ode, mesh, equations, solver)
 
@@ -257,8 +257,10 @@ function rhs!(du_ode, u_ode, t, mesh, equations::SvaerdKalischEquations1D,
 
     @timeit timer() "source terms" calc_sources!(dq, q, t, source_terms, equations, solver)
     @timeit timer() "dv elliptic" begin
-        hmD1betaD1 = Diagonal(h) - D1betaD1
-        dv[:] = hmD1betaD1 \ dv
+        hmD1betaD1 = Symmetric(Diagonal(h) - D1betaD1)
+        cholesky!(factorization, hmD1betaD1)
+        tmp1[:] = dv
+        dv[:] = factorization \ tmp1
     end
 
     return nothing
