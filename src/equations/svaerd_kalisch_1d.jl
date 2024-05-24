@@ -241,11 +241,15 @@ function rhs!(du_ode, u_ode, t, mesh, equations::SvaerdKalischEquations1D,
 
     # split form
     @timeit timer() "dv hyperbolic" begin
-        dv[:] = -(0.5 * (D1_central * (hv .* v) .+ hv .* D1v .- v .* (D1_central * hv)) .+
-                  equations.gravity * h .* D1eta .+
-                  0.5 * (vD1y .- D1vy .- yD1v) .-
-                  0.5 * D1_central * (gamma_hat .* (solver.D2 * v)) .-
-                  0.5 * solver.D2 * (gamma_hat .* D1v))
+        D1_hv = D1_central * hv
+        D1_hv2 = D1_central * (hv .* v)
+        D1_gamma_hat_D2_v = D1_central * (gamma_hat .* (solver.D2 * v))
+        D2_gamma_hat_D1_v = solver.D2 * (gamma_hat .* D1v)
+        @. dv = -(0.5 * (D1_hv2 + hv * D1v - v * D1_hv) +
+                  equations.gravity * h * D1eta +
+                  0.5 * (vD1y - D1vy - yD1v) -
+                  0.5 * D1_gamma_hat_D2_v -
+                  0.5 * D2_gamma_hat_D1_v)
     end
 
     # no split form
