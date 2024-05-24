@@ -201,7 +201,7 @@ end
 function rhs!(du_ode, u_ode, t, mesh, equations::SvaerdKalischEquations1D,
               initial_condition, ::BoundaryConditionPeriodic, source_terms,
               solver, cache)
-    @unpack factorization, D1betaD1, D, h, hv, alpha_hat, beta_hat, gamma_hat, tmp1, tmp2, D1_central = cache
+    @unpack factorization, D1betaD1, D, h, hv, alpha_hat, gamma_hat, tmp1, tmp2, D1_central = cache
     q = wrap_array(u_ode, mesh, equations, solver)
     dq = wrap_array(du_ode, mesh, equations, solver)
 
@@ -213,8 +213,8 @@ function rhs!(du_ode, u_ode, t, mesh, equations::SvaerdKalischEquations1D,
     fill!(dD, zero(eltype(dD)))
 
     @timeit timer() "deta hyperbolic" begin
-        h = eta .+ D .- equations.eta0
-        hv = h .* v
+        @. h = eta + D - equations.eta0
+        @. hv = h * v
 
         if solver.D1 isa PeriodicDerivativeOperator ||
            solver.D1 isa UniformPeriodicCoupledOperator
