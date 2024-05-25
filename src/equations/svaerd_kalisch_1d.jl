@@ -188,10 +188,11 @@ function create_cache(mesh, equations::SvaerdKalischEquations1D,
     else
         @error "unknown type of first-derivative operator: $(typeof(solver.D1))"
     end
-    factorization = cholesky(Symmetric(Diagonal(ones(nnodes(mesh))) - D1betaD1))
+    M = mass_matrix(solver.D1)
+    factorization = cholesky(Symmetric(M * (Diagonal(ones(nnodes(mesh))) - D1betaD1)))
     return (factorization = factorization, D1betaD1 = D1betaD1, D = D, h = h, hv = hv,
             alpha_hat = alpha_hat, gamma_hat = gamma_hat,
-            tmp2 = tmp2, D1_central = D1_central, D1 = solver.D1)
+            tmp2 = tmp2, D1_central = D1_central, M = M, D1 = solver.D1)
 end
 
 # Discretization that conserves the mass (for eta and for flat bottom hv) and the energy for periodic boundary conditions, see
@@ -201,7 +202,7 @@ end
 function rhs!(du_ode, u_ode, t, mesh, equations::SvaerdKalischEquations1D,
               initial_condition, ::BoundaryConditionPeriodic, source_terms,
               solver, cache)
-    @unpack factorization, D1betaD1, D, h, hv, alpha_hat, gamma_hat, tmp1, tmp2, D1_central = cache
+    @unpack factorization, D1betaD1, D, h, hv, alpha_hat, gamma_hat, tmp1, tmp2, D1_central, M = cache
     q = wrap_array(u_ode, mesh, equations, solver)
     dq = wrap_array(du_ode, mesh, equations, solver)
 
@@ -261,9 +262,11 @@ function rhs!(du_ode, u_ode, t, mesh, equations::SvaerdKalischEquations1D,
 
     @timeit timer() "source terms" calc_sources!(dq, q, t, source_terms, equations, solver)
     @timeit timer() "dv elliptic" begin
-        hmD1betaD1 = Symmetric(Diagonal(h) - D1betaD1)
+        # decompose M * (h - D1betaD1) because it is guaranteed to be symmetric and pos. def.,
+        # while (h - D1betaD1) is not necessarily
+        hmD1betaD1 = Symmetric(M * (Diagonal(h) - D1betaD1))
         cholesky!(factorization, hmD1betaD1)
-        tmp1[:] = dv
+        tmp1[:] = M * dv
         dv[:] = factorization \ tmp1
     end
 
