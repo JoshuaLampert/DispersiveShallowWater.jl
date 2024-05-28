@@ -81,9 +81,7 @@ function AnalysisCallback(mesh, equations::AbstractEquations, solver;
     # We need to check the number of accepted steps since callbacks are not
     # activated after a rejected step.
     condition = (u, t, integrator) -> interval > 0 &&
-        ((integrator.stats.naccept % interval == 0 &&
-          !(integrator.stats.naccept == 0 && integrator.iter > 0)) ||
-         isfinished(integrator))
+        ((integrator.stats.naccept % interval == 0) || isfinished(integrator))
     for extra_analysis_error in extra_analysis_errors
         if extra_analysis_error != :conservation_error
             @warn "Extra analysis error $extra_analysis_error is not supported and will be ignored."
