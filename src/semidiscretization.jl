@@ -205,7 +205,7 @@ end
 function rhs!(du_ode, u_ode, semi::Semidiscretization, t)
     @unpack mesh, equations, initial_condition, boundary_conditions, solver, source_terms, cache = semi
 
-    @timeit timer() "rhs!" rhs!(du_ode, u_ode, t, mesh, equations, initial_condition,
+    @trixi_timeit timer() "rhs!" rhs!(du_ode, u_ode, t, mesh, equations, initial_condition,
                                 boundary_conditions, source_terms, solver, cache)
 
     return nothing

@@ -90,7 +90,7 @@ end
     end
     energy_old = relaxation_functional(uold, semi)
 
-    @timeit timer() "relaxation" begin
+    @trixi_timeit timer() "relaxation" begin
         if (relaxation_functional(convex_combination(gamma_lo, uold, unew), semi) -
             energy_old) *
            (relaxation_functional(convex_combination(gamma_hi, uold, unew), semi) -
