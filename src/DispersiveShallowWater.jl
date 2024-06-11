@@ -24,8 +24,9 @@ using SummationByPartsOperators: AbstractDerivativeOperator,
                                  periodic_derivative_operator,
                                  derivative_order, integrate, mass_matrix
 import SummationByPartsOperators: grid, xmin, xmax
-using TimerOutputs: TimerOutputs, TimerOutput, @timeit, print_timer, reset_timer!
-@reexport using TrixiBase: TrixiBase, trixi_include
+using TimerOutputs: TimerOutputs, print_timer, reset_timer!
+@reexport using TrixiBase: trixi_include
+using TrixiBase: TrixiBase, @trixi_timeit, timer
 
 include("boundary_conditions.jl")
 include("mesh.jl")

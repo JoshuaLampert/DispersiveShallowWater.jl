@@ -216,7 +216,7 @@ function (analysis_callback::AnalysisCallback)(io, u_ode, integrator, semi)
     # Source: https://github.com/JuliaLang/julia/blob/b540315cb4bd91e6f3a3e4ab8129a58556947628/base/timing.jl#L86-L97
     memory_use = Base.gc_live_bytes() / 2^20 # bytes -> MiB
 
-    @timeit timer() "analyze solution" begin
+    @trixi_timeit timer() "analyze solution" begin
         println(io)
         println(io, "─"^100)
         println(io, "Simulation running '", get_name(equations), "' with '",

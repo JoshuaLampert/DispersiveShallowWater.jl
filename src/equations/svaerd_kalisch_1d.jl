@@ -213,7 +213,7 @@ function rhs!(du_ode, u_ode, t, mesh, equations::SvaerdKalischEquations1D,
     dD = view(dq, 3, :)
     fill!(dD, zero(eltype(dD)))
 
-    @timeit timer() "deta hyperbolic" begin
+    @trixi_timeit timer() "deta hyperbolic" begin
         @. h = eta + D - equations.eta0
         @. hv = h * v
 
@@ -241,7 +241,7 @@ function rhs!(du_ode, u_ode, t, mesh, equations::SvaerdKalischEquations1D,
     end
 
     # split form
-    @timeit timer() "dv hyperbolic" begin
+    @trixi_timeit timer() "dv hyperbolic" begin
         D1_hv = D1_central * hv
         D1_hv2 = D1_central * (hv .* v)
         D1_gamma_hat_D2_v = D1_central * (gamma_hat .* (solver.D2 * v))
@@ -260,8 +260,9 @@ function rhs!(du_ode, u_ode, t, mesh, equations::SvaerdKalischEquations1D,
     #               0.5 * D1_central * (gamma_hat .* (solver.D2 * v)) -
     #               0.5 * solver.D2 * (gamma_hat .* D1v))
 
-    @timeit timer() "source terms" calc_sources!(dq, q, t, source_terms, equations, solver)
-    @timeit timer() "dv elliptic" begin
+    @trixi_timeit timer() "source terms" calc_sources!(dq, q, t, source_terms, equations,
+                                                       solver)
+    @trixi_timeit timer() "dv elliptic" begin
         # decompose M * (h - D1betaD1) because it is guaranteed to be symmetric and pos. def.,
         # while (h - D1betaD1) is not necessarily
         hmD1betaD1 = Symmetric(M * (Diagonal(h) - D1betaD1))

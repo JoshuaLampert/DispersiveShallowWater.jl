@@ -189,30 +189,32 @@ function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMEquations1D, initial_cond
     # energy and mass conservative semidiscretization
     if solver.D1 isa PeriodicDerivativeOperator ||
        solver.D1 isa UniformPeriodicCoupledOperator
-        @timeit timer() "deta hyperbolic" deta[:]=-solver.D1 * (D * v + eta .* v)
-        @timeit timer() "dv hyperbolic" dv[:]=-solver.D1 *
-                                              (equations.gravity * eta + 0.5 * v .^ 2)
+        @trixi_timeit timer() "deta hyperbolic" deta[:]=-solver.D1 * (D * v + eta .* v)
+        @trixi_timeit timer() "dv hyperbolic" dv[:]=-solver.D1 *
+                                                    (equations.gravity * eta + 0.5 * v .^ 2)
     elseif solver.D1 isa PeriodicUpwindOperators
         # Note that the upwind operators here are not actually used
         # We would need to define two different matrices `invImD2` for eta and v for energy conservation
         # To really use the upwind operators, we can use them with `BBMBBMVariableEquations1D`
-        @timeit timer() "deta hyperbolic" deta[:]=-solver.D1.central * (D * v + eta .* v)
-        @timeit timer() "dv hyperbolic" dv[:]=-solver.D1.central *
-                                              (equations.gravity * eta + 0.5 * v .^ 2)
+        @trixi_timeit timer() "deta hyperbolic" deta[:]=-solver.D1.central *
+                                                        (D * v + eta .* v)
+        @trixi_timeit timer() "dv hyperbolic" dv[:]=-solver.D1.central *
+                                                    (equations.gravity * eta + 0.5 * v .^ 2)
     else
         @error "unknown type of first-derivative operator: $(typeof(solver.D1))"
     end
 
-    @timeit timer() "source terms" calc_sources!(dq, q, t, source_terms, equations, solver)
+    @trixi_timeit timer() "source terms" calc_sources!(dq, q, t, source_terms, equations,
+                                                       solver)
 
     # To use the in-place version `ldiv!` instead of `\`, we need temporary arrays
     # since `deta` and `dv` are not stored contiguously
-    @timeit timer() "deta elliptic" begin
+    @trixi_timeit timer() "deta elliptic" begin
         tmp1[:] = deta
         ldiv!(tmp2, invImD2, tmp1)
         deta[:] = tmp2
     end
-    @timeit timer() "dv elliptic" begin
+    @trixi_timeit timer() "dv elliptic" begin
         tmp2[:] = dv
         ldiv!(tmp1, invImD2, tmp2)
         dv[:] = tmp1
@@ -240,27 +242,29 @@ function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMEquations1D, initial_cond
     # energy and mass conservative semidiscretization
     if solver.D1 isa DerivativeOperator ||
        solver.D1 isa UniformCoupledOperator
-        @timeit timer() "deta hyperbolic" deta[:]=-solver.D1 * (D * v + eta .* v)
-        @timeit timer() "dv hyperbolic" dv[:]=-solver.D1 *
-                                              (equations.gravity * eta + 0.5 * v .^ 2)
+        @trixi_timeit timer() "deta hyperbolic" deta[:]=-solver.D1 * (D * v + eta .* v)
+        @trixi_timeit timer() "dv hyperbolic" dv[:]=-solver.D1 *
+                                                    (equations.gravity * eta + 0.5 * v .^ 2)
     elseif solver.D1 isa UpwindOperators
-        @timeit timer() "deta hyperbolic" deta[:]=-solver.D1.minus * (D * v + eta .* v)
-        @timeit timer() "dv hyperbolic" dv[:]=-solver.D1.plus *
-                                              (equations.gravity * eta + 0.5 * v .^ 2)
+        @trixi_timeit timer() "deta hyperbolic" deta[:]=-solver.D1.minus *
+                                                        (D * v + eta .* v)
+        @trixi_timeit timer() "dv hyperbolic" dv[:]=-solver.D1.plus *
+                                                    (equations.gravity * eta + 0.5 * v .^ 2)
     else
         @error "unknown type of first-derivative operator: $(typeof(solver.D1))"
     end
 
-    @timeit timer() "source terms" calc_sources!(dq, q, t, source_terms, equations, solver)
+    @trixi_timeit timer() "source terms" calc_sources!(dq, q, t, source_terms, equations,
+                                                       solver)
 
     # To use the in-place version `ldiv!` instead of `\`, we need temporary arrays
     # since `deta` and `dv` are not stored contiguously
-    @timeit timer() "deta elliptic" begin
+    @trixi_timeit timer() "deta elliptic" begin
         tmp1[:] = deta
         ldiv!(tmp2, invImD2n, tmp1)
         deta[:] = tmp2
     end
-    @timeit timer() "dv elliptic" begin
+    @trixi_timeit timer() "dv elliptic" begin
         tmp2[:] = dv
         ldiv!(tmp3, invImD2d, tmp2[2:(end - 1)])
         dv[1] = dv[end] = zero(eltype(dv))
