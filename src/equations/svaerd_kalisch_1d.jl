@@ -260,7 +260,8 @@ function rhs!(du_ode, u_ode, t, mesh, equations::SvaerdKalischEquations1D,
     #               0.5 * D1_central * (gamma_hat .* (solver.D2 * v)) -
     #               0.5 * solver.D2 * (gamma_hat .* D1v))
 
-    @trixi_timeit timer() "source terms" calc_sources!(dq, q, t, source_terms, equations, solver)
+    @trixi_timeit timer() "source terms" calc_sources!(dq, q, t, source_terms, equations,
+                                                       solver)
     @trixi_timeit timer() "dv elliptic" begin
         # decompose M * (h - D1betaD1) because it is guaranteed to be symmetric and pos. def.,
         # while (h - D1betaD1) is not necessarily

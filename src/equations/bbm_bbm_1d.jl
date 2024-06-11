@@ -191,19 +191,21 @@ function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMEquations1D, initial_cond
        solver.D1 isa UniformPeriodicCoupledOperator
         @trixi_timeit timer() "deta hyperbolic" deta[:]=-solver.D1 * (D * v + eta .* v)
         @trixi_timeit timer() "dv hyperbolic" dv[:]=-solver.D1 *
-                                              (equations.gravity * eta + 0.5 * v .^ 2)
+                                                    (equations.gravity * eta + 0.5 * v .^ 2)
     elseif solver.D1 isa PeriodicUpwindOperators
         # Note that the upwind operators here are not actually used
         # We would need to define two different matrices `invImD2` for eta and v for energy conservation
         # To really use the upwind operators, we can use them with `BBMBBMVariableEquations1D`
-        @trixi_timeit timer() "deta hyperbolic" deta[:]=-solver.D1.central * (D * v + eta .* v)
+        @trixi_timeit timer() "deta hyperbolic" deta[:]=-solver.D1.central *
+                                                        (D * v + eta .* v)
         @trixi_timeit timer() "dv hyperbolic" dv[:]=-solver.D1.central *
-                                              (equations.gravity * eta + 0.5 * v .^ 2)
+                                                    (equations.gravity * eta + 0.5 * v .^ 2)
     else
         @error "unknown type of first-derivative operator: $(typeof(solver.D1))"
     end
 
-    @trixi_timeit timer() "source terms" calc_sources!(dq, q, t, source_terms, equations, solver)
+    @trixi_timeit timer() "source terms" calc_sources!(dq, q, t, source_terms, equations,
+                                                       solver)
 
     # To use the in-place version `ldiv!` instead of `\`, we need temporary arrays
     # since `deta` and `dv` are not stored contiguously
@@ -242,16 +244,18 @@ function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMEquations1D, initial_cond
        solver.D1 isa UniformCoupledOperator
         @trixi_timeit timer() "deta hyperbolic" deta[:]=-solver.D1 * (D * v + eta .* v)
         @trixi_timeit timer() "dv hyperbolic" dv[:]=-solver.D1 *
-                                              (equations.gravity * eta + 0.5 * v .^ 2)
+                                                    (equations.gravity * eta + 0.5 * v .^ 2)
     elseif solver.D1 isa UpwindOperators
-        @trixi_timeit timer() "deta hyperbolic" deta[:]=-solver.D1.minus * (D * v + eta .* v)
+        @trixi_timeit timer() "deta hyperbolic" deta[:]=-solver.D1.minus *
+                                                        (D * v + eta .* v)
         @trixi_timeit timer() "dv hyperbolic" dv[:]=-solver.D1.plus *
-                                              (equations.gravity * eta + 0.5 * v .^ 2)
+                                                    (equations.gravity * eta + 0.5 * v .^ 2)
     else
         @error "unknown type of first-derivative operator: $(typeof(solver.D1))"
     end
 
-    @trixi_timeit timer() "source terms" calc_sources!(dq, q, t, source_terms, equations, solver)
+    @trixi_timeit timer() "source terms" calc_sources!(dq, q, t, source_terms, equations,
+                                                       solver)
 
     # To use the in-place version `ldiv!` instead of `\`, we need temporary arrays
     # since `deta` and `dv` are not stored contiguously
