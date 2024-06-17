@@ -199,18 +199,16 @@ end
 # - Joshua Lampert and Hendrik Ranocha (2024)
 #   Structure-Preserving Numerical Methods for Two Nonlinear Systems of Dispersive Wave Equations
 #   [DOI: 10.48550/arXiv.2402.16669](https://doi.org/10.48550/arXiv.2402.16669)
-function rhs!(du_ode, u_ode, t, mesh, equations::SvaerdKalischEquations1D,
+function rhs!(dq, q, t, mesh, equations::SvaerdKalischEquations1D,
               initial_condition, ::BoundaryConditionPeriodic, source_terms,
               solver, cache)
     @unpack factorization, D1betaD1, D, h, hv, alpha_hat, gamma_hat, tmp1, tmp2, D1_central, M = cache
-    q = wrap_array(u_ode, mesh, equations, solver)
-    dq = wrap_array(du_ode, mesh, equations, solver)
 
-    eta = view(q, 1, :)
-    v = view(q, 2, :)
-    deta = view(dq, 1, :)
-    dv = view(dq, 2, :)
-    dD = view(dq, 3, :)
+    eta = q.u[1]
+    v = q.u[2]
+    deta = dq.u[1]
+    dv = dq.u[2]
+    dD = dq.u[3]
     fill!(dD, zero(eltype(dD)))
 
     @trixi_timeit timer() "deta hyperbolic" begin
@@ -332,11 +330,10 @@ number of nodes as length of the second dimension.
 `cache` needs to hold the first-derivative SBP operator `D1`.
 """
 @inline function energy_total_modified(q, equations::SvaerdKalischEquations1D, cache)
-    e_modified = zeros(eltype(q), size(q, 2))
+    e_modified = zeros(eltype(q), size(q, 1))
     # Need to compute new beta_hat, do not use the old one from the `cache`
-    eta = view(q, 1, :)
-    v = view(q, 2, :)
-    D = view(q, 3, :)
+    v = q.u[2]
+    D = q.u[3]
     beta_hat = equations.beta * D .^ 3
     if cache.D1 isa PeriodicDerivativeOperator ||
        cache.D1 isa UniformPeriodicCoupledOperator
@@ -344,10 +341,10 @@ number of nodes as length of the second dimension.
     elseif cache.D1 isa PeriodicUpwindOperators
         tmp = 0.5 * beta_hat .* ((cache.D1.minus * v) .^ 2)
     else
-        @error "unknown type of first-derivative operator"
+        @error "unknown type of first-derivative operator: $(typeof(cache.D1))"
     end
-    for i in 1:size(q, 2)
-        e_modified[i] = energy_total(view(q, :, i), equations) + tmp[i]
+    for i in 1:size(q, 1)
+        e_modified[i] = energy_total(view(q, i, :), equations) + tmp[i]
     end
     return e_modified
 end

@@ -117,71 +117,45 @@ Get the grid of a semidiscretization.
 """
 grid(semi::Semidiscretization) = grid(semi.solver)
 
-function PolynomialBases.integrate(func, u_ode, semi::Semidiscretization; wrap = true)
-    if wrap == true
-        q = wrap_array(u_ode, semi)
-        integrals = zeros(real(semi), nvariables(semi))
-        for v in eachvariable(semi.equations)
-            integrals[v] = integrate(func, q[v, :], semi.solver.D1)
-        end
-        return integrals
-    else
-        integrate(func, u_ode, semi.solver.D1)
+function PolynomialBases.integrate(func, q::VectorOfArray, semi::Semidiscretization)
+    integrals = zeros(real(semi), nvariables(semi))
+    for v in eachvariable(semi.equations)
+        integrals[v] = integrate(func, q.u[v], semi.solver.D1)
     end
+    return integrals
 end
-function PolynomialBases.integrate(u_ode, semi::Semidiscretization; wrap = true)
-    integrate(identity, u_ode, semi; wrap = wrap)
+function PolynomialBases.integrate(func, quantity, semi::Semidiscretization)
+    integrate(func, quantity, semi.solver.D1)
+end
+function PolynomialBases.integrate(q, semi::Semidiscretization)
+    integrate(identity, q, semi)
 end
 
-function integrate_quantity(func, u_ode, semi::Semidiscretization; wrap = true)
-    if wrap == true
-        q = wrap_array(u_ode, semi)
-    else
-        q = u_ode
-    end
-    quantity = zeros(eltype(q), size(q, 2))
-    for i in 1:size(q, 2)
-        quantity[i] = func(view(q, :, i))
-    end
-    integrate(quantity, semi; wrap = false)
+function integrate_quantity(func, q, semi::Semidiscretization)
+    quantity = zeros(eltype(q), nnodes(semi))
+    integrate_quantity!(quantity, func, q, semi)
 end
 
-function integrate_quantity!(quantity, func, u_ode, semi::Semidiscretization; wrap = true)
-    if wrap == true
-        q = wrap_array(u_ode, semi)
-    else
-        q = u_ode
+function integrate_quantity!(quantity, func, q, semi::Semidiscretization)
+    for i in eachnode(semi)
+        quantity[i] = func([q.u[v][i] for v in eachvariable(semi.equations)])
     end
-    for i in 1:size(q, 2)
-        quantity[i] = func(view(q, :, i))
-    end
-    integrate(quantity, semi; wrap = false)
+    integrate(quantity, semi)
 end
 
 # modified entropy from Svärd-Kalisch equations need to take the whole vector `q` for every point in space
 function integrate_quantity(func::Union{typeof(energy_total_modified),
-                                        typeof(entropy_modified)}, u_ode,
-                            semi::Semidiscretization; wrap = true)
-    if wrap == true
-        q = wrap_array(u_ode, semi)
-    else
-        q = u_ode
-    end
+                                        typeof(entropy_modified)}, q,
+                            semi::Semidiscretization)
     quantity = func(q, semi.equations, semi.cache)
-    integrate(quantity, semi; wrap = false)
+    integrate(quantity, semi)
 end
 
 function integrate_quantity!(quantity,
                              func::Union{typeof(energy_total_modified),
-                                         typeof(entropy_modified)}, u_ode,
-                             semi::Semidiscretization; wrap = true)
-    if wrap == true
-        q = wrap_array(u_ode, semi)
-    else
-        q = u_ode
-    end
-    quantity = func(q, semi.equations, semi.cache)
-    integrate(quantity, semi; wrap = false)
+                                         typeof(entropy_modified)}, q,
+                             semi::Semidiscretization)
+    integrate_quantity(func, q, semi)
 end
 
 @inline function mesh_equations_solver(semi::Semidiscretization)
@@ -194,18 +168,14 @@ end
     return mesh, equations, solver, cache
 end
 
-function calc_error_norms(u, t, semi::Semidiscretization)
-    calc_error_norms(u, t, semi.initial_condition, mesh_equations_solver(semi)...)
+function calc_error_norms(q, t, semi::Semidiscretization)
+    calc_error_norms(q, t, semi.initial_condition, mesh_equations_solver(semi)...)
 end
 
-function wrap_array(u_ode, semi::Semidiscretization)
-    wrap_array(u_ode, mesh_equations_solver(semi)...)
-end
-
-function rhs!(du_ode, u_ode, semi::Semidiscretization, t)
+function rhs!(dq, q, semi::Semidiscretization, t)
     @unpack mesh, equations, initial_condition, boundary_conditions, solver, source_terms, cache = semi
 
-    @trixi_timeit timer() "rhs!" rhs!(du_ode, u_ode, t, mesh, equations, initial_condition,
+    @trixi_timeit timer() "rhs!" rhs!(dq, q, t, mesh, equations, initial_condition,
                                       boundary_conditions, source_terms, solver, cache)
 
     return nothing
@@ -213,13 +183,12 @@ end
 
 function compute_coefficients(func, t, semi::Semidiscretization)
     @unpack mesh, equations, solver = semi
-    u_ode = allocate_coefficients(mesh_equations_solver(semi)...)
-    compute_coefficients!(u_ode, func, t, semi)
-    return u_ode
+    q = allocate_coefficients(mesh_equations_solver(semi)...)
+    compute_coefficients!(q, func, t, semi)
+    return q
 end
 
-function compute_coefficients!(u_ode, func, t, semi::Semidiscretization)
-    q = wrap_array(u_ode, semi)
+function compute_coefficients!(q, func, t, semi::Semidiscretization)
     # Call `compute_coefficients` defined by the solver
     compute_coefficients!(q, func, t, mesh_equations_solver(semi)...)
 end
@@ -231,7 +200,7 @@ Wrap the semidiscretization `semi` as an ODE problem in the time interval `tspan
 that can be passed to `solve` from the [SciML ecosystem](https://diffeq.sciml.ai/latest/).
 """
 function semidiscretize(semi::Semidiscretization, tspan)
-    u0_ode = compute_coefficients(semi.initial_condition, first(tspan), semi)
+    q0 = compute_coefficients(semi.initial_condition, first(tspan), semi)
     iip = true # is-inplace, i.e., we modify a vector when calling rhs!
-    return ODEProblem{iip}(rhs!, u0_ode, tspan, semi)
+    return ODEProblem{iip}(rhs!, q0, tspan, semi)
 end

@@ -173,17 +173,14 @@ end
 # - Hendrik Ranocha, Dimitrios Mitsotakis and David I. Ketcheson (2020)
 #   A Broad Class of Conservative Numerical Methods for Dispersive Wave Equations
 #   [DOI: 10.4208/cicp.OA-2020-0119](https://doi.org/10.4208/cicp.OA-2020-0119)
-function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMEquations1D, initial_condition,
+function rhs!(dq, q, t, mesh, equations::BBMBBMEquations1D, initial_condition,
               ::BoundaryConditionPeriodic, source_terms, solver, cache)
     @unpack invImD2, tmp1, tmp2 = cache
 
-    q = wrap_array(u_ode, mesh, equations, solver)
-    dq = wrap_array(du_ode, mesh, equations, solver)
-
-    eta = view(q, 1, :)
-    v = view(q, 2, :)
-    deta = view(dq, 1, :)
-    dv = view(dq, 2, :)
+    eta = q.u[1]
+    v = q.u[2]
+    deta = dq.u[1]
+    dv = dq.u[2]
 
     D = equations.D
     # energy and mass conservative semidiscretization
@@ -226,17 +223,14 @@ end
 # - Hendrik Ranocha, Dimitrios Mitsotakis and David I. Ketcheson (2020)
 #   A Broad Class of Conservative Numerical Methods for Dispersive Wave Equations
 #   [DOI: 10.4208/cicp.OA-2020-0119](https://doi.org/10.4208/cicp.OA-2020-0119)
-function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMEquations1D, initial_condition,
+function rhs!(dq, q, t, mesh, equations::BBMBBMEquations1D, initial_condition,
               ::BoundaryConditionReflecting, source_terms, solver, cache)
     @unpack invImD2d, invImD2n, tmp1, tmp2, tmp3 = cache
 
-    q = wrap_array(u_ode, mesh, equations, solver)
-    dq = wrap_array(du_ode, mesh, equations, solver)
-
-    eta = view(q, 1, :)
-    v = view(q, 2, :)
-    deta = view(dq, 1, :)
-    dv = view(dq, 2, :)
+    eta = q.u[1]
+    v = q.u[2]
+    deta = dq.u[1]
+    dv = dq.u[2]
 
     D = equations.D
     # energy and mass conservative semidiscretization

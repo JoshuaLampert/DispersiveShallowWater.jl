@@ -7,6 +7,7 @@ using LinearAlgebra: mul!, ldiv!, I, Diagonal, Symmetric, diag, lu, cholesky, ch
 using PolynomialBases: PolynomialBases
 using Printf: @printf, @sprintf
 using RecipesBase: RecipesBase, @recipe, @series
+using RecursiveArrayTools: VectorOfArray
 using Reexport: @reexport
 using Roots: AlefeldPotraShi, find_zero
 

@@ -33,22 +33,22 @@ end
     t = sol.t[step]
 
     if plot_initial == true
-        q_exact = wrap_array(compute_coefficients(initial_condition, t, semi), semi)
+        q_exact = compute_coefficients(initial_condition, t, semi)
     end
 
-    q = wrap_array(sol.u[step], semi)
+    q = sol.u[step]
     data = zeros(nvars, nnodes(semi))
     if plot_bathymetry == true
         bathy = zeros(nnodes(semi))
     end
     for j in eachnode(semi)
         if plot_bathymetry == true
-            bathy[j] = bathymetry(view(q, :, j), equations)
+            bathy[j] = bathymetry(view(q, j, :), equations)
         end
         if plot_initial == true
-            q_exact[:, j] .= conversion(view(q_exact, :, j), equations)
+            q_exact[j, :] .= conversion(q_exact[j, :], equations)
         end
-        data[:, j] .= conversion(view(q, :, j), equations)
+        data[:, j] .= conversion(view(q, j, :), equations)
     end
 
     plot_title --> "$(get_name(semi.equations)) at t = $(round(t, digits=5))"
@@ -63,7 +63,7 @@ end
                 subplot --> i
                 linestyle := :solid
                 label := "initial $(names[i])"
-                grid(semi), q_exact[i, :]
+                grid(semi), q_exact[:, i]
             end
         end
 
@@ -112,7 +112,7 @@ end
             # Allow that the spatial value `x` is not on the grid. Thus, interpolate the given values to the provided `x`
             # with a linear spline.
             solution[i, k] = linear_interpolation(grid(semi),
-                                                  view(wrap_array(sol.u[k], semi), i, :))(x)
+                                                  view(sol.u[k], :, i))(x)
         end
     end
 

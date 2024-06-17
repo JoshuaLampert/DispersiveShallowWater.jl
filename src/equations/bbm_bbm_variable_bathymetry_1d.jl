@@ -257,19 +257,16 @@ end
 # - Joshua Lampert and Hendrik Ranocha (2024)
 #   Structure-Preserving Numerical Methods for Two Nonlinear Systems of Dispersive Wave Equations
 #   [DOI: 10.48550/arXiv.2402.16669](https://doi.org/10.48550/arXiv.2402.16669)
-function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMVariableEquations1D,
+function rhs!(dq, q, t, mesh, equations::BBMBBMVariableEquations1D,
               initial_condition, ::BoundaryConditionPeriodic, source_terms,
               solver, cache)
     @unpack invImDKD, invImD2K, D, tmp1, tmp2 = cache
 
-    q = wrap_array(u_ode, mesh, equations, solver)
-    dq = wrap_array(du_ode, mesh, equations, solver)
-
-    eta = view(q, 1, :)
-    v = view(q, 2, :)
-    deta = view(dq, 1, :)
-    dv = view(dq, 2, :)
-    dD = view(dq, 3, :)
+    eta = q.u[1]
+    v = q.u[2]
+    deta = dq.u[1]
+    dv = dq.u[2]
+    dD = dq.u[3]
     fill!(dD, zero(eltype(dD)))
 
     if solver.D1 isa PeriodicDerivativeOperator ||
@@ -305,19 +302,16 @@ function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMVariableEquations1D,
     return nothing
 end
 
-function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMVariableEquations1D,
+function rhs!(dq, q, t, mesh, equations::BBMBBMVariableEquations1D,
               initial_condition, ::BoundaryConditionReflecting, source_terms,
               solver, cache)
     @unpack invImDKDn, invImD2Kd, D, tmp1, tmp2, tmp3 = cache
 
-    q = wrap_array(u_ode, mesh, equations, solver)
-    dq = wrap_array(du_ode, mesh, equations, solver)
-
-    eta = view(q, 1, :)
-    v = view(q, 2, :)
-    deta = view(dq, 1, :)
-    dv = view(dq, 2, :)
-    dD = view(dq, 3, :)
+    eta = q.u[1]
+    v = q.u[2]
+    deta = dq.u[1]
+    dv = dq.u[2]
+    dD = dq.u[3]
     fill!(dD, zero(eltype(dD)))
 
     # energy and mass conservative semidiscretization
