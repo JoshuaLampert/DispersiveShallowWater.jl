@@ -138,7 +138,7 @@ end
 
 function integrate_quantity!(quantity, func, q, semi::Semidiscretization)
     for i in eachnode(semi)
-        quantity[i] = func([q.u[v][i] for v in eachvariable(semi.equations)])
+        quantity[i] = func(view(q, i, :))
     end
     integrate(quantity, semi)
 end
