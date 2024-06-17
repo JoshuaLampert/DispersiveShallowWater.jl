@@ -86,7 +86,8 @@ grid(solver::Solver) = grid(solver.D1)
 end
 
 function allocate_coefficients(mesh::Mesh1D, equations, solver::AbstractSolver)
-    return VectorOfArray([zeros(real(solver), nnodes(mesh)) for _ in eachvariable(equations)])
+    return VectorOfArray([zeros(real(solver), nnodes(mesh))
+                          for _ in eachvariable(equations)])
 end
 
 function compute_coefficients!(q, func, t, mesh::Mesh1D, equations, solver::AbstractSolver)
