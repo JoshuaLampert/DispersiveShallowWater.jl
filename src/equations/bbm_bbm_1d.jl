@@ -133,7 +133,7 @@ function create_cache(mesh, equations::BBMBBMEquations1D,
                       RealT, uEltype)
     D = equations.D
     invImD2 = lu(I - 1 / 6 * D^2 * sparse(solver.D2))
-    return (invImD2 = invImD2)
+    return (invImD2 = invImD2,)
 end
 
 function create_cache(mesh, equations::BBMBBMEquations1D,
@@ -172,7 +172,7 @@ end
 #   [DOI: 10.4208/cicp.OA-2020-0119](https://doi.org/10.4208/cicp.OA-2020-0119)
 function rhs!(dq, q, t, mesh, equations::BBMBBMEquations1D, initial_condition,
               ::BoundaryConditionPeriodic, source_terms, solver, cache)
-    @unpack invImD2, tmp1, tmp2 = cache
+    @unpack invImD2 = cache
 
     eta = q.u[1]
     v = q.u[2]
@@ -246,7 +246,7 @@ function rhs!(dq, q, t, mesh, equations::BBMBBMEquations1D, initial_condition,
         ldiv!(invImD2n, deta)
     end
     @trixi_timeit timer() "dv elliptic" begin
-        ldiv!(invImD2d, dv[2:(end - 1)])
+        ldiv!(invImD2d, (@view dv[2:(end - 1)]))
         dv[1] = dv[end] = zero(eltype(dv))
     end
 

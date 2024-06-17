@@ -327,7 +327,7 @@ function rhs!(dq, q, t, mesh, equations::BBMBBMVariableEquations1D,
         ldiv!(invImDKDn, deta)
     end
     @trixi_timeit timer() "dv elliptic" begin
-        ldiv!(invImD2Kd, dv[2:(end - 1)])
+        ldiv!(invImD2Kd, (@view dv[2:(end - 1)]))
         dv[1] = dv[end] = zero(eltype(dv))
     end
 
