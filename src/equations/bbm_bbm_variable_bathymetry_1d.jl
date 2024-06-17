@@ -210,8 +210,7 @@ function create_cache(mesh, equations::BBMBBMVariableEquations1D,
         @error "unknown type of first-derivative operator: $(typeof(solver.D1))"
     end
     invImD2K = lu(I - 1 / 6 * sparse(solver.D2) * K)
-    tmp2 = Array{RealT}(undef, nnodes(mesh))
-    return (invImDKD = invImDKD, invImD2K = invImD2K, D = D, tmp2 = tmp2)
+    return (invImDKD = invImDKD, invImD2K = invImD2K, D = D)
 end
 
 function create_cache(mesh, equations::BBMBBMVariableEquations1D,
@@ -248,9 +247,7 @@ function create_cache(mesh, equations::BBMBBMVariableEquations1D,
     else
         @error "unknown type of first-derivative operator: $(typeof(solver.D1))"
     end
-    tmp2 = Array{RealT}(undef, nnodes(mesh))
-    tmp3 = Array{RealT}(undef, nnodes(mesh) - 2)
-    return (invImD2Kd = invImD2Kd, invImDKDn = invImDKDn, D = D, tmp2 = tmp2, tmp3 = tmp3)
+    return (invImD2Kd = invImD2Kd, invImDKDn = invImDKDn, D = D)
 end
 
 # Discretization that conserves the mass (for eta and v) and the energy for periodic boundary conditions, see
@@ -260,7 +257,7 @@ end
 function rhs!(dq, q, t, mesh, equations::BBMBBMVariableEquations1D,
               initial_condition, ::BoundaryConditionPeriodic, source_terms,
               solver, cache)
-    @unpack invImDKD, invImD2K, D, tmp1, tmp2 = cache
+    @unpack invImDKD, invImD2K, D = cache
 
     eta = q.u[1]
     v = q.u[2]
@@ -286,17 +283,11 @@ function rhs!(dq, q, t, mesh, equations::BBMBBMVariableEquations1D,
     @trixi_timeit timer() "source terms" calc_sources!(dq, q, t, source_terms, equations,
                                                        solver)
 
-    # To use the in-place version `ldiv!` instead of `\`, we need temporary arrays
-    # since `deta` and `dv` are not stored contiguously
     @trixi_timeit timer() "deta elliptic" begin
-        tmp1[:] = deta
-        ldiv!(tmp2, invImDKD, tmp1)
-        deta[:] = tmp2
+        ldiv!(invImDKD, deta)
     end
     @trixi_timeit timer() "dv elliptic" begin
-        tmp2[:] = dv
-        ldiv!(tmp1, invImD2K, tmp2)
-        dv[:] = tmp1
+        ldiv!(invImD2K, dv)
     end
 
     return nothing
@@ -305,7 +296,7 @@ end
 function rhs!(dq, q, t, mesh, equations::BBMBBMVariableEquations1D,
               initial_condition, ::BoundaryConditionReflecting, source_terms,
               solver, cache)
-    @unpack invImDKDn, invImD2Kd, D, tmp1, tmp2, tmp3 = cache
+    @unpack invImDKDn, invImD2Kd, D = cache
 
     eta = q.u[1]
     v = q.u[2]
@@ -332,18 +323,12 @@ function rhs!(dq, q, t, mesh, equations::BBMBBMVariableEquations1D,
     @trixi_timeit timer() "source terms" calc_sources!(dq, q, t, source_terms, equations,
                                                        solver)
 
-    # To use the in-place version `ldiv!` instead of `\`, we need temporary arrays
-    # since `deta` and `dv` are not stored contiguously
     @trixi_timeit timer() "deta elliptic" begin
-        tmp1[:] = deta
-        ldiv!(tmp2, invImDKDn, tmp1)
-        deta[:] = tmp2
+        ldiv!(invImDKDn, deta)
     end
     @trixi_timeit timer() "dv elliptic" begin
-        tmp2[:] = dv
-        ldiv!(tmp3, invImD2Kd, tmp2[2:(end - 1)])
+        ldiv!(invImD2Kd, dv[2:(end - 1)])
         dv[1] = dv[end] = zero(eltype(dv))
-        dv[2:(end - 1)] = tmp3
     end
 
     return nothing
