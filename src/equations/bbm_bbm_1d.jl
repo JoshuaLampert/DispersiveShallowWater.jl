@@ -174,10 +174,10 @@ function rhs!(dq, q, t, mesh, equations::BBMBBMEquations1D, initial_condition,
               ::BoundaryConditionPeriodic, source_terms, solver, cache)
     @unpack invImD2 = cache
 
-    eta = q.u[1]
-    v = q.u[2]
-    deta = dq.u[1]
-    dv = dq.u[2]
+    eta = q.x[1]
+    v = q.x[2]
+    deta = dq.x[1]
+    dv = dq.x[2]
 
     D = equations.D
     # energy and mass conservative semidiscretization
@@ -218,10 +218,10 @@ function rhs!(dq, q, t, mesh, equations::BBMBBMEquations1D, initial_condition,
               ::BoundaryConditionReflecting, source_terms, solver, cache)
     @unpack invImD2d, invImD2n = cache
 
-    eta = q.u[1]
-    v = q.u[2]
-    deta = dq.u[1]
-    dv = dq.u[2]
+    eta = q.x[1]
+    v = q.x[2]
+    deta = dq.x[1]
+    dv = dq.x[2]
 
     D = equations.D
     # energy and mass conservative semidiscretization

@@ -259,11 +259,11 @@ function rhs!(dq, q, t, mesh, equations::BBMBBMVariableEquations1D,
               solver, cache)
     @unpack invImDKD, invImD2K, D = cache
 
-    eta = q.u[1]
-    v = q.u[2]
-    deta = dq.u[1]
-    dv = dq.u[2]
-    dD = dq.u[3]
+    eta = q.x[1]
+    v = q.x[2]
+    deta = dq.x[1]
+    dv = dq.x[2]
+    dD = dq.x[3]
     fill!(dD, zero(eltype(dD)))
 
     if solver.D1 isa PeriodicDerivativeOperator ||
@@ -298,11 +298,11 @@ function rhs!(dq, q, t, mesh, equations::BBMBBMVariableEquations1D,
               solver, cache)
     @unpack invImDKDn, invImD2Kd, D = cache
 
-    eta = q.u[1]
-    v = q.u[2]
-    deta = dq.u[1]
-    dv = dq.u[2]
-    dD = dq.u[3]
+    eta = q.x[1]
+    v = q.x[2]
+    deta = dq.x[1]
+    dv = dq.x[2]
+    dD = dq.x[3]
     fill!(dD, zero(eltype(dD)))
 
     # energy and mass conservative semidiscretization

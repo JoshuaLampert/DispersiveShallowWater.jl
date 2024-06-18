@@ -117,10 +117,10 @@ Get the grid of a semidiscretization.
 """
 grid(semi::Semidiscretization) = grid(semi.solver)
 
-function PolynomialBases.integrate(func, q::VectorOfArray, semi::Semidiscretization)
+function PolynomialBases.integrate(func, q::ArrayPartition, semi::Semidiscretization)
     integrals = zeros(real(semi), nvariables(semi))
     for v in eachvariable(semi.equations)
-        integrals[v] = integrate(func, q.u[v], semi.solver.D1)
+        integrals[v] = integrate(func, q.x[v], semi.solver.D1)
     end
     return integrals
 end
@@ -138,7 +138,7 @@ end
 
 function integrate_quantity!(quantity, func, q, semi::Semidiscretization)
     for i in eachnode(semi)
-        quantity[i] = func(view(q, i, :))
+        quantity[i] = func(get_node_vars(q, semi.equations, i))
     end
     integrate(quantity, semi)
 end

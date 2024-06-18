@@ -78,16 +78,32 @@ grid(solver::Solver) = grid(solver.D1)
 @inline eachnode(solver::Solver) = Base.OneTo(length(grid(solver)))
 @inline Base.real(::Solver{RealT}) where {RealT} = RealT
 
+# Adapted from Trixi.jl
+# https://github.com/trixi-framework/Trixi.jl/blob/75d8c67629562efd24b2a04e46d22b0a1f4f572c/src/solvers/dg.jl#L539
+@inline function get_node_vars(q, equations, indices...)
+    # There is a cut-off at `n == 10` inside of the method
+    # `ntuple(f::F, n::Integer) where F` in Base at ntuple.jl:17
+    # in Julia `v1.5`, leading to type instabilities if
+    # more than ten variables are used. That's why we use
+    # `Val(...)` below.
+    # We use `@inline` to make sure that the `getindex` calls are
+    # really inlined, which might be the default choice of the Julia
+    # compiler for standard `Array`s but not necessarily for more
+    # advanced array types such as `PtrArray`s, cf.
+    # https://github.com/JuliaSIMD/VectorizationBase.jl/issues/55
+    SVector(ntuple(@inline(v->q.x[v][indices...]), Val(nvariables(equations))))
+end
+
 @inline function set_node_vars!(q, q_node, equations, indices...)
     for v in eachvariable(equations)
-        q.u[v][indices...] = q_node[v]
+        q.x[v][indices...] = q_node[v]
     end
     return nothing
 end
 
 function allocate_coefficients(mesh::Mesh1D, equations, solver::AbstractSolver)
-    return VectorOfArray([zeros(real(solver), nnodes(mesh))
-                          for _ in eachvariable(equations)])
+    return ArrayPartition([zeros(real(solver), nnodes(mesh))
+                           for _ in eachvariable(equations)]...)
 end
 
 function compute_coefficients!(q, func, t, mesh::Mesh1D, equations, solver::AbstractSolver)
@@ -108,7 +124,7 @@ function calc_error_norms(q, t, initial_condition, mesh::Mesh1D, equations,
     l2_error = zeros(real(solver), nvariables(equations))
     linf_error = similar(l2_error)
     for v in eachvariable(equations)
-        @views diff = q.u[v] - q_exact[v, :]
+        @views diff = q.x[v] - q_exact[v, :]
         l2_error[v] = integrate(q -> q^2, diff, solver.D1) |> sqrt
         linf_error[v] = maximum(abs.(diff))
     end
@@ -124,9 +140,9 @@ function calc_sources!(dq, q, t, source_terms,
                        equations::AbstractEquations{1}, solver::Solver)
     x = grid(solver)
     for i in eachnode(solver)
-        local_source = source_terms(view(q, i, :), x[i], t, equations)
+        local_source = source_terms(get_node_vars(q, equations, i), x[i], t, equations)
         for v in eachvariable(equations)
-            dq.u[v][i] += local_source[v]
+            dq.x[v][i] += local_source[v]
         end
     end
     return nothing

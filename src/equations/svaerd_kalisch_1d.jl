@@ -204,11 +204,11 @@ function rhs!(dq, q, t, mesh, equations::SvaerdKalischEquations1D,
               solver, cache)
     @unpack factorization, D1betaD1, D, h, hv, alpha_hat, gamma_hat, tmp1, tmp2, D1_central, M = cache
 
-    eta = q.u[1]
-    v = q.u[2]
-    deta = dq.u[1]
-    dv = dq.u[2]
-    dD = dq.u[3]
+    eta = q.x[1]
+    v = q.x[2]
+    deta = dq.x[1]
+    dv = dq.x[2]
+    dD = dq.x[3]
     fill!(dD, zero(eltype(dD)))
 
     @trixi_timeit timer() "deta hyperbolic" begin
@@ -330,10 +330,11 @@ number of nodes as length of the second dimension.
 `cache` needs to hold the first-derivative SBP operator `D1`.
 """
 @inline function energy_total_modified(q, equations::SvaerdKalischEquations1D, cache)
-    e_modified = zeros(eltype(q), size(q, 1))
     # Need to compute new beta_hat, do not use the old one from the `cache`
-    v = q.u[2]
-    D = q.u[3]
+    v = q.x[2]
+    D = q.x[3]
+    N = length(v)
+    e_modified = zeros(eltype(q), N)
     beta_hat = equations.beta * D .^ 3
     if cache.D1 isa PeriodicDerivativeOperator ||
        cache.D1 isa UniformPeriodicCoupledOperator
@@ -343,8 +344,8 @@ number of nodes as length of the second dimension.
     else
         @error "unknown type of first-derivative operator: $(typeof(cache.D1))"
     end
-    for i in 1:size(q, 1)
-        e_modified[i] = energy_total(view(q, i, :), equations) + tmp[i]
+    for i in 1:N
+        e_modified[i] = energy_total(get_node_vars(q, equations, i), equations) + tmp[i]
     end
     return e_modified
 end
