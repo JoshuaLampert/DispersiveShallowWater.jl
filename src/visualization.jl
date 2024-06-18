@@ -46,7 +46,9 @@ end
             bathy[j] = bathymetry(get_node_vars(q, equations, j), equations)
         end
         if plot_initial == true
-            set_node_vars!(q_exact, conversion(get_node_vars(q_exact, equations, j), equations), equations, j)
+            set_node_vars!(q_exact,
+                           conversion(get_node_vars(q_exact, equations, j), equations),
+                           equations, j)
         end
         data[:, j] .= conversion(get_node_vars(q, equations, j), equations)
     end
