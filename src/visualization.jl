@@ -107,7 +107,7 @@ end
 
     solution = zeros(nvariables(semi), length(sol.t))
     data = zeros(nvars, length(sol.t))
-    for v in 1:nvariables(semi)
+    for v in eachvariable(semi)
         for k in 1:length(sol.t)
             # Allow that the spatial value `x` is not on the grid. Thus, interpolate the given values to the provided `x`
             # with a linear spline.

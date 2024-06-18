@@ -106,6 +106,7 @@ end
 
 @inline Base.ndims(semi::Semidiscretization) = ndims(semi.mesh)
 @inline nvariables(semi::Semidiscretization) = nvariables(semi.equations)
+@inline eachvariable(semi::Semidiscretization) = eachvariable(semi.equations)
 @inline nnodes(semi::Semidiscretization) = nnodes(semi.mesh)
 @inline eachnode(semi::Semidiscretization) = eachnode(semi.mesh)
 @inline Base.real(semi::Semidiscretization) = real(semi.solver)
@@ -119,7 +120,7 @@ grid(semi::Semidiscretization) = grid(semi.solver)
 
 function PolynomialBases.integrate(func, q::ArrayPartition, semi::Semidiscretization)
     integrals = zeros(real(semi), nvariables(semi))
-    for v in eachvariable(semi.equations)
+    for v in eachvariable(semi)
         integrals[v] = integrate(func, q.x[v], semi.solver.D1)
     end
     return integrals
