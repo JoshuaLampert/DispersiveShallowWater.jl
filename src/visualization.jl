@@ -34,6 +34,7 @@ end
 
     if plot_initial == true
         q_exact = compute_coefficients(initial_condition, t, semi)
+        data_exact = zeros(nvars, nnodes(semi))
     end
 
     q = sol.u[step]
@@ -46,9 +47,7 @@ end
             bathy[j] = bathymetry(get_node_vars(q, equations, j), equations)
         end
         if plot_initial == true
-            set_node_vars!(q_exact,
-                           conversion(get_node_vars(q_exact, equations, j), equations),
-                           equations, j)
+            data_exact[:, j] .= conversion(get_node_vars(q_exact, equations, j), equations)
         end
         data[:, j] .= conversion(get_node_vars(q, equations, j), equations)
     end
@@ -65,7 +64,7 @@ end
                 subplot --> i
                 linestyle := :solid
                 label := "initial $(names[i])"
-                grid(semi), q_exact.x[i]
+                grid(semi), data_exact[i, :]
             end
         end
 
