@@ -19,6 +19,8 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_1d")
                             change_entropy=0.00019552920957721653,
                             atol_ints=1e-10) # in order to make CI pass
 
+        @test_allocations(semi, sol)
+
         # test upwind operators
         using SummationByPartsOperators: upwind_operators, periodic_derivative_operator
         using SparseArrays: sparse
@@ -47,6 +49,8 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_1d")
         for (linf_expected, linf_actual) in zip(linf, linf_measured)
             @test isapprox(linf_expected, linf_actual, atol = atol, rtol = rtol)
         end
+
+        @test_allocations(semi, sol)
     end
 
     @trixi_testset "bbm_bbm_1d_dg" begin
@@ -58,6 +62,8 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_1d")
                             change_waterheight=1.0543424823256011e-14,
                             change_velocity=-3.552713678800501e-15,
                             change_entropy=-0.021843627302246205)
+
+        @test_allocations(semi, sol, allocs = 60000)
     end
 
     @trixi_testset "bbm_bbm_1d_relaxation" begin
@@ -69,6 +75,8 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_1d")
                             change_waterheight=2.1746572188776938e-13,
                             change_velocity=-4.547473508864641e-13,
                             change_entropy=0.0)
+
+        @test_allocations(semi, sol)
     end
 
     @trixi_testset "bbm_bbm_1d_manufactured" begin
@@ -82,6 +90,8 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_1d")
                             change_entropy=17.387441847193436,
                             atol=1e-10,
                             atol_ints=1e-10) # in order to make CI pass
+
+        @test_allocations(semi, sol)
     end
 
     @trixi_testset "bbm_bbm_1d_basic_reflecting" begin
@@ -93,6 +103,8 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_1d")
                             change_waterheight=4.272316442782926e-11,
                             change_velocity=0.5469460931577768,
                             change_entropy=130.69415963528348)
+
+        @test_allocations(semi, sol)
 
         # test upwind operators
         using SummationByPartsOperators: upwind_operators, Mattsson2017
@@ -123,6 +135,8 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_1d")
         for (linf_expected, linf_actual) in zip(linf, linf_measured)
             @test isapprox(linf_expected, linf_actual, atol = atol, rtol = rtol)
         end
+
+        @test_allocations(semi, sol)
     end
 end
 

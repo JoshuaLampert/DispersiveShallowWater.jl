@@ -19,6 +19,8 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_variable_bathymetry_1d")
                             change_velocity=-3.410605131648481e-13,
                             change_entropy=0.0006197172569955001,
                             atol_ints=1e-10) # in order to make CI pass
+
+        @test_allocations(semi, sol)
     end
 
     @trixi_testset "bbm_bbm_variable_bathymetry_1d_relaxation" begin
@@ -31,6 +33,8 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_variable_bathymetry_1d")
                             change_waterheight=-2.1271873151818e-13,
                             change_velocity=2.7874259106214573e-13,
                             change_entropy=0.0)
+
+        @test_allocations(semi, sol)
     end
 
     @trixi_testset "bbm_bbm_variable_bathymetry_1d_dg_upwind_relaxation" begin
@@ -43,6 +47,8 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_variable_bathymetry_1d")
                             change_waterheight=3.1796787425264483e-13,
                             change_velocity=-1.0584519372081047e-12,
                             change_entropy=1.4210854715202004e-14)
+
+        @test_allocations(semi, sol, allocs = 60000)
     end
 
     @trixi_testset "bbm_bbm_variable_bathymetry_1d_upwind_relaxation" begin
@@ -55,7 +61,9 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_variable_bathymetry_1d")
                             change_waterheight=-1.5765166949677223e-13,
                             change_velocity=1.8791999206735355e-13,
                             change_entropy=2.1316282072803006e-14,
-                            atol=1e-11) # in order to make CI pass)
+                            atol=1e-11) # in order to make CI pass
+
+        @test_allocations(semi, sol)
     end
 
     @trixi_testset "bbm_bbm_variable_bathymetry_1d_manufactured" begin
@@ -70,6 +78,8 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_variable_bathymetry_1d")
                             change_entropy=17.817012269328853,
                             atol=1e-10,
                             atol_ints=1e-10) # in order to make CI pass
+
+        @test_allocations(semi, sol)
     end
 
     @trixi_testset "bbm_bbm_variable_bathymetry_1d_well_balanced" begin
@@ -83,6 +93,8 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_variable_bathymetry_1d")
                             change_velocity=-5.728935765975126e-15,
                             change_entropy=0.0,
                             lake_at_rest=6.725397799854067e-15)
+
+        @test_allocations(semi, sol)
     end
 
     @trixi_testset "bbm_bbm_variable_bathymetry_1d_dingemans" begin
@@ -96,6 +108,8 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_variable_bathymetry_1d")
                             change_waterheight=-1.4210854715202004e-13,
                             change_velocity=-3.1478183774857893e-15,
                             change_entropy=3.417533493699221e-7)
+
+        @test_allocations(semi, sol)
     end
 
     @trixi_testset "bbm_bbm_variable_bathymetry_1d_basic_reflecting" begin
@@ -110,6 +124,8 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_variable_bathymetry_1d")
                             change_entropy=132.10935771964688,
                             atol=1e-10,
                             atol_ints=1e-10) # in order to make CI pass
+
+        @test_allocations(semi, sol)
 
         # test upwind operators
         using SummationByPartsOperators: upwind_operators, Mattsson2017
@@ -140,6 +156,8 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_variable_bathymetry_1d")
         for (linf_expected, linf_actual) in zip(linf, linf_measured)
             @test isapprox(linf_expected, linf_actual, atol = atol, rtol = rtol)
         end
+
+        @test_allocations(semi, sol)
     end
 end
 

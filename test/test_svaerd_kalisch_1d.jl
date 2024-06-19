@@ -18,6 +18,8 @@ EXAMPLES_DIR = joinpath(examples_dir(), "svaerd_kalisch_1d")
                             change_waterheight=-2.42861286636753e-16,
                             change_entropy=0.1868146724821993,
                             atol=1e-9) # in order to make CI pass
+
+    @test_allocations(semi, sol, allocs = 130_000)
     end
 
     @trixi_testset "svaerd_kalisch_1d_dingemans" begin
@@ -31,6 +33,8 @@ EXAMPLES_DIR = joinpath(examples_dir(), "svaerd_kalisch_1d")
                             change_waterheight=-3.979039320256561e-13,
                             change_entropy=-0.00024362648639453255,
                             change_entropy_modified=-6.311893230304122e-9)
+
+    @test_allocations(semi, sol, allocs = 500_000)
     end
 
     @trixi_testset "svaerd_kalisch_1d_dingemans_cg" begin
@@ -43,6 +47,8 @@ EXAMPLES_DIR = joinpath(examples_dir(), "svaerd_kalisch_1d")
                             change_waterheight=-1.4210854715202004e-13,
                             change_entropy=-0.0002425303440531934,
                             change_entropy_modified=-2.6815314413397573e-9)
+
+    @test_allocations(semi, sol, allocs = 1_000_000)
     end
 
     @trixi_testset "svaerd_kalisch_1d_dingemans_upwind" begin
@@ -55,6 +61,8 @@ EXAMPLES_DIR = joinpath(examples_dir(), "svaerd_kalisch_1d")
                             change_waterheight=-1.1368683772161603e-13,
                             change_entropy=-0.00023645232727176335,
                             change_entropy_modified=-6.654090611846186e-9)
+
+    @test_allocations(semi, sol, allocs = 600_000)
     end
 
     @trixi_testset "svaerd_kalisch_1d_dingemans_relaxation" begin
@@ -68,6 +76,8 @@ EXAMPLES_DIR = joinpath(examples_dir(), "svaerd_kalisch_1d")
                             change_waterheight=-3.979039320256561e-13,
                             change_entropy=-0.00024362054875837202,
                             change_entropy_modified=0.0)
+
+    @test_allocations(semi, sol, allocs = 500_000)
     end
 
     @trixi_testset "svaerd_kalisch_1d_well_balanced" begin
@@ -81,6 +91,8 @@ EXAMPLES_DIR = joinpath(examples_dir(), "svaerd_kalisch_1d")
                             change_momentum=1.5679986322667355e-14,
                             change_entropy=0.0,
                             lake_at_rest=0.0)
+
+    @test_allocations(semi, sol, allocs = 200_000)
     end
 end
 
