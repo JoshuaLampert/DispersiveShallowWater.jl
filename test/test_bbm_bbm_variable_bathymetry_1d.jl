@@ -48,7 +48,7 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_variable_bathymetry_1d")
                             change_velocity=-1.0584519372081047e-12,
                             change_entropy=1.4210854715202004e-14)
 
-        @test_allocations(semi, sol, allocs = 60000)
+        @test_allocations(semi, sol, allocs=60000)
     end
 
     @trixi_testset "bbm_bbm_variable_bathymetry_1d_upwind_relaxation" begin

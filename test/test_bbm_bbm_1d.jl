@@ -63,7 +63,7 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_1d")
                             change_velocity=-3.552713678800501e-15,
                             change_entropy=-0.021843627302246205)
 
-        @test_allocations(semi, sol, allocs = 60000)
+        @test_allocations(semi, sol, allocs=60000)
     end
 
     @trixi_testset "bbm_bbm_1d_relaxation" begin
