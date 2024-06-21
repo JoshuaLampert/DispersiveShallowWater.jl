@@ -59,45 +59,40 @@ end
 @inline function (relaxation_callback::RelaxationCallback)(integrator)
     semi = integrator.p
     told = integrator.tprev
-    uold_ode = integrator.uprev
-    uold = wrap_array(uold_ode, semi)
+    qold = integrator.uprev
     tnew = integrator.t
-    unew_ode = integrator.u
-    unew = wrap_array(unew_ode, semi)
+    qnew = integrator.u
 
-    gamma = one(tnew)
     terminate_integration = false
-    gamma_lo = one(gamma) / 2
-    gamma_hi = 3 * one(gamma) / 2
+    gamma_lo = one(tnew) / 2
+    gamma_hi = 3 * one(tnew) / 2
 
-    function relaxation_functional(u, semi)
+    function relaxation_functional(q, semi)
         @unpack tmp1 = semi.cache
-        # modified entropy from Svärd-Kalisch equations need to take the whole vector `u` for every point in space
+        # modified entropy from Svärd-Kalisch equations need to take the whole vector `q` for every point in space
         if relaxation_callback.invariant isa
            Union{typeof(energy_total_modified), typeof(entropy_modified)}
-            return integrate_quantity!(tmp1, relaxation_callback.invariant, u, semi;
-                                       wrap = false)
+            return integrate_quantity!(tmp1, relaxation_callback.invariant, q, semi)
         else
             return integrate_quantity!(tmp1,
-                                       u_ode -> relaxation_callback.invariant(u_ode,
-                                                                              semi.equations),
-                                       u, semi; wrap = false)
+                                       q -> relaxation_callback.invariant(q, semi.equations),
+                                       q, semi)
         end
     end
 
-    function convex_combination(gamma, uold, unew)
-        @. uold + gamma * (unew - uold)
+    function convex_combination(gamma, old, new)
+        @. old + gamma * (new - old)
     end
-    energy_old = relaxation_functional(uold, semi)
+    energy_old = relaxation_functional(qold, semi)
 
     @trixi_timeit timer() "relaxation" begin
-        if (relaxation_functional(convex_combination(gamma_lo, uold, unew), semi) -
+        if (relaxation_functional(convex_combination(gamma_lo, qold, qnew), semi) -
             energy_old) *
-           (relaxation_functional(convex_combination(gamma_hi, uold, unew), semi) -
+           (relaxation_functional(convex_combination(gamma_hi, qold, qnew), semi) -
             energy_old) > 0
             terminate_integration = true
         else
-            gamma = find_zero(g -> relaxation_functional(convex_combination(g, uold, unew),
+            gamma = find_zero(g -> relaxation_functional(convex_combination(g, qold, qnew),
                                                          semi) -
                                    energy_old, (gamma_lo, gamma_hi), AlefeldPotraShi())
         end
@@ -106,9 +101,8 @@ end
             terminate_integration = true
         end
 
-        unew .= convex_combination(gamma, uold, unew)
-        unew_ode = reshape(unew, prod(size(unew)))
-        DiffEqBase.set_u!(integrator, unew_ode)
+        qnew .= convex_combination(gamma, qold, qnew)
+        DiffEqBase.set_u!(integrator, qnew)
         if !isapprox(tnew, first(integrator.opts.tstops))
             tgamma = convex_combination(gamma, told, tnew)
             DiffEqBase.set_t!(integrator, tgamma)

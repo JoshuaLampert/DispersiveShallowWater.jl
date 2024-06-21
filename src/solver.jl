@@ -76,37 +76,47 @@ end
 grid(solver::Solver) = grid(solver.D1)
 
 @inline eachnode(solver::Solver) = Base.OneTo(length(grid(solver)))
-@inline Base.real(solver::Solver{RealT}) where {RealT} = RealT
+@inline Base.real(::Solver{RealT}) where {RealT} = RealT
 
-@inline function set_node_vars!(u, u_node, equations, indices...)
+# Adapted from Trixi.jl
+# https://github.com/trixi-framework/Trixi.jl/blob/75d8c67629562efd24b2a04e46d22b0a1f4f572c/src/solvers/dg.jl#L539
+@inline function get_node_vars(q, equations, indices...)
+    # There is a cut-off at `n == 10` inside of the method
+    # `ntuple(f::F, n::Integer) where F` in Base at ntuple.jl:17
+    # in Julia `v1.5`, leading to type instabilities if
+    # more than ten variables are used. That's why we use
+    # `Val(...)` below.
+    # We use `@inline` to make sure that the `getindex` calls are
+    # really inlined, which might be the default choice of the Julia
+    # compiler for standard `Array`s but not necessarily for more
+    # advanced array types such as `PtrArray`s, cf.
+    # https://github.com/JuliaSIMD/VectorizationBase.jl/issues/55
+    SVector(ntuple(@inline(v->q.x[v][indices...]), Val(nvariables(equations))))
+end
+
+@inline function set_node_vars!(q, q_node, equations, indices...)
     for v in eachvariable(equations)
-        u[v, indices...] = u_node[v]
+        q.x[v][indices...] = q_node[v]
     end
     return nothing
 end
 
 function allocate_coefficients(mesh::Mesh1D, equations, solver::AbstractSolver)
-    # cf. wrap_array
-    zeros(real(solver), nvariables(equations) * nnodes(mesh)^ndims(mesh))
+    return ArrayPartition([zeros(real(solver), nnodes(mesh))
+                           for _ in eachvariable(equations)]...)
 end
 
-function wrap_array(u_ode, mesh, equations, solver)
-    unsafe_wrap(Array{eltype(u_ode), ndims(mesh) + 1}, pointer(u_ode),
-                (nvariables(equations), ntuple(_ -> nnodes(mesh), ndims(mesh))...))
-end
-
-function compute_coefficients!(u, func, t, mesh::Mesh1D, equations, solver::AbstractSolver)
+function compute_coefficients!(q, func, t, mesh::Mesh1D, equations, solver::AbstractSolver)
     x = grid(solver)
     for i in eachnode(solver)
-        u_node = func(x[i], t, equations, mesh)
-        set_node_vars!(u, u_node, equations, i)
+        q_node = func(x[i], t, equations, mesh)
+        set_node_vars!(q, q_node, equations, i)
     end
 end
 
-function calc_error_norms(u_ode, t, initial_condition, mesh::Mesh1D, equations,
+function calc_error_norms(q, t, initial_condition, mesh::Mesh1D, equations,
                           solver::AbstractSolver)
     x = grid(solver)
-    q = wrap_array(u_ode, mesh, equations, solver)
     q_exact = zeros(real(solver), (nvariables(equations), nnodes(mesh)))
     for i in eachnode(solver)
         q_exact[:, i] = initial_condition(x[i], t, equations, mesh)
@@ -114,7 +124,7 @@ function calc_error_norms(u_ode, t, initial_condition, mesh::Mesh1D, equations,
     l2_error = zeros(real(solver), nvariables(equations))
     linf_error = similar(l2_error)
     for v in eachvariable(equations)
-        @views diff = q[v, :] - q_exact[v, :]
+        @views diff = q.x[v] - q_exact[v, :]
         l2_error[v] = integrate(q -> q^2, diff, solver.D1) |> sqrt
         linf_error[v] = maximum(abs.(diff))
     end
@@ -130,9 +140,9 @@ function calc_sources!(dq, q, t, source_terms,
                        equations::AbstractEquations{1}, solver::Solver)
     x = grid(solver)
     for i in eachnode(solver)
-        local_source = source_terms(view(q, :, i), x[i], t, equations)
+        local_source = source_terms(get_node_vars(q, equations, i), x[i], t, equations)
         for v in eachvariable(equations)
-            dq[v, i] += local_source[v]
+            dq.x[v][i] += local_source[v]
         end
     end
     return nothing

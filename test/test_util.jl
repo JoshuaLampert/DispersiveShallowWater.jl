@@ -190,6 +190,21 @@ macro trixi_testset(name, expr)
     end
 end
 
+"""
+    @test_allocations(semi, sol, allocs = 50000)
+
+Test that the memory allocations of `DispersiveShallowWater.rhs!` are below `allocs`
+(e.g., from type instabilities).
+"""
+macro test_allocations(semi, sol, allocs = 50000)
+    quote
+        t = $sol.t[end]
+        q = $sol.u[end]
+        dq = similar(q)
+        @test (@allocated DispersiveShallowWater.rhs!(dq, q, $semi, t)) < $allocs
+    end
+end
+
 # Copied from TrixiBase.jl. See https://github.com/trixi-framework/TrixiBase.jl/issues/9.
 """
     @test_nowarn_mod expr

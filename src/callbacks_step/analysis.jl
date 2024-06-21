@@ -149,10 +149,10 @@ function integrals(cb::DiscreteCallback{Condition,
     return (; zip(names, integrals)...)
 end
 
-function initialize!(cb::DiscreteCallback{Condition, Affect!}, u_ode, t,
+function initialize!(cb::DiscreteCallback{Condition, Affect!}, q, t,
                      integrator) where {Condition, Affect! <: AnalysisCallback}
     semi = integrator.p
-    initial_state_integrals = integrate(u_ode, semi)
+    initial_state_integrals = integrate(q, semi)
 
     analysis_callback = cb.affect!
     analysis_callback.initial_state_integrals = initial_state_integrals
@@ -184,8 +184,8 @@ end
 
 # This method is just called internally from `(analysis_callback::AnalysisCallback)(integrator)`
 # and serves as a function barrier. Additionally, it makes the code easier to profile and optimize.
-function (analysis_callback::AnalysisCallback)(io, u_ode, integrator, semi)
-    _, equations, solver = mesh_equations_solver(semi)
+function (analysis_callback::AnalysisCallback)(io, q, integrator, semi)
+    equations = semi.equations
     @unpack analysis_errors, analysis_integrals, tstops, errors, integrals = analysis_callback
     @unpack t, dt = integrator
     push!(tstops, t)
@@ -247,7 +247,7 @@ function (analysis_callback::AnalysisCallback)(io, u_ode, integrator, semi)
         println(io)
 
         # Calculate L2/Linf errors, which are also returned
-        l2_error, linf_error = calc_error_norms(u_ode, t, semi)
+        l2_error, linf_error = calc_error_norms(q, t, semi)
         current_errors = zeros(real(semi), (length(analysis_errors), nvariables(equations)))
         current_errors[1, :] = l2_error
         current_errors[2, :] = linf_error
@@ -266,7 +266,7 @@ function (analysis_callback::AnalysisCallback)(io, u_ode, integrator, semi)
         # Conservation error
         if :conservation_error in analysis_errors
             @unpack initial_state_integrals = analysis_callback
-            state_integrals = integrate(u_ode, semi)
+            state_integrals = integrate(q, semi)
             current_errors[3, :] = abs.(state_integrals - initial_state_integrals)
             print(io, " |∫q - ∫q₀|:  ")
             for v in eachvariable(equations)
@@ -282,7 +282,7 @@ function (analysis_callback::AnalysisCallback)(io, u_ode, integrator, semi)
             println(io, " Integrals:    ")
         end
         current_integrals = zeros(real(semi), length(analysis_integrals))
-        analyze_integrals!(io, current_integrals, 1, analysis_integrals, u_ode, t, semi)
+        analyze_integrals!(io, current_integrals, 1, analysis_integrals, q, t, semi)
         push!(integrals, current_integrals)
 
         println(io, "─"^100)
@@ -292,26 +292,25 @@ end
 
 # Iterate over tuples of analysis integrals in a type-stable way using "lispy tuple programming".
 function analyze_integrals!(io, current_integrals, i, analysis_integrals::NTuple{N, Any},
-                            u_ode,
-                            t, semi) where {N}
+                            q, t, semi) where {N}
 
     # Extract the first analysis integral and process it; keep the remaining to be processed later
     quantity = first(analysis_integrals)
     remaining_quantities = Base.tail(analysis_integrals)
 
-    res = analyze(quantity, u_ode, t, semi)
+    res = analyze(quantity, q, t, semi)
     current_integrals[i] = res
     @printf(io, " %-12s:", pretty_form_utf(quantity))
     @printf(io, "  % 10.8e", res)
     println(io)
 
     # Recursively call this method with the unprocessed integrals
-    analyze_integrals!(io, current_integrals, i + 1, remaining_quantities, u_ode, t, semi)
+    analyze_integrals!(io, current_integrals, i + 1, remaining_quantities, q, t, semi)
     return nothing
 end
 
 # terminate the type-stable iteration over tuples
-function analyze_integrals!(io, current_integrals, i, analysis_integrals::Tuple{}, u_ode, t,
+function analyze_integrals!(io, current_integrals, i, analysis_integrals::Tuple{}, q, t,
                             semi)
     nothing
 end
@@ -320,7 +319,6 @@ end
 function (cb::DiscreteCallback{Condition, Affect!})(sol) where {Condition,
                                                                 Affect! <:
                                                                 AnalysisCallback}
-    analysis_callback = cb.affect!
     semi = sol.prob.p
 
     l2_error, linf_error = calc_error_norms(sol.u[end], sol.t[end], semi)
@@ -328,14 +326,14 @@ function (cb::DiscreteCallback{Condition, Affect!})(sol) where {Condition,
     return (; l2 = l2_error, linf = linf_error)
 end
 
-function analyze(quantity, u_ode, t, semi::Semidiscretization)
-    integrate_quantity(u_ode -> quantity(u_ode, semi.equations), u_ode, semi)
+function analyze(quantity, q, t, semi::Semidiscretization)
+    integrate_quantity(q -> quantity(q, semi.equations), q, semi)
 end
 
 # modified entropy from Svärd-Kalisch equations need to take the whole vector `u` for every point in space
 function analyze(quantity::Union{typeof(energy_total_modified), typeof(entropy_modified)},
-                 u_ode, t, semi::Semidiscretization)
-    integrate_quantity(quantity, u_ode, semi)
+                 q, t, semi::Semidiscretization)
+    integrate_quantity(quantity, q, semi)
 end
 
 pretty_form_utf(::typeof(waterheight_total)) = "∫η"

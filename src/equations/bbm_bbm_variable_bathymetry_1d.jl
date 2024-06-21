@@ -210,8 +210,7 @@ function create_cache(mesh, equations::BBMBBMVariableEquations1D,
         @error "unknown type of first-derivative operator: $(typeof(solver.D1))"
     end
     invImD2K = lu(I - 1 / 6 * sparse(solver.D2) * K)
-    tmp2 = Array{RealT}(undef, nnodes(mesh))
-    return (invImDKD = invImDKD, invImD2K = invImD2K, D = D, tmp2 = tmp2)
+    return (invImDKD = invImDKD, invImD2K = invImD2K, D = D)
 end
 
 function create_cache(mesh, equations::BBMBBMVariableEquations1D,
@@ -248,28 +247,23 @@ function create_cache(mesh, equations::BBMBBMVariableEquations1D,
     else
         @error "unknown type of first-derivative operator: $(typeof(solver.D1))"
     end
-    tmp2 = Array{RealT}(undef, nnodes(mesh))
-    tmp3 = Array{RealT}(undef, nnodes(mesh) - 2)
-    return (invImD2Kd = invImD2Kd, invImDKDn = invImDKDn, D = D, tmp2 = tmp2, tmp3 = tmp3)
+    return (invImD2Kd = invImD2Kd, invImDKDn = invImDKDn, D = D)
 end
 
 # Discretization that conserves the mass (for eta and v) and the energy for periodic boundary conditions, see
 # - Joshua Lampert and Hendrik Ranocha (2024)
 #   Structure-Preserving Numerical Methods for Two Nonlinear Systems of Dispersive Wave Equations
 #   [DOI: 10.48550/arXiv.2402.16669](https://doi.org/10.48550/arXiv.2402.16669)
-function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMVariableEquations1D,
+function rhs!(dq, q, t, mesh, equations::BBMBBMVariableEquations1D,
               initial_condition, ::BoundaryConditionPeriodic, source_terms,
               solver, cache)
-    @unpack invImDKD, invImD2K, D, tmp1, tmp2 = cache
+    @unpack invImDKD, invImD2K, D = cache
 
-    q = wrap_array(u_ode, mesh, equations, solver)
-    dq = wrap_array(du_ode, mesh, equations, solver)
-
-    eta = view(q, 1, :)
-    v = view(q, 2, :)
-    deta = view(dq, 1, :)
-    dv = view(dq, 2, :)
-    dD = view(dq, 3, :)
+    eta = q.x[1]
+    v = q.x[2]
+    deta = dq.x[1]
+    dv = dq.x[2]
+    dD = dq.x[3]
     fill!(dD, zero(eltype(dD)))
 
     if solver.D1 isa PeriodicDerivativeOperator ||
@@ -289,35 +283,26 @@ function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMVariableEquations1D,
     @trixi_timeit timer() "source terms" calc_sources!(dq, q, t, source_terms, equations,
                                                        solver)
 
-    # To use the in-place version `ldiv!` instead of `\`, we need temporary arrays
-    # since `deta` and `dv` are not stored contiguously
     @trixi_timeit timer() "deta elliptic" begin
-        tmp1[:] = deta
-        ldiv!(tmp2, invImDKD, tmp1)
-        deta[:] = tmp2
+        ldiv!(invImDKD, deta)
     end
     @trixi_timeit timer() "dv elliptic" begin
-        tmp2[:] = dv
-        ldiv!(tmp1, invImD2K, tmp2)
-        dv[:] = tmp1
+        ldiv!(invImD2K, dv)
     end
 
     return nothing
 end
 
-function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMVariableEquations1D,
+function rhs!(dq, q, t, mesh, equations::BBMBBMVariableEquations1D,
               initial_condition, ::BoundaryConditionReflecting, source_terms,
               solver, cache)
-    @unpack invImDKDn, invImD2Kd, D, tmp1, tmp2, tmp3 = cache
+    @unpack invImDKDn, invImD2Kd, D = cache
 
-    q = wrap_array(u_ode, mesh, equations, solver)
-    dq = wrap_array(du_ode, mesh, equations, solver)
-
-    eta = view(q, 1, :)
-    v = view(q, 2, :)
-    deta = view(dq, 1, :)
-    dv = view(dq, 2, :)
-    dD = view(dq, 3, :)
+    eta = q.x[1]
+    v = q.x[2]
+    deta = dq.x[1]
+    dv = dq.x[2]
+    dD = dq.x[3]
     fill!(dD, zero(eltype(dD)))
 
     # energy and mass conservative semidiscretization
@@ -338,18 +323,12 @@ function rhs!(du_ode, u_ode, t, mesh, equations::BBMBBMVariableEquations1D,
     @trixi_timeit timer() "source terms" calc_sources!(dq, q, t, source_terms, equations,
                                                        solver)
 
-    # To use the in-place version `ldiv!` instead of `\`, we need temporary arrays
-    # since `deta` and `dv` are not stored contiguously
     @trixi_timeit timer() "deta elliptic" begin
-        tmp1[:] = deta
-        ldiv!(tmp2, invImDKDn, tmp1)
-        deta[:] = tmp2
+        ldiv!(invImDKDn, deta)
     end
     @trixi_timeit timer() "dv elliptic" begin
-        tmp2[:] = dv
-        ldiv!(tmp3, invImD2Kd, tmp2[2:(end - 1)])
+        ldiv!(invImD2Kd, (@view dv[2:(end - 1)]))
         dv[1] = dv[end] = zero(eltype(dv))
-        dv[2:(end - 1)] = tmp3
     end
 
     return nothing

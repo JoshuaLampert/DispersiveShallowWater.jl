@@ -33,25 +33,26 @@ end
     t = sol.t[step]
 
     if plot_initial == true
-        q_exact = wrap_array(compute_coefficients(initial_condition, t, semi), semi)
+        q_exact = compute_coefficients(initial_condition, t, semi)
+        data_exact = zeros(nvars, nnodes(semi))
     end
 
-    q = wrap_array(sol.u[step], semi)
+    q = sol.u[step]
     data = zeros(nvars, nnodes(semi))
     if plot_bathymetry == true
         bathy = zeros(nnodes(semi))
     end
     for j in eachnode(semi)
         if plot_bathymetry == true
-            bathy[j] = bathymetry(view(q, :, j), equations)
+            bathy[j] = bathymetry(get_node_vars(q, equations, j), equations)
         end
         if plot_initial == true
-            q_exact[:, j] .= conversion(view(q_exact, :, j), equations)
+            data_exact[:, j] .= conversion(get_node_vars(q_exact, equations, j), equations)
         end
-        data[:, j] .= conversion(view(q, :, j), equations)
+        data[:, j] .= conversion(get_node_vars(q, equations, j), equations)
     end
 
-    plot_title --> "$(get_name(semi.equations)) at t = $(round(t, digits=5))"
+    plot_title --> "$(get_name(equations)) at t = $(round(t, digits=5))"
     layout --> nsubplots
 
     for i in 1:nsubplots
@@ -63,7 +64,7 @@ end
                 subplot --> i
                 linestyle := :solid
                 label := "initial $(names[i])"
-                grid(semi), q_exact[i, :]
+                grid(semi), data_exact[i, :]
             end
         end
 
@@ -107,12 +108,12 @@ end
 
     solution = zeros(nvariables(semi), length(sol.t))
     data = zeros(nvars, length(sol.t))
-    for i in 1:nvariables(semi)
+    for v in eachvariable(semi)
         for k in 1:length(sol.t)
             # Allow that the spatial value `x` is not on the grid. Thus, interpolate the given values to the provided `x`
             # with a linear spline.
-            solution[i, k] = linear_interpolation(grid(semi),
-                                                  view(wrap_array(sol.u[k], semi), i, :))(x)
+            solution[v, k] = linear_interpolation(grid(semi),
+                                                  sol.u[k].x[v])(x)
         end
     end
 
