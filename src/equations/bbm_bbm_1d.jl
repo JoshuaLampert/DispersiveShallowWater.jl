@@ -81,11 +81,14 @@ function source_terms_manufactured(q, x, t, equations::BBMBBMEquations1D)
     a5 = sinpi(2 * t - 4 * x)
     a6 = sinpi(4 * t - 2 * x)
     a7 = cospi(4 * t - 2 * x)
-    dq1 = -2 * pi^2 * D^2 * (4 * pi * a6 - a7) * exp(t) / 3 + 2 * pi * D * exp(t / 2) * a3 -
-          2 * pi * exp(3 * t / 2) * a4 * a6 + 2 * pi * exp(3 * t / 2) * a3 * a7 -
-          4 * pi * exp(t) * a6 + exp(t) * a7
-    dq2 = -pi^2 * D^2 * (a4 + 2 * pi * a3) * exp(t / 2) / 3 + 2 * pi * g * exp(t) * a6 -
-          exp(t / 2) * a4 / 2 - pi * exp(t / 2) * a3 - pi * exp(t) * a5
+    a10 = exp(t)
+    a14 = exp(t / 2)
+    a15 = exp(3 * t / 2)
+    dq1 = -2 * pi^2 * D^2 * (4 * pi * a6 - a7) * a10 / 3 + 2 * pi * D * a14 * a3 -
+          2 * pi * a15 * a4 * a6 + 2 * pi * a15 * a3 * a7 -
+          4 * pi * a10 * a6 + a10 * a7
+    dq2 = -pi^2 * D^2 * (a4 + 2 * pi * a3) * a14 / 3 + 2 * pi * g * a10 * a6 -
+          a14 * a4 / 2 - pi * a14 * a3 - pi * a10 * a5
 
     return SVector(dq1, dq2)
 end
