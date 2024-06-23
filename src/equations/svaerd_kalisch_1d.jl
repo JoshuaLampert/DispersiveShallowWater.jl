@@ -127,7 +127,7 @@ function source_terms_manufactured(q, x, t, equations::SvaerdKalischEquations1D)
     a15 = sqrt(a14)
     a16 = -1.0 * pi * a14 * a1 / a11 - 0.8 * pi * alpha * a12 * a13 * a1
     a17 = -20.0 * pi^2 * a15 * a10 - 10.0 * pi * a15 * a16 * a9 * a7 / (a14)
-    a18 = -2 * pi * a10 * a7 - 4.0 * pi * a1
+    a18 = -2 * pi * a9 * a7 - 4.0 * pi * a1
     a19 = a10 + 2.0 * a2 + 5.0
     a20 = a18 * a8 * a3 + 2 * pi * a19 * a8 * a4
     a21 = a15 * (40.0 * pi^3 * a15 * a9 * a7 - 40.0 * pi^2 * a15 * a16 * a10 / (a14) -
