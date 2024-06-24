@@ -86,17 +86,21 @@ function source_terms_manufactured(q, x, t, equations::BBMBBMVariableEquations1D
     a5 = sinpi(2 * t - 4 * x)
     a6 = sinpi(4 * t - 2 * x)
     a7 = cospi(4 * t - 2 * x)
-    dq1 = -2 * pi^2 * (4 * pi * a6 - a7) * (2 * a1 + 5)^2 * exp(t) / 3 +
-          8 * pi^2 * (a6 + 4 * pi * a7) * (2 * a1 + 5) * exp(t) * a2 / 3 +
-          2 * pi * (2 * a1 + 5) * exp(t / 2) * a3 - 2 * pi * exp(3 * t / 2) * a4 * a6 +
-          2 * pi * exp(3 * t / 2) * a3 * a7 + 4 * pi * exp(t / 2) * a2 * a4 -
-          4 * pi * exp(t) * a6 + exp(t) * a7
-    dq2 = 2 * pi * g * exp(t) * a6 -
+    a9 = sinpi(x)
+    a10 = exp(t)
+    a14 = exp(t / 2)
+    a15 = exp(3 * t / 2)
+    dq1 = -2 * pi^2 * (4 * pi * a6 - a7) * (2 * a1 + 5)^2 * a10 / 3 +
+          8 * pi^2 * (a6 + 4 * pi * a7) * (2 * a1 + 5) * a10 * a2 / 3 +
+          2 * pi * (2 * a1 + 5) * a14 * a3 - 2 * pi * a15 * a4 * a6 +
+          2 * pi * a15 * a3 * a7 + 4 * pi * a14 * a2 * a4 -
+          4 * pi * a10 * a6 + a10 * a7
+    dq2 = 2 * pi * g * a10 * a6 -
           pi^2 *
           (8 * (2 * pi * a4 - a3) * (2 * a1 + 5) * a2 +
            (a4 + 2 * pi * a3) * (2 * a1 + 5)^2 +
-           4 * (a4 + 2 * pi * a3) * (16 * sinpi(x)^4 - 26 * sinpi(x)^2 + 7)) * exp(t / 2) /
-          3 - exp(t / 2) * a4 / 2 - pi * exp(t / 2) * a3 - pi * exp(t) * a5
+           4 * (a4 + 2 * pi * a3) * (16 * a9^4 - 26 * a9^2 + 7)) * a14 /
+          3 - a14 * a4 / 2 - pi * a14 * a3 - pi * a10 * a5
 
     return SVector(dq1, dq2, zero(dq1))
 end

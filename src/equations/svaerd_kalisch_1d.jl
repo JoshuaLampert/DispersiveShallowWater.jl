@@ -118,45 +118,44 @@ function source_terms_manufactured(q, x, t, equations::SvaerdKalischEquations1D)
     a6 = cospi(t - 2 * x)
     a7 = sinpi(-4 * t + 2 * x)
     a8 = exp(t / 2)
-    a9 = exp(t) * cospi(-4 * t + 2 * x)
-    a10 = eta0 + 2.0 * a2 + 5.0
-    a11 = sqrt(g * a10)
-    a12 = 0.2 * eta0 + 0.4 * a2 + 1
-    a13 = alpha * a11 * a12^2
-    a14 = sqrt(a13)
-    a15 = -1.0 * pi * a13 * a1 / a10 - 0.8 * pi * alpha * a11 * a12 * a1
-    a16 = -20.0 * pi^2 * a14 * a9 - 10.0 * pi * a14 * a15 * exp(t) * a7 / (a13)
-    a17 = -2 * pi * exp(t) * a7 - 4.0 * pi * a1
-    a18 = a9 + 2.0 * a2 + 5.0
-    a19 = a17 * a8 * a3 + 2 * pi * a18 * a8 * a4
-    a20 = a14 * (40.0 * pi^3 * a14 * exp(t) * a7 - 40.0 * pi^2 * a14 * a15 * a9 / (a13) -
-           20.0 * pi^2 * a14 * a15 * exp(t) * a1 * a7 / (a13 * a10) -
-           16.0 * pi^2 * a14 * a15 * exp(t) * a1 * a7 / (alpha * a11 * a12^3) -
-           10.0 * pi * a14 *
-           (-2.0 * pi^2 * a13 * a2 / a10 - 1.6 * pi^2 * alpha * a11 * a12 * a2 +
-            3.2 * pi^2 * alpha * a11 * a12 * a1^2 / a10 + 0.56 * pi^2 * alpha * a11 * a1^2) *
-           exp(t) * a7 / (a13) -
-           10.0 * pi * a14 * a15^2 * exp(t) * a7 / (alpha^2 * g * a12^4 * a10))
+    a9 = exp(t)
+    a10 = a9 * cospi(-4 * t + 2 * x)
+    a11 = eta0 + 2.0 * a2 + 5.0
+    a12 = sqrt(g * a11)
+    a13 = 0.2 * eta0 + 0.4 * a2 + 1
+    a14 = alpha * a12 * a13^2
+    a15 = sqrt(a14)
+    a16 = -1.0 * pi * a14 * a1 / a11 - 0.8 * pi * alpha * a12 * a13 * a1
+    a17 = -20.0 * pi^2 * a15 * a10 - 10.0 * pi * a15 * a16 * a9 * a7 / (a14)
+    a18 = -2 * pi * a9 * a7 - 4.0 * pi * a1
+    a19 = a10 + 2.0 * a2 + 5.0
+    a20 = a18 * a8 * a3 + 2 * pi * a19 * a8 * a4
+    a21 = a15 * (40.0 * pi^3 * a15 * a9 * a7 - 40.0 * pi^2 * a15 * a16 * a10 / (a14) -
+           20.0 * pi^2 * a15 * a16 * a9 * a1 * a7 / (a14 * a11) -
+           16.0 * pi^2 * a15 * a16 * a9 * a1 * a7 / (alpha * a12 * a13^3) -
+           10.0 * pi * a15 *
+           (-2.0 * pi^2 * a14 * a2 / a11 - 1.6 * pi^2 * alpha * a12 * a13 * a2 +
+            3.2 * pi^2 * alpha * a12 * a13 * a1^2 / a11 + 0.56 * pi^2 * alpha * a12 * a1^2) *
+           a9 * a7 / (a14) -
+           10.0 * pi * a15 * a16^2 * a9 * a7 / (alpha^2 * g * a13^4 * a11))
 
-    dq1 = -5.0 * a20 + a19 + 4 * pi * exp(t) * a7 + a9 - 5.0 * a14 * a16 * a15 / (a13)
+    dq1 = -5.0 * a21 + a20 + 4 * pi * a9 * a7 + a10 - 5.0 * a15 * a17 * a16 / (a14)
 
-    dq2 = -25.0 * beta * (-2 * pi^2 * a8 * a3 + 4 * pi^3 * a8 * a4) * a12^2 * a10 +
-          100.0 * pi * beta * (2 * pi^2 * a8 * a3 + pi * a8 * a4) * a12^2 * a1 +
-          40.0 * pi * beta * (2 * pi^2 * a8 * a3 + pi * a8 * a4) * a12 * a10 * a1 -
-          2 * pi * g * a18 * exp(t) * a7 +
-          100.0 * pi^3 * gamma * a11 * a12^2 * a10 * a8 * a4 -
-          300.0 * pi^3 * gamma * a11 * a12^2 * a8 * a1 * a3 -
-          80.0 * pi^3 * gamma * a11 * a12 * a10 * a8 * a1 * a3 -
-          pi^3 * gamma * a11 *
-          (-50.0 * (3.2 * a12 * a2 - 1.28 * a1^2) * a10 * a6 -
-           50.0 * (4.0 * a2 / a10 + 0.16 * a1^2 / a12^2) * a12^2 * a10 * a6 -
-           200.0 * a12^2 * a10 * a6 - 1200.0 * a12^2 * a1 * a5 - 400.0 * a12^2 * a2 * a6 +
-           800.0 * a12^2 * a1^2 * a6 / a10 - 320.0 * a12 * a10 * a1 * a5 +
-           960.0 * a12 * a1^2 * a6) * a8 / 2 - 10.0 * pi * a14 * a16 * a8 * a4 -
-          2.5 * a20 * a8 * a3 + (5.0 * a20 + 5.0 * a14 * a16 * a15 / (a13)) * a8 * a3 / 2 +
-          (a8 * a3 / 2 - pi * a8 * a4) * a18 + a17 * exp(t) * a3^2 / 2 -
-          (a19) * a8 * a3 / 2 + 3 * pi * a18 * exp(t) * a3 * a4 -
-          2.5 * a14 * a16 * a15 * a8 * a3 / (a13)
+    dq2 = -25.0 * beta * (-2 * pi^2 * a8 * a3 + 4 * pi^3 * a8 * a4) * a13^2 * a11 +
+          100.0 * pi * beta * (2 * pi^2 * a8 * a3 + pi * a8 * a4) * a13^2 * a1 +
+          40.0 * pi * beta * (2 * pi^2 * a8 * a3 + pi * a8 * a4) * a13 * a11 * a1 -
+          2 * pi * g * a19 * a9 * a7 + 100.0 * pi^3 * gamma * a12 * a13^2 * a11 * a8 * a4 -
+          300.0 * pi^3 * gamma * a12 * a13^2 * a8 * a1 * a3 -
+          80.0 * pi^3 * gamma * a12 * a13 * a11 * a8 * a1 * a3 -
+          pi^3 * gamma * a12 *
+          (-50.0 * (3.2 * a13 * a2 - 1.28 * a1^2) * a11 * a6 -
+           50.0 * (4.0 * a2 / a11 + 0.16 * a1^2 / a13^2) * a13^2 * a11 * a6 -
+           200.0 * a13^2 * a11 * a6 - 1200.0 * a13^2 * a1 * a5 - 400.0 * a13^2 * a2 * a6 +
+           800.0 * a13^2 * a1^2 * a6 / a11 - 320.0 * a13 * a11 * a1 * a5 +
+           960.0 * a13 * a1^2 * a6) * a8 / 2 - 10.0 * pi * a15 * a17 * a8 * a4 -
+          2.5 * a21 * a8 * a3 + (5.0 * a21 + 5.0 * a15 * a17 * a16 / (a14)) * a8 * a3 / 2 +
+          (a8 * a3 / 2 - pi * a8 * a4) * a19 + a18 * a9 * a3^2 / 2 - (a20) * a8 * a3 / 2 +
+          3 * pi * a19 * a9 * a3 * a4 - 2.5 * a15 * a17 * a16 * a8 * a3 / (a14)
 
     return SVector(dq1, dq2, zero(dq1))
 end
