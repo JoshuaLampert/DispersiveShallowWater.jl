@@ -181,9 +181,15 @@ function create_cache(mesh, equations::SvaerdKalischEquations1D,
        solver.D1 isa UniformPeriodicCoupledOperator
         D1_central = solver.D1
         sparse_D1 = sparse(D1_central)
+        # We use the periodic SBP property
+        #   M * sparse_D1 == -sparse_D1' * M
+        # to avoid possible floating point errors in the symmetry of the matrix.
         minus_MD1betaD1 = sparse_D1' * M * Diagonal(beta_hat) * sparse_D1
     elseif solver.D1 isa PeriodicUpwindOperators
         D1_central = solver.D1.central
+        # We use the periodic upwind SBP property
+        #   M * sparse_D1plus == -sparse_D1minus' * M
+        # to avoid possible floating point errors in the symmetry of the matrix.
         sparse_D1minus = sparse(solver.D1.minus)
         minus_MD1betaD1 = sparse_D1minus' * M * Diagonal(beta_hat) * sparse_D1minus
     else
