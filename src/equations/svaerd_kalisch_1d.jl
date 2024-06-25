@@ -176,21 +176,28 @@ function create_cache(mesh, equations::SvaerdKalischEquations1D,
     beta_hat = equations.beta * D .^ 3
     gamma_hat = equations.gamma * sqrt.(equations.gravity * D) .* D .^ 3
     tmp2 = similar(h)
+    M = mass_matrix(solver.D1)
     if solver.D1 isa PeriodicDerivativeOperator ||
        solver.D1 isa UniformPeriodicCoupledOperator
         D1_central = solver.D1
         sparse_D1 = sparse(D1_central)
-        D1betaD1 = sparse_D1 * Diagonal(beta_hat) * sparse_D1
+        # We use the periodic SBP property
+        #   M * sparse_D1 == -sparse_D1' * M
+        # to avoid possible floating point errors in the symmetry of the matrix.
+        minus_MD1betaD1 = sparse_D1' * M * Diagonal(beta_hat) * sparse_D1
     elseif solver.D1 isa PeriodicUpwindOperators
         D1_central = solver.D1.central
-        D1betaD1 = sparse(solver.D1.plus) * Diagonal(beta_hat) * sparse(solver.D1.minus)
+        # We use the periodic upwind SBP property
+        #   M * sparse_D1plus == -sparse_D1minus' * M
+        # to avoid possible floating point errors in the symmetry of the matrix.
+        sparse_D1minus = sparse(solver.D1.minus)
+        minus_MD1betaD1 = sparse_D1minus' * M * Diagonal(beta_hat) * sparse_D1minus
     else
         @error "unknown type of first-derivative operator: $(typeof(solver.D1))"
     end
-    M = mass_matrix(solver.D1)
-    factorization = cholesky(Symmetric(M * (Diagonal(ones(nnodes(mesh))) - D1betaD1)))
-    return (factorization = factorization, D1betaD1 = D1betaD1, D = D, h = h, hv = hv,
-            alpha_hat = alpha_hat, gamma_hat = gamma_hat,
+    factorization = cholesky(Symmetric(M * Diagonal(ones(nnodes(mesh))) + minus_MD1betaD1))
+    return (factorization = factorization, minus_MD1betaD1 = minus_MD1betaD1, D = D, h = h,
+            hv = hv, alpha_hat = alpha_hat, gamma_hat = gamma_hat,
             tmp2 = tmp2, D1_central = D1_central, M = M, D1 = solver.D1)
 end
 
@@ -201,7 +208,7 @@ end
 function rhs!(dq, q, t, mesh, equations::SvaerdKalischEquations1D,
               initial_condition, ::BoundaryConditionPeriodic, source_terms,
               solver, cache)
-    @unpack factorization, D1betaD1, D, h, hv, alpha_hat, gamma_hat, tmp1, tmp2, D1_central, M = cache
+    @unpack factorization, minus_MD1betaD1, D, h, hv, alpha_hat, gamma_hat, tmp1, tmp2, D1_central, M = cache
 
     eta = q.x[1]
     v = q.x[2]
@@ -262,10 +269,17 @@ function rhs!(dq, q, t, mesh, equations::SvaerdKalischEquations1D,
     @trixi_timeit timer() "dv elliptic" begin
         # decompose M * (h - D1betaD1) because it is guaranteed to be symmetric and pos. def.,
         # while (h - D1betaD1) is not necessarily
-        hmD1betaD1 = Symmetric(M * (Diagonal(h) - D1betaD1))
-        cholesky!(factorization, hmD1betaD1)
-        tmp1[:] = M * dv
-        dv[:] = factorization \ tmp1
+        hmD1betaD1 = Symmetric(M * Diagonal(h) + minus_MD1betaD1)
+        # If the time integration method takes a too large step, h become become negative
+        # letting the factorization fail. In this case the solution is set to `NaN` to force
+        # rejecting the step
+        cholesky!(factorization, hmD1betaD1, check = false)
+        if issuccess(factorization)
+            mul!(tmp1, M, dv)
+            dv[:] = factorization \ tmp1
+        else
+            fill!(dv, NaN)
+        end
     end
 
     return nothing
