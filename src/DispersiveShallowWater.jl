@@ -30,7 +30,7 @@ using TimerOutputs: TimerOutputs, print_timer, reset_timer!
 @reexport using TrixiBase: trixi_include
 using TrixiBase: TrixiBase, @trixi_timeit, timer
 
-include("boundary_conditions.jl")
+  include("boundary_conditions.jl")
 include("mesh.jl")
 include("equations/equations.jl")
 include("solver.jl")
