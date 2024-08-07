@@ -159,6 +159,25 @@ function integrate_quantity!(quantity,
     integrate_quantity(func, q, semi)
 end
 
+# The entropy/energy of the Serre-Green-Naghdi eqautions
+# takes the whole `q` for every point in space since it requires
+# the derivative of the velocity `v_x`.
+function integrate_quantity(func::Union{typeof(energy_total),
+                                        typeof(entropy)},
+                            q,
+                            semi::Semidiscretization{<:Any, <:AbstractSerreGreenNaghdiEquations})
+    quantity = func(q, semi.equations, semi.cache)
+    integrate(quantity, semi)
+end
+
+function integrate_quantity!(quantity,
+                             func::Union{typeof(energy_total),
+                                         typeof(entropy)},
+                             q,
+                             semi::Semidiscretization{<:Any, <:AbstractSerreGreenNaghdiEquations})
+    integrate_quantity(func, q, semi)
+end
+
 @inline function mesh_equations_solver(semi::Semidiscretization)
     @unpack mesh, equations, solver = semi
     return mesh, equations, solver

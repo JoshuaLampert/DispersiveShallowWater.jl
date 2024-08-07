@@ -219,3 +219,7 @@ include("bbm_bbm_variable_bathymetry_1d.jl")
 abstract type AbstractSvaerdKalischEquations{NDIMS, NVARS} <:
               AbstractEquations{NDIMS, NVARS} end
 include("svaerd_kalisch_1d.jl")
+
+# Serre-Green-Naghdi equations
+abstract type AbstractSerreGreenNaghdiEquations{NDIMS, NVARS} <: AbstractEquations{NDIMS, NVARS} end
+include("serre_green_naghdi_flat_1d.jl")
