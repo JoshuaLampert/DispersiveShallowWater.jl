@@ -336,7 +336,7 @@ function analyze(quantity::Union{typeof(energy_total_modified), typeof(entropy_m
     integrate_quantity(quantity, q, semi)
 end
 
-# The entropy/energy of the Serre-Green-Naghdi eqautions
+# The entropy/energy of the Serre-Green-Naghdi equations
 # takes the whole `q` for every point in space since it requires
 # the derivative of the velocity `v_x`.
 function analyze(quantity::Union{typeof(energy_total),

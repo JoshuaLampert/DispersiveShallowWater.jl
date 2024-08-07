@@ -159,7 +159,7 @@ function integrate_quantity!(quantity,
     integrate_quantity(func, q, semi)
 end
 
-# The entropy/energy of the Serre-Green-Naghdi eqautions
+# The entropy/energy of the Serre-Green-Naghdi equations
 # takes the whole `q` for every point in space since it requires
 # the derivative of the velocity `v_x`.
 function integrate_quantity(func::Union{typeof(energy_total),
