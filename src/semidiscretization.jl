@@ -165,7 +165,8 @@ end
 function integrate_quantity(func::Union{typeof(energy_total),
                                         typeof(entropy)},
                             q,
-                            semi::Semidiscretization{<:Any, <:AbstractSerreGreenNaghdiEquations})
+                            semi::Semidiscretization{<:Any,
+                                                     <:AbstractSerreGreenNaghdiEquations})
     quantity = func(q, semi.equations, semi.cache)
     integrate(quantity, semi)
 end
@@ -174,7 +175,8 @@ function integrate_quantity!(quantity,
                              func::Union{typeof(energy_total),
                                          typeof(entropy)},
                              q,
-                             semi::Semidiscretization{<:Any, <:AbstractSerreGreenNaghdiEquations})
+                             semi::Semidiscretization{<:Any,
+                                                      <:AbstractSerreGreenNaghdiEquations})
     integrate_quantity(func, q, semi)
 end
 

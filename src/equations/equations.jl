@@ -221,5 +221,6 @@ abstract type AbstractSvaerdKalischEquations{NDIMS, NVARS} <:
 include("svaerd_kalisch_1d.jl")
 
 # Serre-Green-Naghdi equations
-abstract type AbstractSerreGreenNaghdiEquations{NDIMS, NVARS} <: AbstractEquations{NDIMS, NVARS} end
+abstract type AbstractSerreGreenNaghdiEquations{NDIMS, NVARS} <:
+              AbstractEquations{NDIMS, NVARS} end
 include("serre_green_naghdi_flat_1d.jl")

@@ -7,7 +7,6 @@ A singleton struct indicating a flat bathymetry ``b = 0``.
 """
 const bathymetry_flat = BathymetryFlat()
 
-
 @doc raw"""
     SerreGreenNaghdiEquations1D(gravity)
 
@@ -34,7 +33,8 @@ References for the Serre-Green-Naghdi system can be found in
   A derivation of equations for wave propagation in water of variable depth
   [DOI: 10.1017/S0022112076002425](https://doi.org/10.1017/S0022112076002425)
 """
-struct SerreGreenNaghdiEquations1D{Bathymetry <: AbstractBathymetry, RealT <: Real} <: AbstractSerreGreenNaghdiEquations{1, 2}
+struct SerreGreenNaghdiEquations1D{Bathymetry <: AbstractBathymetry, RealT <: Real} <:
+       AbstractSerreGreenNaghdiEquations{1, 2}
     bathymetry::Bathymetry # type of bathymetry
     gravity::RealT # gravitational constant
 end
@@ -51,7 +51,8 @@ varnames(::typeof(prim2cons), ::SerreGreenNaghdiEquations1D) = ("h", "hv")
 
 A soliton solution used for convergence tests in a periodic domain.
 """
-function initial_condition_convergence_test(x, t, equations::SerreGreenNaghdiEquations1D, mesh)
+function initial_condition_convergence_test(x, t, equations::SerreGreenNaghdiEquations1D,
+                                            mesh)
     g = equations.gravity
 
     # setup parameters data
@@ -97,9 +98,9 @@ function create_cache(mesh,
             Dmat = Matrix(D)
 
             cache = (; h_x, v_x, h2_x, hv_x, v2_x,
-                       h2_v_vx_x, h_vx_x, p_x, tmp,
-                       M_h, M_h3_3,
-                       D, Dmat)
+                     h2_v_vx_x, h_vx_x, p_x, tmp,
+                     M_h, M_h3_3,
+                     D, Dmat)
         else
             Dmat = sparse(D)
 
@@ -109,16 +110,17 @@ function create_cache(mesh,
             # factorization.
             @. M_h = h
             scale_by_mass_matrix!(M_h, D)
-            @. M_h3_3 = (1/3) * h^3
+            @. M_h3_3 = (1 / 3) * h^3
             scale_by_mass_matrix!(M_h3_3, D)
             system_matrix = Symmetric(Diagonal(M_h)
-                                        + Dmat' * Diagonal(M_h3_3) * Dmat)
+                                      +
+                                      Dmat' * Diagonal(M_h3_3) * Dmat)
             factorization = cholesky(system_matrix)
 
             cache = (; h_x, v_x, h2_x, hv_x, v2_x,
-                       h2_v_vx_x, h_vx_x, p_x, tmp,
-                       M_h, M_h3_3,
-                       D, Dmat, factorization)
+                     h2_v_vx_x, h_vx_x, p_x, tmp,
+                     M_h, M_h3_3,
+                     D, Dmat, factorization)
         end
     end
 
@@ -165,9 +167,9 @@ function rhs_sgn_flat_central!(dq, q, equations, source_terms, cache)
 
     @trixi_timeit timer() "hyperbolic terms" begin
         # Compute all derivatives required below
-        (; h_x, v_x, h2_x, hv_x, v2_x,
-           h2_v_vx_x, h_vx_x, p_x, tmp,
-           M_h, M_h3_3) = cache
+        (; h_x, v_x, h2_x, hv_x, v2_x, h2_v_vx_x,
+        M_h, M_h3_3) = cache
+
         mul!(h_x, D, h)
         mul!(v_x, D, v)
         @. tmp = h^2
@@ -182,9 +184,11 @@ function rhs_sgn_flat_central!(dq, q, equations, source_terms, cache)
         @. tmp = h * v_x
         mul!(h_vx_x, D, tmp)
         inv6 = 1 / 6
-        @. tmp = (  0.5 * h^2 * (h * v_x + h_x * v) * v_x
-                    - inv6 * h * h2_v_vx_x
-                    - inv6 * h^2 * v * h_vx_x)
+        @. tmp = (0.5 * h^2 * (h * v_x + h_x * v) * v_x
+                  -
+                  inv6 * h * h2_v_vx_x
+                  -
+                  inv6 * h^2 * v * h_vx_x)
         mul!(p_x, D, tmp)
 
         # Plain: h_t + (h v)_x = 0
@@ -196,12 +200,17 @@ function rhs_sgn_flat_central!(dq, q, equations, source_terms, cache)
         # Plain: h v_t + ... = 0
         #
         # Split form for energy conservation:
-        @. tmp = -(  g * h2_x - g * h * h_x
-                    + 0.5 * h * v2_x
-                    - 0.5 * v^2 * h_x
-                    + 0.5 * hv_x * v
-                    - 0.5 * h * v * v_x
-                    + p_x)
+        @. tmp = -(g * h2_x - g * h * h_x
+                   +
+                   0.5 * h * v2_x
+                   -
+                   0.5 * v^2 * h_x
+                   +
+                   0.5 * hv_x * v
+                   -
+                   0.5 * h * v * v_x
+                   +
+                   p_x)
     end
 
     @trixi_timeit timer() "assembling elliptic operator" begin
@@ -217,7 +226,8 @@ function rhs_sgn_flat_central!(dq, q, equations, source_terms, cache)
         @. M_h3_3 = inv3 * h^3
         scale_by_mass_matrix!(M_h3_3, D)
         system_matrix = Symmetric(Diagonal(M_h)
-                                  + Dmat' * Diagonal(M_h3_3) * Dmat)
+                                  +
+                                  Dmat' * Diagonal(M_h3_3) * Dmat)
     end
 
     @trixi_timeit timer() "solving elliptic system" begin
@@ -273,7 +283,8 @@ end
 end
 
 # The entropy/energy takes the whole `q` for every point in space
-@inline function energy_total(q, equations::SerreGreenNaghdiEquations1D{BathymetryFlat}, cache)
+@inline function energy_total(q, equations::SerreGreenNaghdiEquations1D{BathymetryFlat},
+                              cache)
     # unpack physical parameters and SBP operator `D`
     g = equations.gravity
     (; D, v_x) = cache
@@ -292,9 +303,11 @@ end
         mul!(v_x, D, v)
     end
 
-    @. e = 1/2 * g * h^2 + 1/2 * h * v^2 + 1/6 * h^3 * v_x^2
+    @. e = 1 / 2 * g * h^2 + 1 / 2 * h * v^2 + 1 / 6 * h^3 * v_x^2
 
     return e
 end
 
-@inline entropy(q, equations::SerreGreenNaghdiEquations1D, cache) = energy_total(q, equations, cache)
+@inline entropy(q, equations::SerreGreenNaghdiEquations1D, cache) = energy_total(q,
+                                                                                 equations,
+                                                                                 cache)
