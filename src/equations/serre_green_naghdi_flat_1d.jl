@@ -168,7 +168,7 @@ function rhs_sgn_flat_central!(dq, q, equations, source_terms, cache)
     @trixi_timeit timer() "hyperbolic terms" begin
         # Compute all derivatives required below
         (; h_x, v_x, h2_x, hv_x, v2_x, h2_v_vx_x,
-        M_h, M_h3_3) = cache
+        h_vx_x, p_x, tmp, M_h, M_h3_3) = cache
 
         mul!(h_x, D, h)
         mul!(v_x, D, v)
