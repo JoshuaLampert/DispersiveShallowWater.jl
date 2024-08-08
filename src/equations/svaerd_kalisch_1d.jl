@@ -1,5 +1,5 @@
 @doc raw"""
-    SvärdKalischEquations1D(gravity, eta0 = 1.0, alpha = 0.0, beta = 0.2308939393939394, gamma = 0.04034343434343434)
+    SvaerdKalischEquations1D(gravity, eta0 = 1.0, alpha = 0.0, beta = 0.2308939393939394, gamma = 0.04034343434343434)
 
 Dispersive system by Svärd and Kalisch in one spatial dimension with spatially varying bathymetry. The equations are given in conservative variables by
 ```math
@@ -20,11 +20,18 @@ The unknown quantities of the Svärd-Kalisch equations are the total water heigh
 The gravitational constant is denoted by `g` and the bottom topography (bathymetry) ``b = \eta_0 - D``. The water height above the bathymetry is therefore given by
 ``h = \eta - \eta_0 + D``.
 
-The equations by Svärd and Kalisch are presented and analyzed in
+`SvärdKalischEquations1D` is an alias for `SvaerdKalischEquations1D`.
+
+The equations by Svärd and Kalisch are presented and analyzed in Svärd and Kalisch (2023).
+The semidiscretization implemented here conserves the mass and the energy, is well-balanced for the lake-at-rest state,
+and is developed in Lampert and Ranocha (2024).
+
 - Magnus Svärd, Henrik Kalisch (2023)
   A novel energy-bounded Boussinesq model and a well-balanced and stable numerical discretization
   [arXiv: 2302.09924](https://arxiv.org/abs/2302.09924)
-
+- Joshua Lampert, Hendrik Ranocha (2024)
+  Structure-Preserving Numerical Methods for Two Nonlinear Systems of Dispersive Wave Equations
+  [DOI: 10.48550/arXiv.2402.16669](https://doi.org/10.48550/arXiv.2402.16669)
 """
 struct SvaerdKalischEquations1D{RealT <: Real} <: AbstractSvaerdKalischEquations{1, 3}
     gravity::RealT # gravitational constant

@@ -12,11 +12,15 @@ The unknown quantities of the BBM-BBM equations are the total water height ``\et
 The gravitational constant is denoted by `g` and the constant bottom topography (bathymetry) ``b = \eta_0 - D``. The water height above the bathymetry is therefore given by
 ``h = \eta - \eta_0 + D``. The BBM-BBM equations are only implemented for ``\eta_0 = 0``.
 
-One reference for the BBM-BBM system can be found in
+One reference for the BBM-BBM system can be found in Bona et al. (1998).
+The semidiscretization implemented here conserves the mass and the energy and is developed in Ranocha et al. (2020).
+
 - Jerry L. Bona, Min Chen (1998)
   A Boussinesq system for two-way propagation of nonlinear dispersive waves
   [DOI: 10.1016/S0167-2789(97)00249-2](https://doi.org/10.1016/S0167-2789(97)00249-2)
-
+- Hendrik Ranocha, Dimitrios Mitsotakis, David I. Ketcheson (2020)
+  A Broad Class of Conservative Numerical Methods for Dispersive Wave Equations
+  [DOI: 10.4208/cicp.OA-2020-0119](https://doi.org/10.4208/cicp.OA-2020-0119)
 """
 struct BBMBBMEquations1D{RealT <: Real} <: AbstractBBMBBMEquations{1, 2}
     gravity::RealT # gravitational constant
@@ -213,7 +217,7 @@ function rhs!(dq, q, t, mesh, equations::BBMBBMEquations1D, initial_condition,
     return nothing
 end
 
-# Discretization that conserves the mass (for eta) and the energy for periodic boundary conditions, see
+# Discretization that conserves the mass (for eta) and the energy for reflecting boundary conditions, see
 # - Hendrik Ranocha, Dimitrios Mitsotakis and David I. Ketcheson (2020)
 #   A Broad Class of Conservative Numerical Methods for Dispersive Wave Equations
 #   [DOI: 10.4208/cicp.OA-2020-0119](https://doi.org/10.4208/cicp.OA-2020-0119)
