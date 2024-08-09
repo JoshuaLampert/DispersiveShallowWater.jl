@@ -12,11 +12,16 @@ The unknown quantities of the BBM-BBM equations are the total water height ``\et
 The gravitational constant is denoted by `g` and the bottom topography (bathymetry) ``b = \eta_0 - D``. The water height above the bathymetry is therefore given by
 ``h = \eta - \eta_0 + D``. The BBM-BBM equations are only implemented for ``\eta_0 = 0``.
 
-One reference for the BBM-BBM system with spatially varying bathymetry can be found in
+One reference for the BBM-BBM system with spatially varying bathymetry can be found in Israwi et al. (2022).
+The semidiscretization implemented here conserves the mass and the energy, is well-balanced for the lake-at-rest state,
+and is developed in Lampert and Ranocha (2024).
+
 - Samer Israwi, Henrik Kalisch, Theodoros Katsaounis, Dimitrios Mitsotakis (2022)
   A regularized shallow-water waves system with slip-wall boundary conditions in a basin: theory and numerical analysis
   [DOI: 10.1088/1361-6544/ac3c29](https://doi.org/10.1088/1361-6544/ac3c29)
-
+- Joshua Lampert, Hendrik Ranocha (2024)
+  Structure-Preserving Numerical Methods for Two Nonlinear Systems of Dispersive Wave Equations
+  [DOI: 10.48550/arXiv.2402.16669](https://doi.org/10.48550/arXiv.2402.16669)
 """
 struct BBMBBMVariableEquations1D{RealT <: Real} <: AbstractBBMBBMEquations{1, 3}
     gravity::RealT # gravitational constant
