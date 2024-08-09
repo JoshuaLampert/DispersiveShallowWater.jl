@@ -242,7 +242,7 @@ function rhs_sgn_flat_central!(dq, q, equations, source_terms, cache)
             else
                 # The factorization may fail if the time step is too large
                 # and h becomes negative.
-                fill!(dv, Inf)
+                fill!(dv, NaN)
             end
         else
             factorization = cholesky!(system_matrix)
