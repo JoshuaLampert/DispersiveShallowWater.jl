@@ -190,6 +190,34 @@ using SparseArrays: sparse, SparseMatrixCSC
         @test isapprox(energy_total(q, equations), 8740.42)
     end
 
+    @testset "SerreGreenNaghdiEquations1D" begin
+        equations = @test_nowarn SerreGreenNaghdiEquations1D(gravity_constant = 9.81)
+        @test_nowarn print(equations)
+        @test_nowarn display(equations)
+        conversion_functions = [
+            waterheight_total,
+            waterheight,
+            velocity,
+            momentum,
+            discharge,
+            entropy,
+            energy_total,
+            prim2cons,
+            prim2prim,
+        ]
+        for conversion in conversion_functions
+            @test DispersiveShallowWater.varnames(conversion, equations) isa Tuple
+        end
+        q = [42.0, 2.0]
+        @test prim2prim(q, equations) == q
+        @test isapprox(cons2prim(prim2cons(q, equations), equations), q)
+        @test waterheight_total(q, equations) == 42.0
+        @test waterheight(q, equations) == 42.0
+        @test velocity(q, equations) == 2.0
+        @test momentum(q, equations) == 84.0
+        @test discharge(q, equations) == 84.0
+    end
+
     @testset "AnalysisCallback" begin
         equations = SvaerdKalischEquations1D(gravity_constant = 9.81)
         initial_condition = initial_condition_dingemans
