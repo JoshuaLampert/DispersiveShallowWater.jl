@@ -24,7 +24,7 @@ struct Solver{RealT <: Real, FirstDerivative <: AbstractDerivativeOperator{RealT
                                                                                            SecondDerivative
                                                                                            }
         @assert derivative_order(D1) == 1
-        if D2 isa AbstractDerivativeOperator
+        if D2 isa AbstractDerivativeOperator && !(D2 isa SummationByPartsOperators.FourierPolynomialDerivativeOperator)
             @assert derivative_order(D2) == 2
         end
         new(D1, D2)

@@ -32,6 +32,17 @@ References for the Serre-Green-Naghdi system can be found in
 - Green and Naghdi (1976)
   A derivation of equations for wave propagation in water of variable depth
   [DOI: 10.1017/S0022112076002425](https://doi.org/10.1017/S0022112076002425)
+
+The semidiscretization implemented here conserves
+- the total water mass (integral of h) as a linear invariant
+- the total momentum (integral of h v) as a nonlinear invariant
+- the total energy
+
+for periodic boundary conditions, see
+- Hendrik Ranocha and Mario Ricchiuto (2024)
+  Structure-preserving approximations of the Serre-Green-Naghdi
+  equations in standard and hyperbolic form
+  [arXiv: 2408.02665](https://arxiv.org/abs/2408.02665)
 """
 struct SerreGreenNaghdiEquations1D{Bathymetry <: AbstractBathymetry, RealT <: Real} <:
        AbstractSerreGreenNaghdiEquations{1, 2}

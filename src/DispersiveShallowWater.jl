@@ -18,7 +18,8 @@ import SciMLBase: u_modified!
 @reexport using StaticArrays: SVector
 using SimpleUnPack: @unpack
 using SparseArrays: sparse, issparse
-using SummationByPartsOperators: AbstractDerivativeOperator,
+using SummationByPartsOperators: SummationByPartsOperators,
+                                 AbstractDerivativeOperator,
                                  PeriodicDerivativeOperator, PeriodicUpwindOperators,
                                  UniformPeriodicCoupledOperator,
                                  DerivativeOperator, UpwindOperators,
