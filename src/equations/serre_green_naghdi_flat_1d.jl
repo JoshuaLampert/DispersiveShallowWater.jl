@@ -37,13 +37,15 @@ struct SerreGreenNaghdiEquations1D{Bathymetry <: AbstractBathymetry, RealT <: Re
        AbstractSerreGreenNaghdiEquations{1, 2}
     bathymetry::Bathymetry # type of bathymetry
     gravity::RealT # gravitational constant
+    eta0::RealT # constant still-water surface
 end
 
-function SerreGreenNaghdiEquations1D(; gravity_constant)
-    SerreGreenNaghdiEquations1D(bathymetry_flat, gravity_constant)
+function SerreGreenNaghdiEquations1D(; gravity_constant, eta0 = 0.0)
+    eta0 == 0.0 || @warn "The still-water surface needs to be 0 for the Serre-Green-Naghdi equations"
+    SerreGreenNaghdiEquations1D(bathymetry_flat, gravity_constant, eta0)
 end
 
-varnames(::typeof(prim2prim), ::SerreGreenNaghdiEquations1D) = ("h", "v")
+varnames(::typeof(prim2prim), ::SerreGreenNaghdiEquations1D) = ("η", "v")
 varnames(::typeof(prim2cons), ::SerreGreenNaghdiEquations1D) = ("h", "hv")
 
 """
