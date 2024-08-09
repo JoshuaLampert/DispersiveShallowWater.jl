@@ -41,7 +41,8 @@ struct SerreGreenNaghdiEquations1D{Bathymetry <: AbstractBathymetry, RealT <: Re
 end
 
 function SerreGreenNaghdiEquations1D(; gravity_constant, eta0 = 0.0)
-    eta0 == 0.0 || @warn "The still-water surface needs to be 0 for the Serre-Green-Naghdi equations"
+    eta0 == 0.0 ||
+        @warn "The still-water surface needs to be 0 for the Serre-Green-Naghdi equations"
     SerreGreenNaghdiEquations1D(bathymetry_flat, gravity_constant, eta0)
 end
 
