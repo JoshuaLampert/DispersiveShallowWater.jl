@@ -90,24 +90,43 @@ function create_cache(mesh,
                       RealT, uEltype)
     D = solver.D1
 
-    if D isa PeriodicUpwindOperators
-        # TODO: Implement upwind version
-        error("to be implemented")
-    else
-        # create temporary storage
-        h = ones(RealT, nnodes(mesh))
-        h_x = zero(h)
-        v_x = zero(h)
-        h2_x = zero(h)
-        hv_x = zero(h)
-        v2_x = zero(h)
-        h2_v_vx_x = zero(h)
-        h_vx_x = zero(h)
-        p_x = zero(h)
-        tmp = zero(h)
-        M_h = zero(h)
-        M_h3_3 = zero(h)
+    # create temporary storage
+    h = ones(RealT, nnodes(mesh))
+    h_x = zero(h)
+    v_x = zero(h)
+    h2_x = zero(h)
+    hv_x = zero(h)
+    v2_x = zero(h)
+    h2_v_vx_x = zero(h)
+    h_vx_x = zero(h)
+    p_x = zero(h)
+    tmp = zero(h)
+    M_h = zero(h)
+    M_h3_3 = zero(h)
 
+    if D isa PeriodicUpwindOperators
+        v_x_upwind = zero(h)
+
+        Dmat_minus = sparse(D.minus)
+
+        # Floating point errors accumulate a bit and the system matrix
+        # is not necessarily perfectly symmetric but only up to
+        # round-off errors. We wrap it here to avoid issues with the
+        # factorization.
+        @. M_h = h
+        scale_by_mass_matrix!(M_h, D)
+        @. M_h3_3 = (1 / 3) * h^3
+        scale_by_mass_matrix!(M_h3_3, D)
+        system_matrix = Symmetric(Diagonal(M_h)
+                                  +
+                                  Dmat_minus' * Diagonal(M_h3_3) * Dmat_minus)
+        factorization = cholesky(system_matrix)
+
+        cache = (; h_x, v_x, v_x_upwind, h2_x, hv_x, v2_x,
+                 h2_v_vx_x, h_vx_x, p_x, tmp,
+                 M_h, M_h3_3,
+                 D, Dmat_minus, factorization)
+    else
         if D isa FourierDerivativeOperator
             Dmat = Matrix(D)
 
@@ -151,7 +170,6 @@ end
 #   equations in standard and hyperbolic form
 #   [arXiv: 2408.02665](https://arxiv.org/abs/2408.02665)
 # TODO: Implement source terms
-# TODO: Implement upwind version
 # TODO: Implement variable bathymetry
 function rhs!(dq, q, t, mesh,
               equations::SerreGreenNaghdiEquations1D{BathymetryFlat},
@@ -260,6 +278,104 @@ function rhs_sgn_flat_central!(dq, q, equations, source_terms, cache)
             factorization = cholesky!(system_matrix)
             scale_by_mass_matrix!(tmp, D)
             ldiv!(dv, factorization, tmp)
+        end
+    end
+
+    return nothing
+end
+
+function rhs_sgn_flat_upwind!(dq, q, equations, source_terms, cache)
+    # Unpack physical parameters and SBP operator `D` as well as the
+    # SBP upwind operator in sparse matrix form `Dmat_minus`
+    g = equations.gravity
+    (; Dmat_minus) = cache
+    D_upwind = cache.D
+    D = D_upwind.central
+
+    # `q` and `dq` are `ArrayPartition`s. They collect the individual
+    # arrays for the water height `h` and the velocity `v`.
+    h, v = q.x
+    dh, dv = dq.x
+
+    @trixi_timeit timer() "hyperbolic terms" begin
+        # Compute all derivatives required below
+        (; h_x, v_x, v_x_upwind, h2_x, hv_x, v2_x,
+        h2_v_vx_x, h_vx_x, p_x, tmp,
+        M_h, M_h3_3) = cache
+
+        mul!(h_x, D, h)
+        mul!(v_x, D, v)
+        mul!(v_x_upwind, D_upwind.minus, v)
+        @. tmp = h^2
+        mul!(h2_x, D, tmp)
+        @. tmp = h * v
+        mul!(hv_x, D, tmp)
+        @. tmp = v^2
+        mul!(v2_x, D, tmp)
+
+        @. tmp = h^2 * v * v_x
+        mul!(h2_v_vx_x, D, tmp)
+        @. tmp = h * v_x
+        mul!(h_vx_x, D, tmp)
+        # p_+
+        @. tmp = 0.5 * h^2 * (h * v_x + h_x * v) * v_x_upwind
+        mul!(p_x, D_upwind.plus, tmp)
+        # p_0
+        minv6 = -1 / 6
+        @. tmp = minv6 * (h * h2_v_vx_x
+                          +
+                          h^2 * v * h_vx_x)
+        mul!(p_x, D, tmp, 1.0, 1.0)
+
+        # Plain: h_t + (h v)_x = 0
+        #
+        # Split form for energy conservation:
+        # h_t + h_x v + h v_x = 0
+        @. dh = -(h_x * v + h * v_x)
+
+        # Plain: h v_t + ... = 0
+        #
+        # Split form for energy conservation:
+        @. tmp = -(g * h2_x - g * h * h_x
+                   +
+                   0.5 * h * v2_x
+                   -
+                   0.5 * v^2 * h_x
+                   +
+                   0.5 * hv_x * v
+                   -
+                   0.5 * h * v * v_x
+                   +
+                   p_x)
+    end
+
+    @trixi_timeit timer() "assembling elliptic operator" begin
+        # The code below is equivalent to
+        #   dv .= (Diagonal(h) - Dmat_plus * Diagonal(1/3 .* h.^3) * Dmat_minus) \ tmp
+        # but faster since the symbolic factorization is reused.
+        # Floating point errors accumulate a bit and the system matrix
+        # is not necessarily perfectly symmetric but only up to round-off errors.
+        # We wrap it here to avoid issues with the factorization.
+        @. M_h = h
+        scale_by_mass_matrix!(M_h, D)
+        inv3 = 1 / 3
+        @. M_h3_3 = inv3 * h^3
+        scale_by_mass_matrix!(M_h3_3, D)
+        system_matrix = Symmetric(Diagonal(M_h)
+                                  +
+                                  Dmat_minus' * Diagonal(M_h3_3) * Dmat_minus)
+    end
+
+    @trixi_timeit timer() "solving elliptic system" begin
+        (; factorization) = cache
+        cholesky!(factorization, system_matrix; check = false)
+        if issuccess(factorization)
+            scale_by_mass_matrix!(tmp, D)
+            dv .= factorization \ tmp
+        else
+            # The factorization may fail if the time step is too large
+            # and h becomes negative.
+            fill!(dv, NaN)
         end
     end
 
