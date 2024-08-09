@@ -19,7 +19,7 @@ N = 512
 mesh = Mesh1D(coordinates_min, coordinates_max, N)
 
 # create solver with periodic upwind SBP operators of accuracy order 4
-# (note that only central-type wth even order are used)
+# (note that only central-type with even order are used)
 accuracy_order = 4
 D1 = upwind_operators(periodic_derivative_operator;
                       derivative_order = 1,
