@@ -49,6 +49,20 @@ EXAMPLES_DIR = joinpath(examples_dir(), "serre_green_naghdi_1d")
 
         @test_allocations(semi, sol, allocs=550_000)
     end
+
+    @trixi_testset "serre_green_naghdi_soliton_relaxation.jl" begin
+        @test_trixi_include(joinpath(EXAMPLES_DIR,
+                                     "serre_green_naghdi_soliton_relaxation.jl"),
+                            tspan=(0.0, 0.1),
+                            l2=[8.252225169608892e-8, 6.724994488577288e-7],
+                            linf=[2.6722121404532118e-8, 9.64274304918189e-8],
+                            cons_error=[2.842170943040401e-14, 4.649614027130156e-13],
+                            change_waterheight=2.842170943040401e-14,
+                            change_entropy_modified=0.0,
+                            atol=1e-9) # in order to make CI pass
+
+        @test_allocations(semi, sol, allocs=550_000)
+    end
 end
 
 end # module
