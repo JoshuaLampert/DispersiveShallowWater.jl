@@ -1,5 +1,5 @@
 @doc raw"""
-    SerreGreenNaghdiEquations1D(gravity)
+    SerreGreenNaghdiEquations1D(; gravity_constant, eta0 = 0.0)
 
 Serre-Green-Naghdi system in one spatial dimension.
 The equations are given by

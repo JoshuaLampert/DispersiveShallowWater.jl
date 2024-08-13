@@ -1,5 +1,5 @@
 @doc raw"""
-    BBMBBMEquations1D(gravity, D, eta0 = 0.0)
+    BBMBBMEquations1D(; gravity_constant, D = 1.0, eta0 = 0.0)
 
 BBM-BBM (Benjamin–Bona–Mahony) system in one spatial dimension. The equations are given by
 ```math

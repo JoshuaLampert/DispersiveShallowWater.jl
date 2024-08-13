@@ -1,5 +1,8 @@
 @doc raw"""
-    SvaerdKalischEquations1D(gravity, eta0 = 1.0, alpha = 0.0, beta = 0.2308939393939394, gamma = 0.04034343434343434)
+    SvaerdKalischEquations1D(; gravity_constant, eta0 = 1.0,
+                               alpha = 0.0,
+                               beta = 0.2308939393939394,
+                               gamma = 0.04034343434343434)
 
 Dispersive system by Svärd and Kalisch in one spatial dimension with spatially varying bathymetry. The equations are given in conservative variables by
 ```math

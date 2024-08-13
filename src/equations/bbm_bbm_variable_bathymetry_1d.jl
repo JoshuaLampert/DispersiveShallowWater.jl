@@ -1,5 +1,5 @@
 @doc raw"""
-    BBMBBMVariableEquations1D(gravity, eta0 = 1.0)
+    BBMBBMVariableEquations1D(; gravity_constant, eta0 = 0.0)
 
 BBM-BBM (Benjamin–Bona–Mahony) system in one spatial dimension with spatially varying bathymetry. The equations are given by
 ```math
