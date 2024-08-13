@@ -2,7 +2,7 @@
     SerreGreenNaghdiEquations1D(; gravity_constant, eta0 = 0.0)
 
 Serre-Green-Naghdi system in one spatial dimension.
-The equations are given by
+The equations for flat bathymetry are given by
 ```math
 \begin{aligned}
   h_t + (h v)_x &= 0,\\
@@ -11,10 +11,12 @@ The equations are given by
 \end{aligned}
 ```
 The unknown quantities of the Serre-Green-Naghdi equations are the
-water height ``h`` and the velocity ``v``.
-The gravitational constant is denoted by `g` and the constant bottom
-topography (bathymetry) ``b = 0``.
-The total water height is therefore given by ``\eta = h + b = h``.
+total water height ``\eta = h + b`` and the velocity ``v``.
+The gravitational constant is denoted by `g` and the bottom topography
+(bathymetry) ``b = \eta_0 - D``. The water height above the bathymetry
+is therefore given by ``h = \eta - \eta_0 + D``. The Serre-Green-Naghdi
+equations are only implemented for ``\eta_0 = 0``.
+The total water height is therefore given by ``\eta = h + b``.
 
 References for the Serre-Green-Naghdi system can be found in
 - Serre (1953)
@@ -36,7 +38,7 @@ for periodic boundary conditions, see
   [arXiv: 2408.02665](https://arxiv.org/abs/2408.02665)
 """
 struct SerreGreenNaghdiEquations1D{Bathymetry <: AbstractBathymetry, RealT <: Real} <:
-       AbstractSerreGreenNaghdiEquations{1, 2}
+       AbstractSerreGreenNaghdiEquations{1, 3}
     bathymetry::Bathymetry # type of bathymetry
     gravity::RealT # gravitational constant
     eta0::RealT # constant still-water surface
@@ -48,8 +50,8 @@ function SerreGreenNaghdiEquations1D(; gravity_constant, eta0 = 0.0)
     SerreGreenNaghdiEquations1D(bathymetry_flat, gravity_constant, eta0)
 end
 
-varnames(::typeof(prim2prim), ::SerreGreenNaghdiEquations1D) = ("η", "v")
-varnames(::typeof(prim2cons), ::SerreGreenNaghdiEquations1D) = ("h", "hv")
+varnames(::typeof(prim2prim), ::SerreGreenNaghdiEquations1D) = ("η", "v", "D")
+varnames(::typeof(prim2cons), ::SerreGreenNaghdiEquations1D) = ("h", "hv", "b")
 
 """
     initial_condition_convergence_test(x, t, equations::SerreGreenNaghdiEquations1D, mesh)
@@ -70,7 +72,7 @@ function initial_condition_convergence_test(x, t, equations::SerreGreenNaghdiEqu
     h = h1 + (h2 - h1) * sech(x_t / 2 * sqrt(3 * (h2 - h1) / (h1^2 * h2)))^2
     v = c * (1 - h1 / h)
 
-    return SVector(h, v)
+    return SVector(h, v, 0)
 end
 
 function create_cache(mesh,
@@ -374,17 +376,21 @@ function rhs_sgn_flat_upwind!(dq, q, equations, source_terms, cache)
 end
 
 @inline function prim2cons(q, equations::SerreGreenNaghdiEquations1D)
-    h, v = q
+    h = waterheight(q, equations)
+    v = velocity(q, equations)
+    b = bathymetry(q, equations)
 
     hv = h * v
-    return SVector(h, hv)
+    return SVector(h, hv, b)
 end
 
 @inline function cons2prim(u, equations::SerreGreenNaghdiEquations1D)
-    h, hv = u
+    h, hv, b = u
 
+    eta = h + b
     v = hv / h
-    return SVector(h, v)
+    D = equations.eta0 - b
+    return SVector(eta, v, D)
 end
 
 @inline function waterheight_total(q, equations::SerreGreenNaghdiEquations1D)
@@ -396,11 +402,12 @@ end
 end
 
 @inline function bathymetry(q, equations::SerreGreenNaghdiEquations1D)
-    return q[3]
+    D = q[3]
+    return equations.eta0 - D
 end
 
 @inline function waterheight(q, equations::SerreGreenNaghdiEquations1D)
-    return q[1]
+    return waterheight_total(q, equations) - bathymetry(q, equations)
 end
 
 # The entropy/energy takes the whole `q` for every point in space
