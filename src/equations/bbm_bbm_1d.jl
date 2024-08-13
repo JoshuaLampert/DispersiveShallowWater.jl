@@ -292,11 +292,4 @@ end
     return waterheight_total(q, equations) - bathymetry(q, equations)
 end
 
-@inline function energy_total(q, equations::BBMBBMEquations1D)
-    eta, v = q
-    D = still_waterdepth(q, equations)
-    e = 0.5 * (equations.gravity * eta^2 + (D + eta - equations.eta0) * v^2)
-    return e
-end
-
 @inline entropy(q, equations::BBMBBMEquations1D) = energy_total(q, equations)

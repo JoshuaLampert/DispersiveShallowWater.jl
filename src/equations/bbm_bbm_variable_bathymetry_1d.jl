@@ -378,12 +378,6 @@ end
     return waterheight_total(q, equations) - bathymetry(q, equations)
 end
 
-@inline function energy_total(q, equations::BBMBBMVariableEquations1D)
-    eta, v, D = q
-    e = 0.5 * (equations.gravity * eta^2 + (D + eta - equations.eta0) * v^2)
-    return e
-end
-
 @inline entropy(q, equations::BBMBBMVariableEquations1D) = energy_total(q, equations)
 
 # Calculate the error for the "lake-at-rest" test case where eta should

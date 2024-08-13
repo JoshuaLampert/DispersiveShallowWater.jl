@@ -4,6 +4,8 @@
 An abstract supertype of specific equations such as the BBM-BBM equations.
 The type parameters encode the number of spatial dimensions (`NDIMS`) and the
 number of primary variables (`NVARS`) of the physics model.
+
+See also [`AbstractShallowWaterEquations`](@ref).
 """
 abstract type AbstractEquations{NDIMS, NVARS} end
 
@@ -41,6 +43,26 @@ Common choices of the `conversion_function` are [`prim2prim`](@ref) and
 function varnames end
 
 """
+    AbstractShallowWaterEquations{NDIMS, NVARS}
+
+An abstract supertype of all equation system that contain the classical
+shallow water equations as a subsystem, e.g., the
+[`BBMBBMEquations1D`](@ref), the [`SvaerdKalischEquations1D`](@ref),
+and the [`SerreGreenNaghdiEquations1D`](@ref).
+In 1D, the shallow water equations with flat bathymetry are given by
+```math
+\begin{aligned}
+  h_t + (h v)_x &= 0,\\
+  h v_t + \frac{1}{2} g (h^2)_x + \frac{1}{2} h (v^2)_x &= 0,
+\end{aligned}
+```
+where ``h`` is the [`waterheight`](@ref),
+``v`` the [`velocity`](@ref), and
+``g`` the [`gravity_constant`](@ref).
+"""
+abstract type AbstractShallowWaterEquations{NDIMS, NVARS} <: AbstractEquations{NDIMS, NVARS} end
+
+"""
     prim2prim(q, equations)
 
 Return the primitive variables `q`. While this function is as trivial as `identity`,
@@ -74,7 +96,8 @@ function cons2prim end
     waterheight_total(q, equations)
 
 Return the total waterheight of the primitive variables `q` for a given set of
-`equations`, i.e. the waterheight plus the bathymetry.
+`equations`, i.e., the [`waterheight`](@ref) plus the
+[`bathymetry`](@ref).
 
 `q` is a vector of the primitive variables at a single node, i.e., a vector
 of the correct length `nvariables(equations)`.
@@ -87,7 +110,7 @@ varnames(::typeof(waterheight_total), equations) = ("η",)
     waterheight(q, equations)
 
 Return the waterheight of the primitive variables `q` for a given set of
-`equations`, i.e. the waterheight above the bathymetry.
+`equations`, i.e., the waterheight above the bathymetry.
 
 `q` is a vector of the primitive variables at a single node, i.e., a vector
 of the correct length `nvariables(equations)`.
@@ -112,8 +135,8 @@ varnames(::typeof(velocity), equations) = ("v",)
 """
     momentum(q, equations)
 
-Return the momentum of the primitive variables `q` for a given set of
-`equations`, i.e. the waterheight times the velocity.
+Return the momentum/discharge of the primitive variables `q` for a given set of
+`equations`, i.e., the [`waterheight`](@ref) times the [`velocity`](@ref).
 
 `q` is a vector of the primitive variables at a single node, i.e., a vector
 of the correct length `nvariables(equations)`.
@@ -133,6 +156,16 @@ See [`momentum`](@ref).
 
 varnames(::typeof(discharge), equations) = ("P",)
 
+"""
+    still_water_surface(q, equations::AbstractShallowWaterEquations)
+
+Return the still water surface ``\\eta_0`` (lake at rest)
+for a given set of `equations`.
+"""
+@inline function still_water_surface(q, equations::AbstractShallowWaterEquations)
+    return equations.eta0
+end
+
 @inline function still_waterdepth(q, equations::AbstractEquations)
     b = bathymetry(q, equations)
     D = equations.eta0 - b
@@ -143,27 +176,96 @@ end
     entropy(q, equations)
 
 Return the entropy of the primitive variables `q` for a given set of
-`equations`.
+`equations`. For all [`AbstractShallowWaterEquations`](@ref), the `entropy`
+is just the [`energy_total`](@ref).
 
 `q` is a vector of the primitive variables at a single node, i.e., a vector
 of the correct length `nvariables(equations)`.
 """
 function entropy end
 
+function entropy(q, equations::AbstractShallowWaterEquations)
+    return energy_total(q, equations)
+end
+
 varnames(::typeof(entropy), equations) = ("U",)
+
+"""
+    gravity_constant(equations::AbstractShallowWaterEquations)
+
+Return the gravity constant ``g`` for a given set of `equations`.
+See also [`AbstractShallowWaterEquations`](@ref).
+"""
+@inline function gravity_constant(equations::AbstractShallowWaterEquations)
+    return equations.gravity
+end
 
 """
     energy_total(q, equations)
 
 Return the total energy of the primitive variables `q` for a given set of
-`equations`.
+`equations`. For all [`AbstractShallowWaterEquations`](@ref), the total
+energy is given by the sum of the kinetic and potential energy of the
+shallow water subsystem, i.e.,
+```math
+\\frac{1}{2} h v^2 + \\frac{1}{2} g \\eta^2
+```
+in 1D, where ``h`` is the [`waterheight`](@ref),
+``\\eta = h + b`` the [`waterheight_total`](@ref),
+``v`` the [`velocity`](@ref), and ``g`` the [`gravity_constant`](@ref).
 
 `q` is a vector of the primitive variables at a single node, i.e., a vector
 of the correct length `nvariables(equations)`.
 """
-function energy_total end
+@inline function energy_total(q, equations::AbstractShallowWaterEquations)
+    h = waterheight(q, equations)
+    eta = waterheight_total(q, equations)
+    v = velocity(q, equations)
+    return 0.5f0 * h * v^2 + 0.5f0 * gravity_constant(equations) * eta^2
+end
 
 varnames(::typeof(energy_total), equations) = ("e_total",)
+
+# The modified entropy/total energy takes the whole `q_global` for every point in space
+"""
+    energy_total_modified(q_global, equations::AbstractShallowWaterEquations, cache)
+
+Return the modified total energy of the primitive variables `q_global` for the
+`equations`. This modified total energy is a conserved quantity and can
+contain additional terms compared to the usual [`energy_total`](@ref).
+For example, for the [`SvaerdKalischEquations1D`](@ref) and the
+[`SerreGreenNaghdiEquations1D`](@ref), it contains additional terms
+depending on the derivative of the velocity ``v_x`` modeling non-hydrostatic
+contributions.
+
+`q_global` is a vector of the primitive variables at ALL nodes.
+`cache` needs to hold the SBP operators used by the `solver` if non-hydrostatic
+terms are present.
+"""
+function energy_total_modified(q_global, equations::AbstractShallowWaterEquations, cache)
+    # `q_global` is an `ArrayPartition` of the primitive variables at all nodes
+    @assert nvariables(equations) == length(q_global.x)
+
+    e = similar(q_global.x[begin])
+    for i in eachindex(q_global.x[begin])
+        e[i] = energy_total(get_node_vars(q, equations, i))
+    end
+
+    return e
+end
+
+varnames(::typeof(energy_total_modified), equations) = ("e_modified",)
+
+"""
+    entropy_modified(q, equations::AbstractShallowWaterEquations, cache)
+
+Alias for [`energy_total_modified`](@ref).
+"""
+@inline function entropy_modified(q, equations::AbstractShallowWaterEquations, cache)
+    energy_total_modified(q, equations, cache)
+end
+
+varnames(::typeof(entropy_modified), equations) = ("U_modified",)
 
 # Add methods to show some information on systems of equations.
 function Base.show(io::IO, equations::AbstractEquations)
@@ -210,17 +312,26 @@ Default analysis integrals used by the [`AnalysisCallback`](@ref).
 """
 default_analysis_integrals(::AbstractEquations) = Symbol[]
 
+abstract type AbstractBathymetry end
+struct BathymetryFlat <: AbstractBathymetry end
+"""
+    bathymetry_flat = DispersiveShallowWater.BathymetryFlat()
+
+A singleton struct indicating a flat bathymetry ``b = 0``.
+"""
+const bathymetry_flat = BathymetryFlat()
+
 # BBM-BBM equations
-abstract type AbstractBBMBBMEquations{NDIMS, NVARS} <: AbstractEquations{NDIMS, NVARS} end
+abstract type AbstractBBMBBMEquations{NDIMS, NVARS} <: AbstractShallowWaterEquations{NDIMS, NVARS} end
 include("bbm_bbm_1d.jl")
 include("bbm_bbm_variable_bathymetry_1d.jl")
 
 # Svärd-Kalisch equations
 abstract type AbstractSvaerdKalischEquations{NDIMS, NVARS} <:
-              AbstractEquations{NDIMS, NVARS} end
+    AbstractShallowWaterEquations{NDIMS, NVARS} end
 include("svaerd_kalisch_1d.jl")
 
 # Serre-Green-Naghdi equations
 abstract type AbstractSerreGreenNaghdiEquations{NDIMS, NVARS} <:
-              AbstractEquations{NDIMS, NVARS} end
+    AbstractShallowWaterEquations{NDIMS, NVARS} end
 include("serre_green_naghdi_flat_1d.jl")

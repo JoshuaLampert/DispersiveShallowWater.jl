@@ -1,12 +1,3 @@
-abstract type AbstractBathymetry end
-struct BathymetryFlat <: AbstractBathymetry end
-"""
-    bathymetry_flat = DispersiveShallowWater.BathymetryFlat()
-
-A singleton struct indicating a flat bathymetry ``b = 0``.
-"""
-const bathymetry_flat = BathymetryFlat()
-
 @doc raw"""
     SerreGreenNaghdiEquations1D(gravity)
 
@@ -397,15 +388,15 @@ end
 end
 
 @inline function waterheight_total(q, equations::SerreGreenNaghdiEquations1D)
-    return waterheight(q, equations) + bathymetry(q, equations)
+    return q[1]
 end
 
 @inline function velocity(q, equations::SerreGreenNaghdiEquations1D)
     return q[2]
 end
 
-@inline function bathymetry(q, equations::SerreGreenNaghdiEquations1D{BathymetryFlat})
-    return zero(eltype(q))
+@inline function bathymetry(q, equations::SerreGreenNaghdiEquations1D)
+    return q[3]
 end
 
 @inline function waterheight(q, equations::SerreGreenNaghdiEquations1D)
@@ -413,8 +404,9 @@ end
 end
 
 # The entropy/energy takes the whole `q` for every point in space
-@inline function energy_total(q, equations::SerreGreenNaghdiEquations1D{BathymetryFlat},
-                              cache)
+function energy_total_modified(q,
+                               equations::SerreGreenNaghdiEquations1D{BathymetryFlat},
+                               cache)
     # unpack physical parameters and SBP operator `D`
     g = equations.gravity
     (; D, v_x) = cache
@@ -437,7 +429,3 @@ end
 
     return e
 end
-
-@inline entropy(q, equations::SerreGreenNaghdiEquations1D, cache) = energy_total(q,
-                                                                                 equations,
-                                                                                 cache)

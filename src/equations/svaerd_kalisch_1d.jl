@@ -327,12 +327,6 @@ end
     return waterheight_total(q, equations) - bathymetry(q, equations)
 end
 
-@inline function energy_total(q, equations::SvaerdKalischEquations1D)
-    eta, v, D = q
-    e = 0.5 * (equations.gravity * eta^2 + (D + eta - equations.eta0) * v^2)
-    return e
-end
-
 @inline entropy(u, equations::SvaerdKalischEquations1D) = energy_total(u, equations)
 
 # The modified entropy/total energy takes the whole `q` for every point in space
@@ -369,19 +363,6 @@ number of nodes as length of the second dimension.
     end
     return e_modified
 end
-
-varnames(::typeof(energy_total_modified), equations) = ("e_modified",)
-
-"""
-    entropy_modified(q, equations::SvaerdKalischEquations1D, cache)
-
-Alias for [`energy_total_modified`](@ref).
-"""
-@inline function entropy_modified(q, equations::SvaerdKalischEquations1D, cache)
-    energy_total_modified(q, equations, cache)
-end
-
-varnames(::typeof(entropy_modified), equations) = ("U_modified",)
 
 # Calculate the error for the "lake-at-rest" test case where eta should
 # be a constant value over time
