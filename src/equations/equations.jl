@@ -322,16 +322,17 @@ A singleton struct indicating a flat bathymetry ``b = 0``.
 const bathymetry_flat = BathymetryFlat()
 
 # BBM-BBM equations
-abstract type AbstractBBMBBMEquations{NDIMS, NVARS} <: AbstractShallowWaterEquations{NDIMS, NVARS} end
+abstract type AbstractBBMBBMEquations{NDIMS, NVARS} <:
+              AbstractShallowWaterEquations{NDIMS, NVARS} end
 include("bbm_bbm_1d.jl")
 include("bbm_bbm_variable_bathymetry_1d.jl")
 
 # Svärd-Kalisch equations
 abstract type AbstractSvaerdKalischEquations{NDIMS, NVARS} <:
-    AbstractShallowWaterEquations{NDIMS, NVARS} end
+              AbstractShallowWaterEquations{NDIMS, NVARS} end
 include("svaerd_kalisch_1d.jl")
 
 # Serre-Green-Naghdi equations
 abstract type AbstractSerreGreenNaghdiEquations{NDIMS, NVARS} <:
-    AbstractShallowWaterEquations{NDIMS, NVARS} end
+              AbstractShallowWaterEquations{NDIMS, NVARS} end
 include("serre_green_naghdi_flat_1d.jl")
