@@ -404,8 +404,26 @@ end
 end
 
 # The entropy/energy takes the whole `q` for every point in space
+"""
+    energy_total_modified(q, equations::SerreGreenNaghdiEquations1D, cache)
+
+Return the modified total energy of the primitive variables `q` for the
+[`SerreGreenNaghdiEquations1D`](@ref).
+It contains an additional term containing a
+derivative compared to the usual [`energy_total`](@ref) modeling
+non-hydrostatic contributuons. The [`energy_total_modified`](@ref)
+is a conserved quantity (for periodic boundary conditions).
+
+For a [`bathymetry_flat`](@ref) the total energy is given by
+```math
+\\frac{1}{2} g h^2 + \\frac{1}{2} h v^2 + \\frac{1}{6} h^3 v_x^2.
+```
+
+`q` is a vector of the primitive variables at ALL nodes.
+`cache` needs to hold the SBP operators used by the `solver`.
+"""
 function energy_total_modified(q,
-                               equations::SerreGreenNaghdiEquations1D{BathymetryFlat},
+                               equations::SerreGreenNaghdiEquations1D,
                                cache)
     # unpack physical parameters and SBP operator `D`
     g = equations.gravity
