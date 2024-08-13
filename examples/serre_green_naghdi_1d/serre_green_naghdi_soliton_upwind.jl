@@ -26,8 +26,7 @@ D1 = upwind_operators(periodic_derivative_operator;
                       accuracy_order = accuracy_order - 1,
                       xmin = xmin(mesh), xmax = xmax(mesh),
                       N = nnodes(mesh))
-D2 = sparse(D1.plus) * sparse(D1.minus) # FIXME: not used
-solver = Solver(D1, D2)
+solver = Solver(D1, nothing)
 
 # semidiscretization holds all the necessary data structures for the spatial discretization
 semi = Semidiscretization(mesh, equations, initial_condition, solver,

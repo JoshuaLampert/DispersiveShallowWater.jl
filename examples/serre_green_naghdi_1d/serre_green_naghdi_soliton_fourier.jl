@@ -19,7 +19,7 @@ mesh = Mesh1D(coordinates_min, coordinates_max, N)
 
 # create solver with Fourier pseudospectral collocation method
 D1 = fourier_derivative_operator(xmin(mesh), xmax(mesh), nnodes(mesh))
-solver = Solver(D1, D1^2)
+solver = Solver(D1, nothing)
 
 # semidiscretization holds all the necessary data structures for the spatial discretization
 semi = Semidiscretization(mesh, equations, initial_condition, solver,
