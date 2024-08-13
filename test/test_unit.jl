@@ -208,7 +208,7 @@ using SparseArrays: sparse, SparseMatrixCSC
         for conversion in conversion_functions
             @test DispersiveShallowWater.varnames(conversion, equations) isa Tuple
         end
-        q = [42.0, 2.0]
+        q = [42.0, 2.0, 0.0]
         @test prim2prim(q, equations) == q
         @test isapprox(cons2prim(prim2cons(q, equations), equations), q)
         @test waterheight_total(q, equations) == 42.0
