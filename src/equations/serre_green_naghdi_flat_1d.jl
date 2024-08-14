@@ -165,21 +165,21 @@ end
 # TODO: Implement source terms
 # TODO: Implement variable bathymetry
 function rhs!(dq, q, t, mesh,
-              equations::SerreGreenNaghdiEquations1D{BathymetryFlat},
+              equations::SerreGreenNaghdiEquations1D,
               initial_condition,
               ::BoundaryConditionPeriodic,
               source_terms::Nothing,
               solver, cache)
     if cache.D isa PeriodicUpwindOperators
-        rhs_sgn_flat_upwind!(dq, q, equations, source_terms, cache)
+        rhs_sgn_upwind!(dq, q, equations, source_terms, cache, equations.bathymetry)
     else
-        rhs_sgn_flat_central!(dq, q, equations, source_terms, cache)
+        rhs_sgn_central!(dq, q, equations, source_terms, cache, equations.bathymetry)
     end
 
     return nothing
 end
 
-function rhs_sgn_flat_central!(dq, q, equations, source_terms, cache)
+function rhs_sgn_central!(dq, q, equations, source_terms, cache, ::BathymetryFlat)
     # Unpack physical parameters and SBP operator `D` as well as the
     # SBP operator in sparse matrix form `Dmat`
     g = gravity_constant(equations)
@@ -277,7 +277,7 @@ function rhs_sgn_flat_central!(dq, q, equations, source_terms, cache)
     return nothing
 end
 
-function rhs_sgn_flat_upwind!(dq, q, equations, source_terms, cache)
+function rhs_sgn_upwind!(dq, q, equations, source_terms, cache, ::BathymetryFlat)
     # Unpack physical parameters and SBP operator `D` as well as the
     # SBP upwind operator in sparse matrix form `Dmat_minus`
     g = gravity_constant(equations)
