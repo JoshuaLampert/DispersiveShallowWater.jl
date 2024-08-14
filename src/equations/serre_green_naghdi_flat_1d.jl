@@ -418,7 +418,7 @@ Return the modified total energy of the primitive variables `q_global` for the
 [`SerreGreenNaghdiEquations1D`](@ref).
 It contains an additional term containing a
 derivative compared to the usual [`energy_total`](@ref) modeling
-non-hydrostatic contributuons. The [`energy_total_modified`](@ref)
+non-hydrostatic contributions. The [`energy_total_modified`](@ref)
 is a conserved quantity (for periodic boundary conditions).
 
 For a [`bathymetry_flat`](@ref) the total energy is given by

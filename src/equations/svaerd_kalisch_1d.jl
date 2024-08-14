@@ -334,24 +334,22 @@ end
 
 # The modified entropy/total energy takes the whole `q` for every point in space
 """
-    energy_total_modified(q, equations::SvaerdKalischEquations1D, cache)
+    energy_total_modified(q_global, equations::SvaerdKalischEquations1D, cache)
 
-Return the modified total energy of the primitive variables `q` for the
+Return the modified total energy of the primitive variables `q_global` for the
 `SvaerdKalischEquations1D`. It contains an additional term containing a
 derivative compared to the usual `energy_total`. The `energy_total_modified`
 is a conserved quantity of the Svärd-Kalisch equations.
 
-`q` is a vector of the primitive variables at ALL nodes, i.e., a matrix
-of the correct length `nvariables(equations)` as first dimension and the
-number of nodes as length of the second dimension.
+`q_global` is a vector of the primitive variables at ALL nodes.
 `cache` needs to hold the first-derivative SBP operator `D1`.
 """
-@inline function energy_total_modified(q, equations::SvaerdKalischEquations1D, cache)
+@inline function energy_total_modified(q_global, equations::SvaerdKalischEquations1D, cache)
     # Need to compute new beta_hat, do not use the old one from the `cache`
-    v = q.x[2]
-    D = q.x[3]
+    v = q_global.x[2]
+    D = q_global.x[3]
     N = length(v)
-    e_modified = zeros(eltype(q), N)
+    e_modified = zeros(eltype(q_global), N)
     beta_hat = equations.beta * D .^ 3
     if cache.D1 isa PeriodicDerivativeOperator ||
        cache.D1 isa UniformPeriodicCoupledOperator
@@ -362,7 +360,7 @@ number of nodes as length of the second dimension.
         @error "unknown type of first-derivative operator: $(typeof(cache.D1))"
     end
     for i in 1:N
-        e_modified[i] = energy_total(get_node_vars(q, equations, i), equations) + tmp[i]
+        e_modified[i] = energy_total(get_node_vars(q_global, equations, i), equations) + tmp[i]
     end
     return e_modified
 end
