@@ -268,12 +268,12 @@ end
 varnames(::typeof(energy_total_modified), equations) = ("e_modified",)
 
 """
-    entropy_modified(q, equations::AbstractShallowWaterEquations, cache)
+    entropy_modified(q_global, equations::AbstractShallowWaterEquations, cache)
 
 Alias for [`energy_total_modified`](@ref).
 """
-@inline function entropy_modified(q, equations::AbstractShallowWaterEquations, cache)
-    energy_total_modified(q, equations, cache)
+@inline function entropy_modified(q_global, equations::AbstractShallowWaterEquations, cache)
+    energy_total_modified(q_global, equations, cache)
 end
 
 varnames(::typeof(entropy_modified), equations) = ("U_modified",)
@@ -328,7 +328,7 @@ struct BathymetryFlat <: AbstractBathymetry end
 """
     bathymetry_flat = DispersiveShallowWater.BathymetryFlat()
 
-A singleton struct indicating a flat bathymetry ``b = 0``.
+A singleton struct indicating a flat bathymetry.
 """
 const bathymetry_flat = BathymetryFlat()
 
