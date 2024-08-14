@@ -125,7 +125,9 @@ using SparseArrays: sparse, SparseMatrixCSC
         @test @inferred(velocity(q, equations)) == 2.0
         @test @inferred(momentum(q, equations)) == 88.0
         @test @inferred(discharge(q, equations)) == 88.0
+        @test @inferred(still_water_surface(q, equations)) == 0.0
         @test isapprox(@inferred(energy_total(q, equations)), 8740.42)
+        @test @inferred(energy_total(q, equations)) == @inferred(entropy(q, equations))
 
         @testset "default implementation of energy_total_modified" begin
             initial_condition = initial_condition_convergence_test
@@ -172,7 +174,9 @@ using SparseArrays: sparse, SparseMatrixCSC
         @test @inferred(velocity(q, equations)) == 2.0
         @test @inferred(momentum(q, equations)) == 88.0
         @test @inferred(discharge(q, equations)) == 88.0
+        @test @inferred(still_water_surface(q, equations)) == 0.0
         @test isapprox(@inferred(energy_total(q, equations)), 8740.42)
+        @test @inferred(energy_total(q, equations)) == @inferred(entropy(q, equations))
 
         @testset "default implementation of energy_total_modified" begin
             initial_condition = initial_condition_convergence_test
@@ -224,6 +228,7 @@ using SparseArrays: sparse, SparseMatrixCSC
         @test @inferred(velocity(q, equations)) == 2.0
         @test @inferred(momentum(q, equations)) == 88.0
         @test @inferred(discharge(q, equations)) == 88.0
+        @test @inferred(still_water_surface(q, equations)) == 0.0
         @test isapprox(@inferred(energy_total(q, equations)), 8740.42)
     end
 
@@ -253,6 +258,7 @@ using SparseArrays: sparse, SparseMatrixCSC
         @test @inferred(velocity(q, equations)) == 2.0
         @test @inferred(momentum(q, equations)) == 84.0
         @test @inferred(discharge(q, equations)) == 84.0
+        @test @inferred(still_water_surface(q, equations)) == 0.0
     end
 
     @testset "AnalysisCallback" begin
