@@ -99,7 +99,8 @@ using SparseArrays: sparse, SparseMatrixCSC
     end
 
     @testset "BBMBBMEquations1D" begin
-        equations = @test_nowarn @inferred BBMBBMEquations1D(gravity_constant = 9.81, D = 2.0)
+        equations = @test_nowarn @inferred BBMBBMEquations1D(gravity_constant = 9.81,
+                                                             D = 2.0)
         @test_nowarn print(equations)
         @test_nowarn display(equations)
         conversion_functions = [
@@ -133,11 +134,14 @@ using SparseArrays: sparse, SparseMatrixCSC
             solver = Solver(mesh, 4)
             semi = @inferred Semidiscretization(mesh, equations, initial_condition,
                                                 solver; boundary_conditions)
-            q = @inferred DispersiveShallowWater.compute_coefficients(initial_condition, 0.0, semi)
+            q = @inferred DispersiveShallowWater.compute_coefficients(initial_condition,
+                                                                      0.0, semi)
             _, _, _, cache = @inferred DispersiveShallowWater.mesh_equations_solver_cache(semi)
             e_modified = @inferred energy_total_modified(q, equations, cache)
             e_modified_total = @inferred DispersiveShallowWater.integrate(e_modified, semi)
-            e_total = @inferred DispersiveShallowWater.integrate_quantity(q -> energy_total(q, equations), q, semi)
+            e_total = @inferred DispersiveShallowWater.integrate_quantity(q -> energy_total(q,
+                                                                                            equations),
+                                                                          q, semi)
             @test isapprox(e_modified_total, e_total)
         end
     end
@@ -177,11 +181,14 @@ using SparseArrays: sparse, SparseMatrixCSC
             solver = Solver(mesh, 4)
             semi = @inferred Semidiscretization(mesh, equations, initial_condition,
                                                 solver; boundary_conditions)
-            q = @inferred DispersiveShallowWater.compute_coefficients(initial_condition, 0.0, semi)
+            q = @inferred DispersiveShallowWater.compute_coefficients(initial_condition,
+                                                                      0.0, semi)
             _, _, _, cache = @inferred DispersiveShallowWater.mesh_equations_solver_cache(semi)
             e_modified = @inferred energy_total_modified(q, equations, cache)
             e_modified_total = @inferred DispersiveShallowWater.integrate(e_modified, semi)
-            e_total = @inferred DispersiveShallowWater.integrate_quantity(q -> energy_total(q, equations), q, semi)
+            e_total = @inferred DispersiveShallowWater.integrate_quantity(q -> energy_total(q,
+                                                                                            equations),
+                                                                          q, semi)
             @test isapprox(e_modified_total, e_total)
         end
     end

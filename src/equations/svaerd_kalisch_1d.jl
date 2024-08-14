@@ -360,7 +360,8 @@ is a conserved quantity of the Svärd-Kalisch equations.
         @error "unknown type of first-derivative operator: $(typeof(cache.D1))"
     end
     for i in 1:N
-        e_modified[i] = energy_total(get_node_vars(q_global, equations, i), equations) + tmp[i]
+        e_modified[i] = energy_total(get_node_vars(q_global, equations, i), equations) +
+                        tmp[i]
     end
     return e_modified
 end
