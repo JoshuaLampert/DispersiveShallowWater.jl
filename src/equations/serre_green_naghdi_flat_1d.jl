@@ -441,7 +441,7 @@ function energy_total_modified(q_global,
     h, v = q_global.x
 
     N = length(v)
-    e = zeros(eltype(q), N)
+    e = zeros(eltype(q_global), N)
 
     # 1/2 g h^2 + 1/2 h v^2 + 1/6 h^3 v_x^2
     if D isa PeriodicUpwindOperators
