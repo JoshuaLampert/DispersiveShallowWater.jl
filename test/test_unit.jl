@@ -169,6 +169,21 @@ using SparseArrays: sparse, SparseMatrixCSC
         @test momentum(q, equations) == 88.0
         @test discharge(q, equations) == 88.0
         @test isapprox(energy_total(q, equations), 8740.42)
+
+        @testset "default implementation of energy_total_modified" begin
+            initial_condition = initial_condition_convergence_test
+            boundary_conditions = boundary_condition_periodic
+            mesh = @inferred Mesh1D(-1.0, 1.0, 10)
+            solver = Solver(mesh, 4)
+            semi = @inferred Semidiscretization(mesh, equations, initial_condition,
+                                                solver; boundary_conditions)
+            q = @inferred DispersiveShallowWater.compute_coefficients(initial_condition, 0.0, semi)
+            _, _, _, cache = @inferred DispersiveShallowWater.mesh_equations_solver_cache(semi)
+            e_modified = @inferred energy_total_modified(q, equations, cache)
+            e_modified_total = @inferred DispersiveShallowWater.integrate(e_modified, semi)
+            e_total = @inferred DispersiveShallowWater.integrate_quantity(q -> energy_total(q, equations), q, semi)
+            @test isapprox(e_modified_total, e_total)
+        end
     end
 
     @testset "SvaerdKalischEquations1D" begin
