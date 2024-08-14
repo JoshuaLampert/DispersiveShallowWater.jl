@@ -166,9 +166,10 @@ for a given set of `equations`.
     return equations.eta0
 end
 
-@inline function still_waterdepth(q, equations::AbstractEquations)
+@inline function still_waterdepth(q, equations::AbstractShallowWaterEquations)
     b = bathymetry(q, equations)
-    D = equations.eta0 - b
+    eta0 = still_water_surface(q, equations)
+    D = eta0 - b
     return D
 end
 

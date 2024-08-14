@@ -182,7 +182,7 @@ end
 function rhs_sgn_flat_central!(dq, q, equations, source_terms, cache)
     # Unpack physical parameters and SBP operator `D` as well as the
     # SBP operator in sparse matrix form `Dmat`
-    g = equations.gravity
+    g = gravity_constant(equations)
     (; D, Dmat) = cache
 
     # `q` and `dq` are `ArrayPartition`s. They collect the individual
@@ -280,7 +280,7 @@ end
 function rhs_sgn_flat_upwind!(dq, q, equations, source_terms, cache)
     # Unpack physical parameters and SBP operator `D` as well as the
     # SBP upwind operator in sparse matrix form `Dmat_minus`
-    g = equations.gravity
+    g = gravity_constant(equations)
     (; Dmat_minus) = cache
     D_upwind = cache.D
     D = D_upwind.central
