@@ -106,8 +106,8 @@ end
 end
 
 function allocate_coefficients(mesh::Mesh1D, equations, solver::AbstractSolver)
-    return ArrayPartition([zeros(real(solver), nnodes(mesh))
-                           for _ in eachvariable(equations)]...)
+    return ArrayPartition(ntuple(_ -> zeros(real(solver), nnodes(mesh)),
+                                 Val(nvariables(equations))))
 end
 
 function compute_coefficients!(q, func, t, mesh::Mesh1D, equations, solver::AbstractSolver)

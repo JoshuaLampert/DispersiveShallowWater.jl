@@ -133,7 +133,7 @@ using SparseArrays: sparse, SparseMatrixCSC
             solver = Solver(mesh, 4)
             semi = @inferred Semidiscretization(mesh, equations, initial_condition,
                                                 solver; boundary_conditions)
-            q = DispersiveShallowWater.compute_coefficients(initial_condition, 0.0, semi)
+            q = @inferred DispersiveShallowWater.compute_coefficients(initial_condition, 0.0, semi)
             _, _, _, cache = @inferred DispersiveShallowWater.mesh_equations_solver_cache(semi)
             e_modified = @inferred energy_total_modified(q, equations, cache)
             e_modified_total = @inferred DispersiveShallowWater.integrate(e_modified, semi)
