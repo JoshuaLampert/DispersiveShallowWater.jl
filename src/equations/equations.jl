@@ -259,7 +259,7 @@ function energy_total_modified(q_global, equations::AbstractShallowWaterEquation
 
     e = similar(q_global.x[begin])
     for i in eachindex(q_global.x[begin])
-        e[i] = energy_total(get_node_vars(q, equations, i))
+        e[i] = energy_total(get_node_vars(q_global, equations, i), equations)
     end
 
     return e
