@@ -18,7 +18,7 @@ EXAMPLES_DIR = joinpath(examples_dir(), "serre_green_naghdi_1d")
                             change_waterheight=0.0,
                             change_entropy_modified=-3.1093350116861984e-11)
 
-        @test_allocations(semi, sol, allocs=550_000)
+        @test_allocations(semi, sol, 550_000)
     end
 
     @trixi_testset "serre_green_naghdi_soliton_fourier.jl" begin
@@ -31,7 +31,7 @@ EXAMPLES_DIR = joinpath(examples_dir(), "serre_green_naghdi_1d")
                             change_waterheight=2.842170943040401e-14,
                             change_entropy_modified=-3.097966327914037e-11)
 
-        @test_allocations(semi, sol, allocs=550_000)
+        @test_allocations(semi, sol, allocs=450_000)
     end
 
     @trixi_testset "serre_green_naghdi_soliton_upwind.jl" begin
@@ -44,7 +44,7 @@ EXAMPLES_DIR = joinpath(examples_dir(), "serre_green_naghdi_1d")
                             change_waterheight=4.263256414560601e-14,
                             change_entropy_modified=-3.1036506698001176e-11)
 
-        @test_allocations(semi, sol, allocs=550_000)
+        @test_allocations(semi, sol, allocs=500_000)
     end
 
     @trixi_testset "serre_green_naghdi_soliton_relaxation.jl" begin
@@ -57,7 +57,7 @@ EXAMPLES_DIR = joinpath(examples_dir(), "serre_green_naghdi_1d")
                             change_waterheight=2.842170943040401e-14,
                             change_entropy_modified=0.0)
 
-        @test_allocations(semi, sol, allocs=550_000)
+        @test_allocations(semi, sol, allocs=450_000)
     end
 end
 
