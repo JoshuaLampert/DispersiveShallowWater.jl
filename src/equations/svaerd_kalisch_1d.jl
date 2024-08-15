@@ -1,5 +1,5 @@
 @doc raw"""
-    SvaerdKalischEquations1D(; gravity_constant, eta0 = 1.0,
+    SvaerdKalischEquations1D(; gravity_constant, eta0 = 0.0,
                                alpha = 0.0,
                                beta = 0.2308939393939394,
                                gamma = 0.04034343434343434)
