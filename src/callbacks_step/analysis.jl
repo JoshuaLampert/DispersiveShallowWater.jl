@@ -116,7 +116,7 @@ end
 
 """
     errors(analysis_callback)
-    
+
 Return the computed errors for each timestep as a named tuple.
 The shape of each entry is (nvariables, ntimesteps).
 """
@@ -330,7 +330,10 @@ function analyze(quantity, q, t, semi::Semidiscretization)
     integrate_quantity(q -> quantity(q, semi.equations), q, semi)
 end
 
-# modified entropy from Svärd-Kalisch equations need to take the whole vector `u` for every point in space
+# The modified entropy/energy of the Svärd-Kalisch and
+# Serre-Green-Naghdi equations
+# takes the whole `q` for every point in space since it requires
+# the derivative of the velocity `v_x`.
 function analyze(quantity::Union{typeof(energy_total_modified), typeof(entropy_modified)},
                  q, t, semi::Semidiscretization)
     integrate_quantity(quantity, q, semi)

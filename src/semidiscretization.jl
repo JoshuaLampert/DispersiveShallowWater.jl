@@ -144,7 +144,9 @@ function integrate_quantity!(quantity, func, q, semi::Semidiscretization)
     integrate(quantity, semi)
 end
 
-# modified entropy from Svärd-Kalisch equations need to take the whole vector `q` for every point in space
+# The entropy/energy of the Svärd-Kalisch and Serre-Green-Naghdi equations
+# takes the whole `q` for every point in space since it requires
+# the derivative of the velocity `v_x`.
 function integrate_quantity(func::Union{typeof(energy_total_modified),
                                         typeof(entropy_modified)}, q,
                             semi::Semidiscretization)

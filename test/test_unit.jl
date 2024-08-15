@@ -99,7 +99,8 @@ using SparseArrays: sparse, SparseMatrixCSC
     end
 
     @testset "BBMBBMEquations1D" begin
-        equations = @test_nowarn BBMBBMEquations1D(gravity_constant = 9.81, D = 2.0)
+        equations = @test_nowarn @inferred BBMBBMEquations1D(gravity_constant = 9.81,
+                                                             D = 2.0)
         @test_nowarn print(equations)
         @test_nowarn display(equations)
         conversion_functions = [
@@ -117,14 +118,34 @@ using SparseArrays: sparse, SparseMatrixCSC
             @test DispersiveShallowWater.varnames(conversion, equations) isa Tuple
         end
         q = [42.0, 2.0]
-        @test prim2prim(q, equations) == q
+        @test @inferred(prim2prim(q, equations)) == q
         @test isapprox(cons2prim(prim2cons(q, equations), equations), q)
-        @test waterheight_total(q, equations) == 42.0
-        @test waterheight(q, equations) == 44.0
-        @test velocity(q, equations) == 2.0
-        @test momentum(q, equations) == 88.0
-        @test discharge(q, equations) == 88.0
-        @test isapprox(energy_total(q, equations), 8740.42)
+        @test @inferred(waterheight_total(q, equations)) == 42.0
+        @test @inferred(waterheight(q, equations)) == 44.0
+        @test @inferred(velocity(q, equations)) == 2.0
+        @test @inferred(momentum(q, equations)) == 88.0
+        @test @inferred(discharge(q, equations)) == 88.0
+        @test @inferred(still_water_surface(q, equations)) == 0.0
+        @test isapprox(@inferred(energy_total(q, equations)), 8740.42)
+        @test @inferred(energy_total(q, equations)) == @inferred(entropy(q, equations))
+
+        @testset "default implementation of energy_total_modified" begin
+            initial_condition = initial_condition_convergence_test
+            boundary_conditions = boundary_condition_periodic
+            mesh = @inferred Mesh1D(-1.0, 1.0, 10)
+            solver = Solver(mesh, 4)
+            semi = @inferred Semidiscretization(mesh, equations, initial_condition,
+                                                solver; boundary_conditions)
+            q = @inferred DispersiveShallowWater.compute_coefficients(initial_condition,
+                                                                      0.0, semi)
+            _, _, _, cache = @inferred DispersiveShallowWater.mesh_equations_solver_cache(semi)
+            e_modified = @inferred energy_total_modified(q, equations, cache)
+            e_modified_total = @inferred DispersiveShallowWater.integrate(e_modified, semi)
+            e_total = @inferred DispersiveShallowWater.integrate_quantity(q -> energy_total(q,
+                                                                                            equations),
+                                                                          q, semi)
+            @test isapprox(e_modified_total, e_total)
+        end
     end
 
     @testset "BBMBBMVariableEquations1D" begin
@@ -146,14 +167,34 @@ using SparseArrays: sparse, SparseMatrixCSC
             @test DispersiveShallowWater.varnames(conversion, equations) isa Tuple
         end
         q = [42.0, 2.0, 2.0]
-        @test prim2prim(q, equations) == q
-        @test isapprox(cons2prim(prim2cons(q, equations), equations), q)
-        @test waterheight_total(q, equations) == 42.0
-        @test waterheight(q, equations) == 44.0
-        @test velocity(q, equations) == 2.0
-        @test momentum(q, equations) == 88.0
-        @test discharge(q, equations) == 88.0
-        @test isapprox(energy_total(q, equations), 8740.42)
+        @test @inferred(prim2prim(q, equations)) == q
+        @test isapprox(@inferred(cons2prim(prim2cons(q, equations), equations)), q)
+        @test @inferred(waterheight_total(q, equations)) == 42.0
+        @test @inferred(waterheight(q, equations)) == 44.0
+        @test @inferred(velocity(q, equations)) == 2.0
+        @test @inferred(momentum(q, equations)) == 88.0
+        @test @inferred(discharge(q, equations)) == 88.0
+        @test @inferred(still_water_surface(q, equations)) == 0.0
+        @test isapprox(@inferred(energy_total(q, equations)), 8740.42)
+        @test @inferred(energy_total(q, equations)) == @inferred(entropy(q, equations))
+
+        @testset "default implementation of energy_total_modified" begin
+            initial_condition = initial_condition_convergence_test
+            boundary_conditions = boundary_condition_periodic
+            mesh = @inferred Mesh1D(-1.0, 1.0, 10)
+            solver = Solver(mesh, 4)
+            semi = @inferred Semidiscretization(mesh, equations, initial_condition,
+                                                solver; boundary_conditions)
+            q = @inferred DispersiveShallowWater.compute_coefficients(initial_condition,
+                                                                      0.0, semi)
+            _, _, _, cache = @inferred DispersiveShallowWater.mesh_equations_solver_cache(semi)
+            e_modified = @inferred energy_total_modified(q, equations, cache)
+            e_modified_total = @inferred DispersiveShallowWater.integrate(e_modified, semi)
+            e_total = @inferred DispersiveShallowWater.integrate_quantity(q -> energy_total(q,
+                                                                                            equations),
+                                                                          q, semi)
+            @test isapprox(e_modified_total, e_total)
+        end
     end
 
     @testset "SvaerdKalischEquations1D" begin
@@ -180,14 +221,44 @@ using SparseArrays: sparse, SparseMatrixCSC
             @test DispersiveShallowWater.varnames(conversion, equations) isa Tuple
         end
         q = [42.0, 2.0, 2.0]
-        @test prim2prim(q, equations) == q
-        @test isapprox(cons2prim(prim2cons(q, equations), equations), q)
-        @test waterheight_total(q, equations) == 42.0
-        @test waterheight(q, equations) == 44.0
-        @test velocity(q, equations) == 2.0
-        @test momentum(q, equations) == 88.0
-        @test discharge(q, equations) == 88.0
-        @test isapprox(energy_total(q, equations), 8740.42)
+        @test @inferred(prim2prim(q, equations)) == q
+        @test isapprox(@inferred(cons2prim(prim2cons(q, equations), equations)), q)
+        @test @inferred(waterheight_total(q, equations)) == 42.0
+        @test @inferred(waterheight(q, equations)) == 44.0
+        @test @inferred(velocity(q, equations)) == 2.0
+        @test @inferred(momentum(q, equations)) == 88.0
+        @test @inferred(discharge(q, equations)) == 88.0
+        @test @inferred(still_water_surface(q, equations)) == 0.0
+        @test isapprox(@inferred(energy_total(q, equations)), 8740.42)
+    end
+
+    @testset "SerreGreenNaghdiEquations1D" begin
+        equations = @test_nowarn SerreGreenNaghdiEquations1D(gravity_constant = 9.81)
+        @test_nowarn print(equations)
+        @test_nowarn display(equations)
+        conversion_functions = [
+            waterheight_total,
+            waterheight,
+            velocity,
+            momentum,
+            discharge,
+            entropy,
+            energy_total,
+            prim2cons,
+            prim2prim,
+        ]
+        for conversion in conversion_functions
+            @test DispersiveShallowWater.varnames(conversion, equations) isa Tuple
+        end
+        q = [42.0, 2.0, 0.0]
+        @test @inferred(prim2prim(q, equations)) == q
+        @test isapprox(@inferred(cons2prim(prim2cons(q, equations), equations)), q)
+        @test @inferred(waterheight_total(q, equations)) == 42.0
+        @test @inferred(waterheight(q, equations)) == 42.0
+        @test @inferred(velocity(q, equations)) == 2.0
+        @test @inferred(momentum(q, equations)) == 84.0
+        @test @inferred(discharge(q, equations)) == 84.0
+        @test @inferred(still_water_surface(q, equations)) == 0.0
     end
 
     @testset "AnalysisCallback" begin

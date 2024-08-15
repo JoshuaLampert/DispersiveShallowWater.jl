@@ -1,5 +1,8 @@
 @doc raw"""
-    SvaerdKalischEquations1D(gravity, eta0 = 1.0, alpha = 0.0, beta = 0.2308939393939394, gamma = 0.04034343434343434)
+    SvaerdKalischEquations1D(; gravity_constant, eta0 = 0.0,
+                               alpha = 0.0,
+                               beta = 0.2308939393939394,
+                               gamma = 0.04034343434343434)
 
 Dispersive system by Svärd and Kalisch in one spatial dimension with spatially varying bathymetry. The equations are given in conservative variables by
 ```math
@@ -327,34 +330,26 @@ end
     return waterheight_total(q, equations) - bathymetry(q, equations)
 end
 
-@inline function energy_total(q, equations::SvaerdKalischEquations1D)
-    eta, v, D = q
-    e = 0.5 * (equations.gravity * eta^2 + (D + eta - equations.eta0) * v^2)
-    return e
-end
-
 @inline entropy(u, equations::SvaerdKalischEquations1D) = energy_total(u, equations)
 
 # The modified entropy/total energy takes the whole `q` for every point in space
 """
-    energy_total_modified(q, equations::SvaerdKalischEquations1D, cache)
+    energy_total_modified(q_global, equations::SvaerdKalischEquations1D, cache)
 
-Return the modified total energy of the primitive variables `q` for the
+Return the modified total energy of the primitive variables `q_global` for the
 `SvaerdKalischEquations1D`. It contains an additional term containing a
 derivative compared to the usual `energy_total`. The `energy_total_modified`
 is a conserved quantity of the Svärd-Kalisch equations.
 
-`q` is a vector of the primitive variables at ALL nodes, i.e., a matrix
-of the correct length `nvariables(equations)` as first dimension and the
-number of nodes as length of the second dimension.
+`q_global` is a vector of the primitive variables at ALL nodes.
 `cache` needs to hold the first-derivative SBP operator `D1`.
 """
-@inline function energy_total_modified(q, equations::SvaerdKalischEquations1D, cache)
+@inline function energy_total_modified(q_global, equations::SvaerdKalischEquations1D, cache)
     # Need to compute new beta_hat, do not use the old one from the `cache`
-    v = q.x[2]
-    D = q.x[3]
+    v = q_global.x[2]
+    D = q_global.x[3]
     N = length(v)
-    e_modified = zeros(eltype(q), N)
+    e_modified = zeros(eltype(q_global), N)
     beta_hat = equations.beta * D .^ 3
     if cache.D1 isa PeriodicDerivativeOperator ||
        cache.D1 isa UniformPeriodicCoupledOperator
@@ -365,23 +360,11 @@ number of nodes as length of the second dimension.
         @error "unknown type of first-derivative operator: $(typeof(cache.D1))"
     end
     for i in 1:N
-        e_modified[i] = energy_total(get_node_vars(q, equations, i), equations) + tmp[i]
+        e_modified[i] = energy_total(get_node_vars(q_global, equations, i), equations) +
+                        tmp[i]
     end
     return e_modified
 end
-
-varnames(::typeof(energy_total_modified), equations) = ("e_modified",)
-
-"""
-    entropy_modified(q, equations::SvaerdKalischEquations1D, cache)
-
-Alias for [`energy_total_modified`](@ref).
-"""
-@inline function entropy_modified(q, equations::SvaerdKalischEquations1D, cache)
-    energy_total_modified(q, equations, cache)
-end
-
-varnames(::typeof(entropy_modified), equations) = ("U_modified",)
 
 # Calculate the error for the "lake-at-rest" test case where eta should
 # be a constant value over time

@@ -1,5 +1,5 @@
 @doc raw"""
-    BBMBBMVariableEquations1D(gravity, eta0 = 1.0)
+    BBMBBMVariableEquations1D(; gravity_constant, eta0 = 0.0)
 
 BBM-BBM (Benjamin–Bona–Mahony) system in one spatial dimension with spatially varying bathymetry. The equations are given by
 ```math
@@ -376,12 +376,6 @@ end
 
 @inline function waterheight(q, equations::BBMBBMVariableEquations1D)
     return waterheight_total(q, equations) - bathymetry(q, equations)
-end
-
-@inline function energy_total(q, equations::BBMBBMVariableEquations1D)
-    eta, v, D = q
-    e = 0.5 * (equations.gravity * eta^2 + (D + eta - equations.eta0) * v^2)
-    return e
 end
 
 @inline entropy(q, equations::BBMBBMVariableEquations1D) = energy_total(q, equations)

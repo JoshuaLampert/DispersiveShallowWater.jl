@@ -10,9 +10,10 @@ abstract type AbstractSolver end
 
 A `struct` that holds the summation by parts (SBP) operators that are used for the spatial discretization.
 """
-struct Solver{RealT <: Real, FirstDerivative <: AbstractDerivativeOperator{RealT},
+struct Solver{RealT <: Real,
+              FirstDerivative <: AbstractDerivativeOperator{RealT},
               SecondDerivative <:
-              Union{AbstractDerivativeOperator{RealT}, AbstractMatrix{RealT}}} <:
+              Union{AbstractDerivativeOperator{RealT}, AbstractMatrix{RealT}, Nothing}} <:
        AbstractSolver
     D1::FirstDerivative
     D2::SecondDerivative
@@ -24,7 +25,8 @@ struct Solver{RealT <: Real, FirstDerivative <: AbstractDerivativeOperator{RealT
                                                                                            SecondDerivative
                                                                                            }
         @assert derivative_order(D1) == 1
-        if D2 isa AbstractDerivativeOperator
+        if D2 isa AbstractDerivativeOperator &&
+           !(D2 isa SummationByPartsOperators.FourierPolynomialDerivativeOperator)
             @assert derivative_order(D2) == 2
         end
         new(D1, D2)
@@ -48,14 +50,16 @@ end
 """
     Solver(D1, D2)
 
-Create a solver, where `D1` is an `AbstractDerivativeOperator`  from [SummationByPartsOperators.jl](https://github.com/ranocha/SummationByPartsOperators.jl)
-of first `derivative_order` and `D2` is an `AbstractDerivativeOperator` of second `derivative_order` or an `AbstractMatrix`.
-Both summation by parts operators should be associated with the same grid.
+Create a solver, where `D1` is an `AbstractDerivativeOperator`
+from [SummationByPartsOperators.jl](https://github.com/ranocha/SummationByPartsOperators.jl)
+of first `derivative_order` and `D2` is an `AbstractDerivativeOperator`
+of second `derivative_order` or an `AbstractMatrix`. It can also be `nothing`
+if no second derivative is used by the discretization.
+Both summation-by-parts operators should be associated with the same grid.
 """
 function Solver(D1::AbstractDerivativeOperator{RealT},
-                D2::Union{AbstractDerivativeOperator{RealT}, AbstractMatrix{RealT}}) where {
-                                                                                            RealT
-                                                                                            }
+                D2::Union{AbstractDerivativeOperator{RealT}, AbstractMatrix{RealT},
+                          Nothing}) where {RealT}
     Solver{RealT, typeof(D1), typeof(D2)}(D1, D2)
 end
 
@@ -102,8 +106,8 @@ end
 end
 
 function allocate_coefficients(mesh::Mesh1D, equations, solver::AbstractSolver)
-    return ArrayPartition([zeros(real(solver), nnodes(mesh))
-                           for _ in eachvariable(equations)]...)
+    return ArrayPartition(ntuple(_ -> zeros(real(solver), nnodes(mesh)),
+                                 Val(nvariables(equations))))
 end
 
 function compute_coefficients!(q, func, t, mesh::Mesh1D, equations, solver::AbstractSolver)
