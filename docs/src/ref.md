@@ -13,7 +13,8 @@ Pages = ["DispersiveShallowWater.jl"]
 
 ```@autodocs
 Modules = [DispersiveShallowWater]
-Pages = readdir("equations")
+Pages = [joinpath("equations", "equations.jl"), joinpath("equations", "bbm_bbm_1d.jl"), joinpath("equations", "bbm_bbm_variable_bathymetry_1d.jl"),
+         joinpath("equations", "svaerd_kalisch_1d.jl"), joinpath("equations", serre_green_naghdi_1d.jl")]
 ```
 
 ## Mesh
@@ -48,7 +49,8 @@ Pages = ["ssemidiscretization.jl"]
 
 ```@autodocs
 Modules = [DispersiveShallowWater]
-Pages = readdir("callbacks_step")
+Pages = [joinpath("callbacks_step", "callbacks_step.jl"), joinpath("callbacks_step", "analysis.jl"), joinpath("callbacks_step", "relaxation.jl"),
+         joinpath("callbacks_step", "summary.jl")]
 ```
 
 ## Utilities
