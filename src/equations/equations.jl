@@ -325,13 +325,38 @@ Default analysis integrals used by the [`AnalysisCallback`](@ref).
 default_analysis_integrals(::AbstractEquations) = Symbol[]
 
 abstract type AbstractBathymetry end
+
 struct BathymetryFlat <: AbstractBathymetry end
 """
     bathymetry_flat = DispersiveShallowWater.BathymetryFlat()
 
 A singleton struct indicating a flat bathymetry.
+
+See also [`bathymetry_mild_slope`](@ref) and [`bathymetry_variable`](@ref).
 """
 const bathymetry_flat = BathymetryFlat()
+
+struct BathymetryMildSlope <: AbstractBathymetry end
+"""
+    bathymetry_mild_slope = DispersiveShallowWater.BathymetryMildSlope()
+
+A singleton struct indicating a variable bathymetry with mild-slope
+approximation.
+
+See also [`bathymetry_flat`](@ref) and [`bathymetry_variable`](@ref).
+"""
+const bathymetry_mild_slope = BathymetryMildSlope()
+
+struct BathymetryVariable <: AbstractBathymetry end
+"""
+    bathymetry_variable = DispersiveShallowWater.BathymetryVariable()
+
+A singleton struct indicating a variable bathymetry (without
+mild-slope approximation).
+
+See also [`bathymetry_flat`](@ref) and [`bathymetry_mild_slope`](@ref).
+"""
+const bathymetry_variable = BathymetryVariable()
 
 # BBM-BBM equations
 abstract type AbstractBBMBBMEquations{NDIMS, NVARS} <:
@@ -347,4 +372,4 @@ include("svaerd_kalisch_1d.jl")
 # Serre-Green-Naghdi equations
 abstract type AbstractSerreGreenNaghdiEquations{NDIMS, NVARS} <:
               AbstractShallowWaterEquations{NDIMS, NVARS} end
-include("serre_green_naghdi_flat_1d.jl")
+include("serre_green_naghdi_1d.jl")

@@ -65,7 +65,7 @@ export Semidiscretization, semidiscretize, grid
 
 export boundary_condition_periodic, boundary_condition_reflecting
 
-export bathymetry_flat
+export bathymetry_flat, bathymetry_mild_slope, bathymetry_variable
 
 export initial_condition_convergence_test,
        initial_condition_manufactured, source_terms_manufactured,
