@@ -337,7 +337,7 @@ end
     energy_total_modified(q_global, equations::SvaerdKalischEquations1D, cache)
 
 Return the modified total energy of the primitive variables `q_global` for the
-`SvaerdKalischEquations1D`. It contains an additional term containing a
+[`SvaerdKalischEquations1D`](@ref). It contains an additional term containing a
 derivative compared to the usual `energy_total`. The `energy_total_modified`
 is a conserved quantity of the Svärd-Kalisch equations.
 
