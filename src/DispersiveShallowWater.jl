@@ -4,7 +4,7 @@
 **DispersiveShallowWater.jl** is a Julia package that implements structure-preserving numerical methods for dispersive shallow water models.
 It provides provably conservative, entropy-conserving and well-balanced numerical schemes for some dispersive shallow water models.
 
-The semidiscretizations are based on summation by parts (SBP) operators, which are implemented in SummationByPartsOperators.jl. In order to
+The semidiscretizations are based on summation-by-parts (SBP) operators, which are implemented in SummationByPartsOperators.jl. To
 obtain fully discrete schemes, the time integration methods from OrdinaryDiffEq.jl are used to solve the resulting ordinary differential equations.
 Fully discrete entropy-conservative methods can be obtained by using the relaxation method provided by DispersiveShallowWater.jl.
 
