@@ -179,6 +179,35 @@ EXAMPLES_DIR = joinpath(examples_dir(), "serre_green_naghdi_1d")
 
         @test_allocations(semi, sol, allocs=850_000)
     end
+
+    @trixi_testset "serre_green_naghdi_dingemans.jl" begin
+        @test_trixi_include(joinpath(EXAMPLES_DIR,
+                                     "serre_green_naghdi_dingemans.jl"),
+                            tspan=(0.0, 1.0),
+                            l2=[0.2463295492331802, 0.805357513755897, 0.0],
+                            linf=[0.036265772921736605, 0.11763218152350845, 0.0],
+                            cons_error=[5.684341886080802e-14, 3.509473432346808e-5, 0.0],
+                            change_waterheight=5.684341886080802e-14,
+                            change_entropy=1.9489684518703143e-5,
+                            change_entropy_modified=-1.2177679309388623e-8)
+
+        @test_allocations(semi, sol, allocs=750_000)
+    end
+
+    @trixi_testset "serre_green_naghdi_dingemans.jl with bathymetry_mild_slope" begin
+        @test_trixi_include(joinpath(EXAMPLES_DIR,
+                                     "serre_green_naghdi_dingemans.jl"),
+                            tspan=(0.0, 1.0),
+                            equations = SerreGreenNaghdiEquations1D(bathymetry_mild_slope; gravity_constant = 9.81),
+                            l2=[0.2463295492331802, 0.805357513755897, 0.0],
+                            linf=[0.036265772921736605, 0.11763218152350845, 0.0],
+                            cons_error=[5.684341886080802e-14, 3.509473432346624e-5, 0.0],
+                            change_waterheight=5.684341886080802e-14,
+                            change_entropy=1.9489684518703143e-5,
+                            change_entropy_modified=-1.2177679309388623e-8)
+
+        @test_allocations(semi, sol, allocs=750_000)
+    end
 end
 
 end # module
