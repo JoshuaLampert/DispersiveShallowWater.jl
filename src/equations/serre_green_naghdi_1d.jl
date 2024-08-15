@@ -287,24 +287,27 @@ function create_cache(mesh,
         @. M_h2_bx = 0.5 * h^2 * b_x
         scale_by_mass_matrix!(M_h2_bx, D)
         system_matrix = Symmetric(Diagonal(M_h_p_h_bx2)
-                                + Dmat_minus' * (Diagonal(M_h3_3) * Dmat_minus
-                                            - Diagonal(M_h2_bx))
-                                - Diagonal(M_h2_bx) * Dmat_minus)
+                                  +
+                                  Dmat_minus' * (Diagonal(M_h3_3) * Dmat_minus
+                                   -
+                                   Diagonal(M_h2_bx))
+                                  -
+                                  Diagonal(M_h2_bx) * Dmat_minus)
 
         factorization = cholesky(system_matrix)
 
         cache = (; h, h_x, v_x, v_x_upwind, h_hpb_x, b, b_x, hv_x, v2_x,
-                   h2_v_vx_x, h_vx_x, p_h, p_0, p_x, tmp,
-                   M_h_p_h_bx2, M_h3_3, M_h2_bx,
-                   D, Dmat_minus, factorization)
+                 h2_v_vx_x, h_vx_x, p_h, p_0, p_x, tmp,
+                 M_h_p_h_bx2, M_h3_3, M_h2_bx,
+                 D, Dmat_minus, factorization)
     else
         if D isa FourierDerivativeOperator
             Dmat = Matrix(D)
 
             cache = (; h, h_x, v_x, h_hpb_x, b, b_x, hv_x, v2_x,
-                       h2_v_vx_x, h_vx_x, p_h, p_x, tmp,
-                       M_h_p_h_bx2, M_h3_3, M_h2_bx,
-                       D, Dmat)
+                     h2_v_vx_x, h_vx_x, p_h, p_x, tmp,
+                     M_h_p_h_bx2, M_h3_3, M_h2_bx,
+                     D, Dmat)
         else
             Dmat = sparse(D)
 
@@ -327,16 +330,19 @@ function create_cache(mesh,
             @. M_h2_bx = 0.5 * h^2 * b_x
             scale_by_mass_matrix!(M_h2_bx, D)
             system_matrix = Symmetric(Diagonal(M_h_p_h_bx2)
-                                    + Dmat' * (Diagonal(M_h3_3) * Dmat
-                                                - Diagonal(M_h2_bx))
-                                    - Diagonal(M_h2_bx) * Dmat)
+                                      +
+                                      Dmat' * (Diagonal(M_h3_3) * Dmat
+                                               -
+                                               Diagonal(M_h2_bx))
+                                      -
+                                      Diagonal(M_h2_bx) * Dmat)
 
             factorization = cholesky(system_matrix)
 
             cache = (; h, h_x, v_x, h_hpb_x, b, b_x, hv_x, v2_x,
-                       h2_v_vx_x, h_vx_x, p_h, p_x, tmp,
-                       M_h_p_h_bx2, M_h3_3, M_h2_bx,
-                       D, Dmat, factorization)
+                     h2_v_vx_x, h_vx_x, p_h, p_x, tmp,
+                     M_h_p_h_bx2, M_h3_3, M_h2_bx,
+                     D, Dmat, factorization)
         end
     end
 
@@ -586,8 +592,8 @@ function rhs_sgn_central!(dq, q, equations, source_terms, cache,
     @trixi_timeit timer() "hyperbolic terms" begin
         # Compute all derivatives required below
         (; h, h_x, v_x, h_hpb_x, b, b_x, hv_x, v2_x,
-          h2_v_vx_x, h_vx_x, p_h, p_x, tmp,
-          M_h_p_h_bx2, M_h3_3, M_h2_bx) = cache
+        h2_v_vx_x, h_vx_x, p_h, p_x, tmp,
+        M_h_p_h_bx2, M_h3_3, M_h2_bx) = cache
         if equations.bathymetry isa BathymetryVariable
             (; ψ) = cache
         end
@@ -610,9 +616,11 @@ function rhs_sgn_central!(dq, q, equations, source_terms, cache,
         @. tmp = h * v_x
         mul!(h_vx_x, D, tmp)
         inv6 = 1 / 6
-        @. p_h = ( 0.5 * h * (h * v_x + h_x * v) * v_x
-                    - inv6 * h2_v_vx_x
-                    - inv6 * h * v * h_vx_x)
+        @. p_h = (0.5 * h * (h * v_x + h_x * v) * v_x
+                  -
+                  inv6 * h2_v_vx_x
+                  -
+                  inv6 * h * v * h_vx_x)
         @. tmp = h * b_x * v^2
         mul!(p_x, D, tmp)
         @. p_h += 0.25 * p_x
@@ -641,13 +649,17 @@ function rhs_sgn_central!(dq, q, equations, source_terms, cache,
         # Plain: h v_t + ... = 0
         #
         # Split form for energy conservation:
-        @. tmp = -(  g * h_hpb_x - g * (h + b) * h_x
-                    + 0.5 * h * v2_x
-                    - 0.5 * v^2 * h_x
-                    + 0.5 * hv_x * v
-                    - 0.5 * h * v * v_x
-                    + p_x
-                    + 1.5 * p_h * b_x)
+        @. tmp = -(g * h_hpb_x - g * (h + b) * h_x
+                   +
+                   0.5 * h * v2_x
+                   -
+                   0.5 * v^2 * h_x
+                   +
+                   0.5 * hv_x * v
+                   -
+                   0.5 * h * v * v_x
+                   + p_x
+                   + 1.5 * p_h * b_x)
         if equations.bathymetry isa BathymetryVariable
             @. tmp = tmp - ψ * b_x
         end
@@ -673,9 +685,12 @@ function rhs_sgn_central!(dq, q, equations, source_terms, cache,
         @. M_h2_bx = 0.5 * h^2 * b_x
         scale_by_mass_matrix!(M_h2_bx, D)
         system_matrix = Symmetric(Diagonal(M_h_p_h_bx2)
-                                + Dmat' * (Diagonal(M_h3_3) * Dmat
-                                            - Diagonal(M_h2_bx))
-                                - Diagonal(M_h2_bx) * Dmat)
+                                  +
+                                  Dmat' * (Diagonal(M_h3_3) * Dmat
+                                           -
+                                           Diagonal(M_h2_bx))
+                                  -
+                                  Diagonal(M_h2_bx) * Dmat)
     end
 
     @trixi_timeit timer() "solving elliptic system" begin
@@ -718,8 +733,8 @@ function rhs_sgn_upwind!(dq, q, equations, source_terms, cache,
     @trixi_timeit timer() "hyperbolic terms" begin
         # Compute all derivatives required below
         (; h, h_x, v_x, v_x_upwind, h_hpb_x, b, b_x, hv_x, v2_x,
-          h2_v_vx_x, h_vx_x, p_h, p_0, p_x, tmp,
-          M_h_p_h_bx2, M_h3_3, M_h2_bx) = cache
+        h2_v_vx_x, h_vx_x, p_h, p_0, p_x, tmp,
+        M_h_p_h_bx2, M_h3_3, M_h2_bx) = cache
         if equations.bathymetry isa BathymetryVariable
             (; ψ) = cache
         end
@@ -744,8 +759,9 @@ function rhs_sgn_upwind!(dq, q, equations, source_terms, cache,
         mul!(h_vx_x, D, tmp)
         # p_0
         minv6 = -1 / 6
-        @. p_h = minv6 * (  h2_v_vx_x
-                        + h * v * h_vx_x)
+        @. p_h = minv6 * (h2_v_vx_x
+                          +
+                          h * v * h_vx_x)
         @. tmp = h * b_x * v^2
         mul!(p_x, D, tmp)
         @. p_h += 0.25 * p_x
@@ -761,8 +777,9 @@ function rhs_sgn_upwind!(dq, q, equations, source_terms, cache,
         @. p_0 = p_h * h
         mul!(p_x, D, p_0)
         # p_+
-        @. tmp = (  0.5 * h * (h * v_x + h_x * v) * v_x_upwind
-                - 0.25 * (h_x * v + h * v_x) * b_x * v)
+        @. tmp = (0.5 * h * (h * v_x + h_x * v) * v_x_upwind
+                  -
+                  0.25 * (h_x * v + h * v_x) * b_x * v)
         if equations.bathymetry isa BathymetryVariable
             @. ψ = 0.125 * (h_x * v + h * v_x) * b_x * v
         end
@@ -779,13 +796,17 @@ function rhs_sgn_upwind!(dq, q, equations, source_terms, cache,
         # Plain: h v_t + ... = 0
         #
         # Split form for energy conservation:
-        @. tmp = -(  g * h_hpb_x - g * (h + b) * h_x
-                    + 0.5 * h * v2_x
-                    - 0.5 * v^2 * h_x
-                    + 0.5 * hv_x * v
-                    - 0.5 * h * v * v_x
-                    + p_x
-                    + 1.5 * p_h * b_x)
+        @. tmp = -(g * h_hpb_x - g * (h + b) * h_x
+                   +
+                   0.5 * h * v2_x
+                   -
+                   0.5 * v^2 * h_x
+                   +
+                   0.5 * hv_x * v
+                   -
+                   0.5 * h * v * v_x
+                   + p_x
+                   + 1.5 * p_h * b_x)
         if equations.bathymetry isa BathymetryVariable
             @. tmp = tmp - ψ * b_x
         end
@@ -811,9 +832,12 @@ function rhs_sgn_upwind!(dq, q, equations, source_terms, cache,
         @. M_h2_bx = 0.5 * h^2 * b_x
         scale_by_mass_matrix!(M_h2_bx, D)
         system_matrix = Symmetric(Diagonal(M_h_p_h_bx2)
-                                + Dmat_minus' * (Diagonal(M_h3_3) * Dmat_minus
-                                            - Diagonal(M_h2_bx))
-                                - Diagonal(M_h2_bx) * Dmat_minus)
+                                  +
+                                  Dmat_minus' * (Diagonal(M_h3_3) * Dmat_minus
+                                   -
+                                   Diagonal(M_h2_bx))
+                                  -
+                                  Diagonal(M_h2_bx) * Dmat_minus)
     end
 
     @trixi_timeit timer() "solving elliptic system" begin
