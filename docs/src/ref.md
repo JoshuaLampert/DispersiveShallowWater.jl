@@ -13,7 +13,8 @@ Pages = ["DispersiveShallowWater.jl"]
 
 ```@autodocs
 Modules = [DispersiveShallowWater]
-Pages = joinpath.(Ref("equations"), readdir("equations"))
+Pages = [joinpath("equations", "equations.jl"), joinpath("equations", "bbm_bbm_1d.jl"), joinpath("equations", "bbm_bbm_variable_bathymetry_1d.jl"),
+         joinpath("equations", "svaerd_kalisch_1d.jl"), joinpath("equations", "serre_green_naghdi_flat_1d.jl")]
 ```
 
 ## Mesh
