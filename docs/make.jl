@@ -32,4 +32,5 @@ makedocs(;
 
 deploydocs(;
            repo = "github.com/JoshuaLampert/DispersiveShallowWater.jl",
-           devbranch = "main")
+           devbranch = "main",
+           push_preview = true)
