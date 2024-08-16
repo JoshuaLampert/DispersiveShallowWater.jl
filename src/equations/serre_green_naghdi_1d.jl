@@ -166,6 +166,7 @@ function create_cache(mesh,
 
     # create temporary storage
     h = ones(RealT, nnodes(mesh))
+    b = zero(h)
     h_x = zero(h)
     v_x = zero(h)
     h2_x = zero(h)
@@ -196,7 +197,7 @@ function create_cache(mesh,
                                   Dmat_minus' * Diagonal(M_h3_3) * Dmat_minus)
         factorization = cholesky(system_matrix)
 
-        cache = (; h_x, v_x, v_x_upwind, h2_x, hv_x, v2_x,
+        cache = (; h, b, h_x, v_x, v_x_upwind, h2_x, hv_x, v2_x,
                  h2_v_vx_x, h_vx_x, p_x, tmp,
                  M_h, M_h3_3,
                  D, Dmat_minus, factorization)
@@ -204,7 +205,7 @@ function create_cache(mesh,
         if D isa FourierDerivativeOperator
             Dmat = Matrix(D)
 
-            cache = (; h_x, v_x, h2_x, hv_x, v2_x,
+            cache = (; h, b, h_x, v_x, h2_x, hv_x, v2_x,
                      h2_v_vx_x, h_vx_x, p_x, tmp,
                      M_h, M_h3_3,
                      D, Dmat)
@@ -225,7 +226,7 @@ function create_cache(mesh,
 
             factorization = cholesky(system_matrix)
 
-            cache = (; h_x, v_x, h2_x, hv_x, v2_x,
+            cache = (; h, b, h_x, v_x, h2_x, hv_x, v2_x,
                      h2_v_vx_x, h_vx_x, p_x, tmp,
                      M_h, M_h3_3,
                      D, Dmat, factorization)
@@ -347,8 +348,8 @@ function create_cache(mesh,
     end
 
     if equations.bathymetry isa BathymetryVariable
-        ψ = zero(h)
-        cache = (; cache..., ψ)
+        psi = zero(h)
+        cache = (; cache..., psi)
     end
 
     return cache
@@ -387,13 +388,17 @@ function rhs_sgn_central!(dq, q, equations, source_terms, cache, ::BathymetryFla
 
     # `q` and `dq` are `ArrayPartition`s. They collect the individual
     # arrays for the water height `h` and the velocity `v`.
-    h, v = q.x
-    dh, dv = dq.x
+    eta, v = q.x
+    dh, dv, dD = dq.x # dh = deta since b is constant in time
+    fill!(dD, zero(eltype(dD)))
 
     @trixi_timeit timer() "hyperbolic terms" begin
         # Compute all derivatives required below
-        (; h_x, v_x, h2_x, hv_x, v2_x, h2_v_vx_x,
+        (; h, b, h_x, v_x, h2_x, hv_x, v2_x, h2_v_vx_x,
         h_vx_x, p_x, tmp, M_h, M_h3_3) = cache
+
+        @. b = equations.eta0 - q.x[3]
+        @. h = eta - b
 
         mul!(h_x, D, h)
         mul!(v_x, D, v)
@@ -487,15 +492,18 @@ function rhs_sgn_upwind!(dq, q, equations, source_terms, cache, ::BathymetryFlat
 
     # `q` and `dq` are `ArrayPartition`s. They collect the individual
     # arrays for the water height `h` and the velocity `v`.
-    h, v = q.x
-    dh, dv, dD = dq.x
+    eta, v = q.x
+    dh, dv, dD = dq.x # dh = deta since b is constant in time
     fill!(dD, zero(eltype(dD)))
 
     @trixi_timeit timer() "hyperbolic terms" begin
         # Compute all derivatives required below
-        (; h_x, v_x, v_x_upwind, h2_x, hv_x, v2_x,
+        (; h, b, h_x, v_x, v_x_upwind, h2_x, hv_x, v2_x,
         h2_v_vx_x, h_vx_x, p_x, tmp,
         M_h, M_h3_3) = cache
+
+        @. b = equations.eta0 - q.x[3]
+        @. h = eta - b
 
         mul!(h_x, D, h)
         mul!(v_x, D, v)
@@ -586,7 +594,7 @@ function rhs_sgn_central!(dq, q, equations, source_terms, cache,
     # `q` and `dq` are `ArrayPartition`s. They collect the individual
     # arrays for the water height `h` and the velocity `v`.
     eta, v = q.x
-    dh, dv, dD = dq.x
+    dh, dv, dD = dq.x # dh = deta since b is constant in time
     fill!(dD, zero(eltype(dD)))
 
     @trixi_timeit timer() "hyperbolic terms" begin
@@ -595,7 +603,7 @@ function rhs_sgn_central!(dq, q, equations, source_terms, cache,
         h2_v_vx_x, h_vx_x, p_h, p_x, tmp,
         M_h_p_h_bx2, M_h3_3, M_h2_bx) = cache
         if equations.bathymetry isa BathymetryVariable
-            (; ψ) = cache
+            (; psi) = cache
         end
 
         @. b = equations.eta0 - q.x[3]
@@ -625,17 +633,17 @@ function rhs_sgn_central!(dq, q, equations, source_terms, cache,
         mul!(p_x, D, tmp)
         @. p_h += 0.25 * p_x
         if equations.bathymetry isa BathymetryVariable
-            @. ψ = 0.125 * p_x
+            @. psi = 0.125 * p_x
         end
         @. tmp = b_x * v
         mul!(p_x, D, tmp)
         @. p_h += 0.25 * h * v * p_x
         if equations.bathymetry isa BathymetryVariable
-            @. ψ += 0.125 * h * v * p_x
+            @. psi += 0.125 * h * v * p_x
         end
         @. p_h = p_h - 0.25 * (h_x * v + h * v_x) * b_x * v
         if equations.bathymetry isa BathymetryVariable
-            @. ψ = ψ - 0.125 * (h_x * v + h * v_x) * b_x * v
+            @. psi = psi - 0.125 * (h_x * v + h * v_x) * b_x * v
         end
         @. tmp = p_h * h
         mul!(p_x, D, tmp)
@@ -661,7 +669,7 @@ function rhs_sgn_central!(dq, q, equations, source_terms, cache,
                    + p_x
                    + 1.5 * p_h * b_x)
         if equations.bathymetry isa BathymetryVariable
-            @. tmp = tmp - ψ * b_x
+            @. tmp = tmp - psi * b_x
         end
     end
 
@@ -726,9 +734,9 @@ function rhs_sgn_upwind!(dq, q, equations, source_terms, cache,
 
     # `q` and `dq` are `ArrayPartition`s. They collect the individual
     # arrays for the water height `h` and the velocity `v`.
-    eta, v, b = q.x
-    dh, dv, db = dq.x
-    fill!(db, zero(eltype(db)))
+    eta, v = q.x
+    dh, dv, dD = dq.x # dh = deta since b is constant in time
+    fill!(dD, zero(eltype(dD)))
 
     @trixi_timeit timer() "hyperbolic terms" begin
         # Compute all derivatives required below
@@ -736,7 +744,7 @@ function rhs_sgn_upwind!(dq, q, equations, source_terms, cache,
         h2_v_vx_x, h_vx_x, p_h, p_0, p_x, tmp,
         M_h_p_h_bx2, M_h3_3, M_h2_bx) = cache
         if equations.bathymetry isa BathymetryVariable
-            (; ψ) = cache
+            (; psi) = cache
         end
 
         @. b = equations.eta0 - q.x[3]
@@ -766,13 +774,13 @@ function rhs_sgn_upwind!(dq, q, equations, source_terms, cache,
         mul!(p_x, D, tmp)
         @. p_h += 0.25 * p_x
         if equations.bathymetry isa BathymetryVariable
-            @. ψ = 0.125 * p_x
+            @. psi = 0.125 * p_x
         end
         @. tmp = b_x * v
         mul!(p_x, D, tmp)
         @. p_h += 0.25 * h * v * p_x
         if equations.bathymetry isa BathymetryVariable
-            @. ψ += 0.125 * h * v * p_x
+            @. psi += 0.125 * h * v * p_x
         end
         @. p_0 = p_h * h
         mul!(p_x, D, p_0)
@@ -781,7 +789,7 @@ function rhs_sgn_upwind!(dq, q, equations, source_terms, cache,
                   -
                   0.25 * (h_x * v + h * v_x) * b_x * v)
         if equations.bathymetry isa BathymetryVariable
-            @. ψ = 0.125 * (h_x * v + h * v_x) * b_x * v
+            @. psi = psi - 0.125 * (h_x * v + h * v_x) * b_x * v
         end
         @. p_h = p_h + tmp
         @. tmp = tmp * h
@@ -808,7 +816,7 @@ function rhs_sgn_upwind!(dq, q, equations, source_terms, cache,
                    + p_x
                    + 1.5 * p_h * b_x)
         if equations.bathymetry isa BathymetryVariable
-            @. tmp = tmp - ψ * b_x
+            @. tmp = tmp - psi * b_x
         end
     end
 
@@ -910,7 +918,15 @@ is a conserved quantity (for periodic boundary conditions).
 
 For a [`bathymetry_flat`](@ref) the total energy is given by
 ```math
-\\frac{1}{2} g h^2 + \\frac{1}{2} h v^2 + \\frac{1}{6} h^3 v_x^2.
+\\frac{1}{2} g \\eta^2 + \\frac{1}{2} h v^2 + \\frac{1}{6} h^3 v_x^2.
+```
+For a [`bathymetry_mild_slope`](@ref) the total energy is given by
+```math
+\\frac{1}{2} g \\eta^2 + \\frac{1}{2} h v^2 + \\frac{1}{6} h (-h v_x + 1.5 v b_x)^2.
+```
+For a [`bathymetry_variable`](@ref) the total energy has the additional term
+```math
++ \\frac{1}{8} h (v b_x)^2.
 ```
 
 `q_global` is a vector of the primitive variables at ALL nodes.
@@ -921,11 +937,15 @@ function energy_total_modified(q_global,
                                cache)
     # unpack physical parameters and SBP operator `D`
     g = equations.gravity
-    (; D, v_x) = cache
+    (; D, h, b, v_x) = cache
 
     # `q_global` is an `ArrayPartition`. It collects the individual arrays for
-    # the water height `h` and the velocity `v`.
-    h, v = q_global.x
+    # the total water height `eta = h + b` and the velocity `v`.
+    eta, v = q_global.x
+    let D = q_global.x[3]
+        @. b = equations.eta0 - D
+        @. h = eta - b
+    end
 
     N = length(v)
     e = zeros(eltype(q_global), N)
@@ -951,7 +971,7 @@ function energy_total_modified(q_global,
         end
     end
 
-    @. e = 1 / 2 * g * h^2 + 1 / 2 * h * v^2 + 1 / 6 * h * (-h * v_x + 1.5 * v * b_x)^2
+    @. e = 1 / 2 * g * eta^2 + 1 / 2 * h * v^2 + 1 / 6 * h * (-h * v_x + 1.5 * v * b_x)^2
     if equations.bathymetry isa BathymetryVariable
         @. e += 1 / 8 * h * (v * b_x)^2
     end
