@@ -681,7 +681,7 @@ function rhs_sgn_central!(dq, q, equations, source_terms, cache,
             factor = 1.0
         end
         # The code below is equivalent to
-        #   dv .= (Diagonal(h .+ factor .* h .* b_x.^2) - Dmat * (Diagonal(1/3 .* h.^3) * Dmat - Diagonal(0.5 .* h.^2 .* b_x)) - Diagonal(0.5 .* h.^2 .* b_x) * Dmat) \ tmp
+        #   dv .= (Diagonal(h .+ factor .* h .* b_x.^2) - Dmat * (Diagonal(1/3 .* h.^3) * Dmat - Diagonal(0.5 .* h.^2 .* b_x) * Dmat) \ tmp
         # but faster since the symbolic factorization is reused.
         @. M_h_p_h_bx2 = h + factor * h * b_x^2
         scale_by_mass_matrix!(M_h_p_h_bx2, D)
