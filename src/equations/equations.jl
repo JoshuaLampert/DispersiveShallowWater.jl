@@ -347,4 +347,4 @@ include("svaerd_kalisch_1d.jl")
 # Serre-Green-Naghdi equations
 abstract type AbstractSerreGreenNaghdiEquations{NDIMS, NVARS} <:
               AbstractShallowWaterEquations{NDIMS, NVARS} end
-include("serre_green_naghdi_flat_1d.jl")
+include("serre_green_naghdi_1d.jl")
