@@ -185,14 +185,14 @@ function create_cache(mesh,
 
         Dmat_minus = sparse(D.minus)
 
-        # Floating point errors accumulate a bit and the system matrix
-        # is not necessarily perfectly symmetric but only up to
-        # round-off errors. We wrap it here to avoid issues with the
-        # factorization.
         @. M_h = h
         scale_by_mass_matrix!(M_h, D)
         @. M_h3_3 = (1 / 3) * h^3
         scale_by_mass_matrix!(M_h3_3, D)
+        # Floating point errors accumulate a bit and the system matrix
+        # is not necessarily perfectly symmetric but only up to
+        # round-off errors. We wrap it here to avoid issues with the
+        # factorization.
         system_matrix = Symmetric(Diagonal(M_h)
                                   +
                                   Dmat_minus' * Diagonal(M_h3_3) * Dmat_minus)
@@ -213,14 +213,14 @@ function create_cache(mesh,
         else
             Dmat = sparse(D)
 
-            # Floating point errors accumulate a bit and the system matrix
-            # is not necessarily perfectly symmetric but only up to
-            # round-off errors. We wrap it here to avoid issues with the
-            # factorization.
             @. M_h = h
             scale_by_mass_matrix!(M_h, D)
             @. M_h3_3 = (1 / 3) * h^3
             scale_by_mass_matrix!(M_h3_3, D)
+            # Floating point errors accumulate a bit and the system matrix
+            # is not necessarily perfectly symmetric but only up to
+            # round-off errors. We wrap it here to avoid issues with the
+            # factorization.
             system_matrix = Symmetric(Diagonal(M_h)
                                       +
                                       Dmat' * Diagonal(M_h3_3) * Dmat)
@@ -270,10 +270,6 @@ function create_cache(mesh,
 
         Dmat_minus = sparse(D.minus)
 
-        # Floating point errors accumulate a bit and the system matrix
-        # is not necessarily perfectly symmetric but only up to
-        # round-off errors. We wrap it here to avoid issues with the
-        # factorization.
         if equations.bathymetry_type isa BathymetryMildSlope
             factor = 0.75
         elseif equations.bathymetry_type isa BathymetryVariable
@@ -288,6 +284,10 @@ function create_cache(mesh,
         scale_by_mass_matrix!(M_h3_3, D)
         @. M_h2_bx = 0.5 * h^2 * b_x
         scale_by_mass_matrix!(M_h2_bx, D)
+        # Floating point errors accumulate a bit and the system matrix
+        # is not necessarily perfectly symmetric but only up to
+        # round-off errors. We wrap it here to avoid issues with the
+        # factorization.
         system_matrix = Symmetric(Diagonal(M_h_p_h_bx2)
                                   +
                                   Dmat_minus' * (Diagonal(M_h3_3) * Dmat_minus
@@ -313,10 +313,6 @@ function create_cache(mesh,
         else
             Dmat = sparse(D)
 
-            # Floating point errors accumulate a bit and the system matrix
-            # is not necessarily perfectly symmetric but only up to
-            # round-off errors. We wrap it here to avoid issues with the
-            # factorization.
             if equations.bathymetry_type isa BathymetryMildSlope
                 factor = 0.75
             elseif equations.bathymetry_type isa BathymetryVariable
@@ -331,6 +327,10 @@ function create_cache(mesh,
             scale_by_mass_matrix!(M_h3_3, D)
             @. M_h2_bx = 0.5 * h^2 * b_x
             scale_by_mass_matrix!(M_h2_bx, D)
+            # Floating point errors accumulate a bit and the system matrix
+            # is not necessarily perfectly symmetric but only up to
+            # round-off errors. We wrap it here to avoid issues with the
+            # factorization.
             system_matrix = Symmetric(Diagonal(M_h_p_h_bx2)
                                       +
                                       Dmat' * (Diagonal(M_h3_3) * Dmat
@@ -448,14 +448,14 @@ function rhs_sgn_central!(dq, q, equations, source_terms, cache, ::BathymetryFla
         # The code below is equivalent to
         #   dv .= (Diagonal(h) - Dmat * Diagonal(1/3 .* h.^3) * Dmat) \ tmp
         # but faster since the symbolic factorization is reused.
-        # Floating point errors accumulate a bit and the system matrix
-        # is not necessarily perfectly symmetric but only up to round-off
-        # errors. We wrap it here to avoid issues with the factorization.
         @. M_h = h
         scale_by_mass_matrix!(M_h, D)
         inv3 = 1 / 3
         @. M_h3_3 = inv3 * h^3
         scale_by_mass_matrix!(M_h3_3, D)
+        # Floating point errors accumulate a bit and the system matrix
+        # is not necessarily perfectly symmetric but only up to round-off
+        # errors. We wrap it here to avoid issues with the factorization.
         system_matrix = Symmetric(Diagonal(M_h)
                                   +
                                   Dmat' * Diagonal(M_h3_3) * Dmat)
@@ -556,14 +556,14 @@ function rhs_sgn_upwind!(dq, q, equations, source_terms, cache, ::BathymetryFlat
         # The code below is equivalent to
         #   dv .= (Diagonal(h) - Dmat_plus * Diagonal(1/3 .* h.^3) * Dmat_minus) \ tmp
         # but faster since the symbolic factorization is reused.
-        # Floating point errors accumulate a bit and the system matrix
-        # is not necessarily perfectly symmetric but only up to round-off errors.
-        # We wrap it here to avoid issues with the factorization.
         @. M_h = h
         scale_by_mass_matrix!(M_h, D)
         inv3 = 1 / 3
         @. M_h3_3 = inv3 * h^3
         scale_by_mass_matrix!(M_h3_3, D)
+        # Floating point errors accumulate a bit and the system matrix
+        # is not necessarily perfectly symmetric but only up to round-off errors.
+        # We wrap it here to avoid issues with the factorization.
         system_matrix = Symmetric(Diagonal(M_h)
                                   +
                                   Dmat_minus' * Diagonal(M_h3_3) * Dmat_minus)
@@ -683,9 +683,6 @@ function rhs_sgn_central!(dq, q, equations, source_terms, cache,
         # The code below is equivalent to
         #   dv .= (Diagonal(h .+ factor .* h .* b_x.^2) - Dmat * (Diagonal(1/3 .* h.^3) * Dmat - Diagonal(0.5 .* h.^2 .* b_x)) - Diagonal(0.5 .* h.^2 .* b_x) * Dmat) \ tmp
         # but faster since the symbolic factorization is reused.
-        # Floating point errors accumulate a bit and the system matrix
-        # is not necessarily perfectly symmetric but only up to round-off
-        # errors. We wrap it here to avoid issues with the factorization.
         @. M_h_p_h_bx2 = h + factor * h * b_x^2
         scale_by_mass_matrix!(M_h_p_h_bx2, D)
         inv3 = 1 / 3
@@ -693,6 +690,9 @@ function rhs_sgn_central!(dq, q, equations, source_terms, cache,
         scale_by_mass_matrix!(M_h3_3, D)
         @. M_h2_bx = 0.5 * h^2 * b_x
         scale_by_mass_matrix!(M_h2_bx, D)
+        # Floating point errors accumulate a bit and the system matrix
+        # is not necessarily perfectly symmetric but only up to round-off
+        # errors. We wrap it here to avoid issues with the factorization.
         system_matrix = Symmetric(Diagonal(M_h_p_h_bx2)
                                   +
                                   Dmat' * (Diagonal(M_h3_3) * Dmat
@@ -830,9 +830,6 @@ function rhs_sgn_upwind!(dq, q, equations, source_terms, cache,
         # The code below is equivalent to
         #   dv .= (Diagonal(h .+ 0.75 .* h .* b_x.^2) - Dmat * (Diagonal(1/3 .* h.^3) * Dmat - Diagonal(0.5 .* h.^2 .* b_x)) - Diagonal(0.5 .* h.^2 .* b_x) * Dmat) \ tmp
         # but faster since the symbolic factorization is reused.
-        # Floating point errors accumulate a bit and the system matrix
-        # is not necessarily perfectly symmetric but only up to round-off
-        # errors. We wrap it here to avoid issues with the factorization.
         @. M_h_p_h_bx2 = h + factor * h * b_x^2
         scale_by_mass_matrix!(M_h_p_h_bx2, D)
         inv3 = 1 / 3
@@ -840,6 +837,9 @@ function rhs_sgn_upwind!(dq, q, equations, source_terms, cache,
         scale_by_mass_matrix!(M_h3_3, D)
         @. M_h2_bx = 0.5 * h^2 * b_x
         scale_by_mass_matrix!(M_h2_bx, D)
+        # Floating point errors accumulate a bit and the system matrix
+        # is not necessarily perfectly symmetric but only up to round-off
+        # errors. We wrap it here to avoid issues with the factorization.
         system_matrix = Symmetric(Diagonal(M_h_p_h_bx2)
                                   +
                                   Dmat_minus' * (Diagonal(M_h3_3) * Dmat_minus
