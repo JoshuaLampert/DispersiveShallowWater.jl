@@ -326,10 +326,6 @@ end
     return equations.eta0 - D
 end
 
-@inline function waterheight(q, equations::SvaerdKalischEquations1D)
-    return waterheight_total(q, equations) - bathymetry(q, equations)
-end
-
 @inline entropy(u, equations::SvaerdKalischEquations1D) = energy_total(u, equations)
 
 # The modified entropy/total energy takes the whole `q` for every point in space

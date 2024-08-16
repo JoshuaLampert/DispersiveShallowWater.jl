@@ -902,10 +902,6 @@ end
     return equations.eta0 - D
 end
 
-@inline function waterheight(q, equations::SerreGreenNaghdiEquations1D)
-    return waterheight_total(q, equations) - bathymetry(q, equations)
-end
-
 # The entropy/energy takes the whole `q` for every point in space
 """
     energy_total_modified(q_global, equations::SerreGreenNaghdiEquations1D, cache)

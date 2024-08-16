@@ -96,8 +96,8 @@ function cons2prim end
     waterheight_total(q, equations)
 
 Return the total waterheight of the primitive variables `q` for a given set of
-`equations`, i.e., the [`waterheight`](@ref) plus the
-[`bathymetry`](@ref).
+`equations`, i.e., the [`waterheight`](@ref) ``h`` plus the
+[`bathymetry`](@ref) ``b``.
 
 `q` is a vector of the primitive variables at a single node, i.e., a vector
 of the correct length `nvariables(equations)`.
@@ -107,15 +107,19 @@ function waterheight_total end
 varnames(::typeof(waterheight_total), equations) = ("η",)
 
 """
-    waterheight(q, equations)
+    waterheight(q, equations::AbstractShallowWaterEquations)
 
 Return the waterheight of the primitive variables `q` for a given set of
-`equations`, i.e., the waterheight above the bathymetry.
+`equations`, i.e., the waterheight ``h`` above the bathymetry ``b``.
 
 `q` is a vector of the primitive variables at a single node, i.e., a vector
 of the correct length `nvariables(equations)`.
+
+See also [`waterheight_total`](@ref), [`bathymetry`](@ref).
 """
-function waterheight end
+@inline function waterheight(q, equations::AbstractShallowWaterEquations)
+    return waterheight_total(q, equations) - bathymetry(q, equations)
+end
 
 varnames(::typeof(waterheight), equations) = ("h",)
 
