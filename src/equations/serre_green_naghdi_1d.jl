@@ -71,7 +71,7 @@ Additionally, it is well-balanced for the lake-at-rest stationary solution, see
 """
 struct SerreGreenNaghdiEquations1D{Bathymetry <: AbstractBathymetry, RealT <: Real} <:
        AbstractSerreGreenNaghdiEquations{1, 3}
-    bathymetry::Bathymetry # type of bathymetry
+    bathymetry_type::Bathymetry # type of bathymetry
     gravity::RealT # gravitational constant
     eta0::RealT # constant still-water surface
 end
@@ -83,11 +83,11 @@ end
 
 function get_name(equations::SerreGreenNaghdiEquations1D)
     name = equations |> typeof |> nameof |> string
-    bathymetry = equations.bathymetry
-    if bathymetry isa BathymetryFlat
+    bathymetry_type = equations.bathymetry_type
+    if bathymetry_type isa BathymetryFlat
         return name
-    else # variable bathymetry
-        return name * "-" * string(nameof(typeof(bathymetry)))
+    else # variable bathymetry_type
+        return name * "-" * string(nameof(typeof(bathymetry_type)))
     end
 end
 
@@ -274,12 +274,12 @@ function create_cache(mesh,
         # is not necessarily perfectly symmetric but only up to
         # round-off errors. We wrap it here to avoid issues with the
         # factorization.
-        if equations.bathymetry isa BathymetryMildSlope
+        if equations.bathymetry_type isa BathymetryMildSlope
             factor = 0.75
-        elseif equations.bathymetry isa BathymetryVariable
+        elseif equations.bathymetry_type isa BathymetryVariable
             factor = 1.0
         else
-            throw(ArgumentError("Unsupported bathymetry type $(equations.bathymetry)"))
+            throw(ArgumentError("Unsupported bathymetry type $(equations.bathymetry_type)"))
         end
         @. M_h_p_h_bx2 = h + factor * h * b_x^2
         scale_by_mass_matrix!(M_h_p_h_bx2, D)
@@ -317,12 +317,12 @@ function create_cache(mesh,
             # is not necessarily perfectly symmetric but only up to
             # round-off errors. We wrap it here to avoid issues with the
             # factorization.
-            if equations.bathymetry isa BathymetryMildSlope
+            if equations.bathymetry_type isa BathymetryMildSlope
                 factor = 0.75
-            elseif equations.bathymetry isa BathymetryVariable
+            elseif equations.bathymetry_type isa BathymetryVariable
                 factor = 1.0
             else
-                throw(ArgumentError("Unsupported bathymetry type $(equations.bathymetry)"))
+                throw(ArgumentError("Unsupported bathymetry type $(equations.bathymetry_type)"))
             end
             @. M_h_p_h_bx2 = h + factor * h * b_x^2
             scale_by_mass_matrix!(M_h_p_h_bx2, D)
@@ -348,7 +348,7 @@ function create_cache(mesh,
         end
     end
 
-    if equations.bathymetry isa BathymetryVariable
+    if equations.bathymetry_type isa BathymetryVariable
         psi = zero(h)
         cache = (; cache..., psi)
     end
@@ -373,9 +373,9 @@ function rhs!(dq, q, t, mesh,
               source_terms::Nothing,
               solver, cache)
     if cache.D isa PeriodicUpwindOperators
-        rhs_sgn_upwind!(dq, q, equations, source_terms, cache, equations.bathymetry)
+        rhs_sgn_upwind!(dq, q, equations, source_terms, cache, equations.bathymetry_type)
     else
-        rhs_sgn_central!(dq, q, equations, source_terms, cache, equations.bathymetry)
+        rhs_sgn_central!(dq, q, equations, source_terms, cache, equations.bathymetry_type)
     end
 
     return nothing
@@ -603,7 +603,7 @@ function rhs_sgn_central!(dq, q, equations, source_terms, cache,
         (; h, h_x, v_x, h_hpb_x, b, b_x, hv_x, v2_x,
         h2_v_vx_x, h_vx_x, p_h, p_x, tmp,
         M_h_p_h_bx2, M_h3_3, M_h2_bx) = cache
-        if equations.bathymetry isa BathymetryVariable
+        if equations.bathymetry_type isa BathymetryVariable
             (; psi) = cache
         end
 
@@ -633,17 +633,17 @@ function rhs_sgn_central!(dq, q, equations, source_terms, cache,
         @. tmp = h * b_x * v^2
         mul!(p_x, D, tmp)
         @. p_h += 0.25 * p_x
-        if equations.bathymetry isa BathymetryVariable
+        if equations.bathymetry_type isa BathymetryVariable
             @. psi = 0.125 * p_x
         end
         @. tmp = b_x * v
         mul!(p_x, D, tmp)
         @. p_h += 0.25 * h * v * p_x
-        if equations.bathymetry isa BathymetryVariable
+        if equations.bathymetry_type isa BathymetryVariable
             @. psi += 0.125 * h * v * p_x
         end
         @. p_h = p_h - 0.25 * (h_x * v + h * v_x) * b_x * v
-        if equations.bathymetry isa BathymetryVariable
+        if equations.bathymetry_type isa BathymetryVariable
             @. psi = psi - 0.125 * (h_x * v + h * v_x) * b_x * v
         end
         @. tmp = p_h * h
@@ -669,15 +669,15 @@ function rhs_sgn_central!(dq, q, equations, source_terms, cache,
                    0.5 * h * v * v_x
                    + p_x
                    + 1.5 * p_h * b_x)
-        if equations.bathymetry isa BathymetryVariable
+        if equations.bathymetry_type isa BathymetryVariable
             @. tmp = tmp - psi * b_x
         end
     end
 
     @trixi_timeit timer() "assembling elliptic operator" begin
-        if equations.bathymetry isa BathymetryMildSlope
+        if equations.bathymetry_type isa BathymetryMildSlope
             factor = 0.75
-        else # equations.bathymetry isa BathymetryVariable
+        else # equations.bathymetry_type isa BathymetryVariable
             factor = 1.0
         end
         # The code below is equivalent to
@@ -744,7 +744,7 @@ function rhs_sgn_upwind!(dq, q, equations, source_terms, cache,
         (; h, h_x, v_x, v_x_upwind, h_hpb_x, b, b_x, hv_x, v2_x,
         h2_v_vx_x, h_vx_x, p_h, p_0, p_x, tmp,
         M_h_p_h_bx2, M_h3_3, M_h2_bx) = cache
-        if equations.bathymetry isa BathymetryVariable
+        if equations.bathymetry_type isa BathymetryVariable
             (; psi) = cache
         end
 
@@ -774,13 +774,13 @@ function rhs_sgn_upwind!(dq, q, equations, source_terms, cache,
         @. tmp = h * b_x * v^2
         mul!(p_x, D, tmp)
         @. p_h += 0.25 * p_x
-        if equations.bathymetry isa BathymetryVariable
+        if equations.bathymetry_type isa BathymetryVariable
             @. psi = 0.125 * p_x
         end
         @. tmp = b_x * v
         mul!(p_x, D, tmp)
         @. p_h += 0.25 * h * v * p_x
-        if equations.bathymetry isa BathymetryVariable
+        if equations.bathymetry_type isa BathymetryVariable
             @. psi += 0.125 * h * v * p_x
         end
         @. p_0 = p_h * h
@@ -789,7 +789,7 @@ function rhs_sgn_upwind!(dq, q, equations, source_terms, cache,
         @. tmp = (0.5 * h * (h * v_x + h_x * v) * v_x_upwind
                   -
                   0.25 * (h_x * v + h * v_x) * b_x * v)
-        if equations.bathymetry isa BathymetryVariable
+        if equations.bathymetry_type isa BathymetryVariable
             @. psi = psi - 0.125 * (h_x * v + h * v_x) * b_x * v
         end
         @. p_h = p_h + tmp
@@ -816,15 +816,15 @@ function rhs_sgn_upwind!(dq, q, equations, source_terms, cache,
                    0.5 * h * v * v_x
                    + p_x
                    + 1.5 * p_h * b_x)
-        if equations.bathymetry isa BathymetryVariable
+        if equations.bathymetry_type isa BathymetryVariable
             @. tmp = tmp - psi * b_x
         end
     end
 
     @trixi_timeit timer() "assembling elliptic operator" begin
-        if equations.bathymetry isa BathymetryMildSlope
+        if equations.bathymetry_type isa BathymetryMildSlope
             factor = 0.75
-        else # equations.bathymetry isa BathymetryVariable
+        else # equations.bathymetry_type isa BathymetryVariable
             factor = 1.0
         end
         # The code below is equivalent to
@@ -955,7 +955,7 @@ function energy_total_modified(q_global,
         mul!(v_x, D, v)
     end
 
-    if equations.bathymetry isa BathymetryFlat
+    if equations.bathymetry_type isa BathymetryFlat
         b_x = cache.tmp
         fill!(b_x, zero(eltype(b_x)))
     else
@@ -969,7 +969,7 @@ function energy_total_modified(q_global,
     end
 
     @. e = 1 / 2 * g * eta^2 + 1 / 2 * h * v^2 + 1 / 6 * h * (-h * v_x + 1.5 * v * b_x)^2
-    if equations.bathymetry isa BathymetryVariable
+    if equations.bathymetry_type isa BathymetryVariable
         @. e += 1 / 8 * h * (v * b_x)^2
     end
 
