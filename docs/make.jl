@@ -37,19 +37,17 @@ open(joinpath(@__DIR__, "src", "contributing.md"), "w") do io
             """)
     # Write the modified contents
     for line in eachline(joinpath(dirname(@__DIR__), "CONTRIBUTING.md"))
-      line = replace(line, "[LICENSE](LICENSE)" => "[License](@ref)")
-      println(io, line)
+        line = replace(line, "[LICENSE](LICENSE)" => "[License](@ref)")
+        println(io, line)
     end
 end
 
 # Create changelog
-Changelog.generate(
-    Changelog.Documenter(),                           # output type
-    joinpath(@__DIR__, "..", "NEWS.md"),              # input file
-    joinpath(@__DIR__, "src", "changelog_tmp.md");    # output file
-    repo = "JoshuaLampert/DispersiveShallowWater.jl", # default repository for links
-    branch = "main",                                  # default branch for links
-)
+Changelog.generate(Changelog.Documenter(),                           # output type
+                   joinpath(@__DIR__, "..", "NEWS.md"),              # input file
+                   joinpath(@__DIR__, "src", "changelog_tmp.md");    # output file
+                   repo = "JoshuaLampert/DispersiveShallowWater.jl", # default repository for links
+                   branch = "main",)
 # Fix edit URL of changelog
 open(joinpath(@__DIR__, "src", "changelog.md"), "w") do io
     for line in eachline(joinpath(@__DIR__, "src", "changelog_tmp.md"))
