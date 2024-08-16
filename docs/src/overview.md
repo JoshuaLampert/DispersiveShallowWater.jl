@@ -74,7 +74,7 @@ far to the left in order to avoid an interaction of the left- and right-travelin
 In the next step, we build a [`Semidiscretization`](@ref) that bundles all ingredients for the spatial discretization of the model. Especially, we need to
 define a [`Solver`](@ref). The simplest way to define a solver is to call the constructor by providing the mesh and a desired order of accuracy. In the
 following example, we use an accuracy order of 4. The default constructor simply creates periodic first- and second-derivative central finite difference
-summation by parts operators of the provided order of accuracy. How to use other summation by parts operators, is described in the section on
+summation-by-parts (SBP) operators of the provided order of accuracy. How to use other summation-by-parts operators, is described in the section on
 [how to customize the solver](@ref customize_solver). Note that for non-periodic boundary conditions, the solver also needs to be created with non-periodic
 operators, see, e.g. [examples/bbm\_bbm\_1d/bbm\_bbm\_1d\_basic\_reflecting.jl](https://github.com/JoshuaLampert/DispersiveShallowWater.jl/blob/main/examples/bbm_bbm_1d/bbm_bbm_1d_basic_reflecting.jl).
 
