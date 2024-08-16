@@ -59,10 +59,11 @@ References for the Serre-Green-Naghdi system can be found in
 
 The semidiscretization implemented here conserves
 - the total water mass (integral of h) as a linear invariant
-- the total momentum (integral of h v) as a nonlinear invariant
-- the total energy
+- the total momentum (integral of h v) as a nonlinear invariant if the bathymetry is constant
+- the total modified energy
 
-for periodic boundary conditions, see
+for periodic boundary conditions (see Ranocha and Ricchiuto (2024)).
+Additionally, it is well-balanced for the lake-at-rest stationary solution, see
 - Hendrik Ranocha and Mario Ricchiuto (2024)
   Structure-preserving approximations of the Serre-Green-Naghdi
   equations in standard and hyperbolic form
