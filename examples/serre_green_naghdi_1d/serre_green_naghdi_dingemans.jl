@@ -5,8 +5,8 @@ using SummationByPartsOperators: upwind_operators, periodic_derivative_operator
 ###############################################################################
 # Semidiscretization of the Svärd-Kalisch equations
 
-bathymetry = bathymetry_variable # or bathymetry_mild_slope
-equations = SerreGreenNaghdiEquations1D(bathymetry;
+bathymetry_type = bathymetry_variable # or bathymetry_mild_slope
+equations = SerreGreenNaghdiEquations1D(bathymetry_type;
                                         gravity_constant = 9.81)
 
 initial_condition = initial_condition_dingemans

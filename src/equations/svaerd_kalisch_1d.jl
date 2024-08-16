@@ -361,10 +361,3 @@ is a conserved quantity of the Svärd-Kalisch equations.
     end
     return e_modified
 end
-
-# Calculate the error for the "lake-at-rest" test case where eta should
-# be a constant value over time
-@inline function lake_at_rest_error(u, equations::SvaerdKalischEquations1D)
-    eta, _, _ = u
-    return abs(equations.eta0 - eta)
-end
