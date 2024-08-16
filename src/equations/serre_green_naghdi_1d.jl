@@ -27,8 +27,8 @@ References for the Serre-Green-Naghdi system can be found in
   [DOI: 10.1017/S0022112076002425](https://doi.org/10.1017/S0022112076002425)
 
 The semidiscretization implemented here conserves
-- the total water mass (integral of ``h``) as a linear invariant
-- the total momentum (integral of ``h v``) as a nonlinear invariant
+- the total water mass (integral of h) as a linear invariant
+- the total momentum (integral of h v) as a nonlinear invariant
 - the total energy
 
 for periodic boundary conditions, see
@@ -423,7 +423,7 @@ is a conserved quantity (for periodic boundary conditions).
 
 For a [`bathymetry_flat`](@ref) the total energy is given by
 ```math
-    \\frac{1}{2} g h^2 + \\frac{1}{2} h v^2 + \\frac{1}{6} h^3 v_x^2.
+\\frac{1}{2} g h^2 + \\frac{1}{2} h v^2 + \\frac{1}{6} h^3 v_x^2.
 ```
 
 `q_global` is a vector of the primitive variables at ALL nodes.
