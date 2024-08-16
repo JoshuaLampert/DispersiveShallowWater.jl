@@ -8,7 +8,7 @@ or submit patches (preferably as
 any time.
 
 DispersiveShallowWater.jl and its contributions are licensed under the MIT license (see
-[LICENSE.md](LICENSE.md)). As a contributor, you certify that all your
+[LICENSE](LICENSE)). As a contributor, you certify that all your
 contributions are in conformance with the *Developer Certificate of Origin
 (Version 1.1)*, which is reproduced below.
 
