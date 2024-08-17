@@ -1,5 +1,5 @@
 @doc raw"""
-    SerreGreenNaghdiEquations1D(bathymetry = bathymetry_flat;
+    SerreGreenNaghdiEquations1D(bathymetry_type = bathymetry_flat;
                                 gravity_constant, eta0 = 0.0)
 
 Serre-Green-Naghdi system in one spatial dimension.
@@ -19,7 +19,7 @@ is therefore given by ``h = \eta - \eta_0 + D``. The Serre-Green-Naghdi
 equations are only implemented for ``\eta_0 = 0``.
 The total water height is therefore given by ``\eta = h + b``.
 
-Three types of variable `bathymetry` are supported:
+Three types of variable `bathymetry_type` are supported:
 - [`bathymetry_flat`](@ref): flat bathymetry (typically ``b = 0`` everywhere)
 - [`bathymetry_mild_slope`](@ref): variable bathymetry with mild-slope approximation
 - [`bathymetry_variable`](@ref): general variable bathymetry
@@ -76,9 +76,9 @@ struct SerreGreenNaghdiEquations1D{Bathymetry <: AbstractBathymetry, RealT <: Re
     eta0::RealT # constant still-water surface
 end
 
-function SerreGreenNaghdiEquations1D(bathymetry = bathymetry_flat;
+function SerreGreenNaghdiEquations1D(bathymetry_type = bathymetry_flat;
                                      gravity_constant, eta0 = 0.0)
-    SerreGreenNaghdiEquations1D(bathymetry, gravity_constant, eta0)
+    SerreGreenNaghdiEquations1D(bathymetry_type, gravity_constant, eta0)
 end
 
 function get_name(equations::SerreGreenNaghdiEquations1D)
