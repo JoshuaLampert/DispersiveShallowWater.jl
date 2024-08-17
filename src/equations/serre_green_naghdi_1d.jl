@@ -659,7 +659,7 @@ function rhs_sgn_central!(dq, q, equations, source_terms, cache,
         # Plain: h v_t + ... = 0
         #
         # Split form for energy conservation:
-        @. tmp = -(g * h_hpb_x - g * (h + b) * h_x
+        @. tmp = -(g * h_hpb_x - g * eta * h_x
                    +
                    0.5 * h * v2_x
                    -
@@ -756,7 +756,7 @@ function rhs_sgn_upwind!(dq, q, equations, source_terms, cache,
         mul!(h_x, D1, h)
         mul!(v_x, D1, v)
         mul!(v_x_upwind, D1_upwind.minus, v)
-        @. tmp = h * (h + b)
+        @. tmp = h * eta
         mul!(h_hpb_x, D1, tmp)
         @. tmp = h * v
         mul!(hv_x, D1, tmp)
@@ -806,7 +806,7 @@ function rhs_sgn_upwind!(dq, q, equations, source_terms, cache,
         # Plain: h v_t + ... = 0
         #
         # Split form for energy conservation:
-        @. tmp = -(g * h_hpb_x - g * (h + b) * h_x
+        @. tmp = -(g * h_hpb_x - g * eta * h_x
                    +
                    0.5 * h * v2_x
                    -
