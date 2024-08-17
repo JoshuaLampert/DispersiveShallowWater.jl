@@ -1,4 +1,4 @@
-# This elixir contains an aritficial setup that can be used to check the
+# This elixir contains an artificial setup that can be used to check the
 # conservation properties of the equations and numerical methods as well as
 # a possible directional bias (if the velocity is set to zero). See
 # - Hendrik Ranocha and Mario Ricchiuto (2024)
