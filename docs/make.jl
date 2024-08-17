@@ -16,10 +16,12 @@ lines = readlines(ref_path)
 open(ref_path, "w") do io
     for line in lines
         if contains(line, "EQUATIONS_FILES_TO_BE_INSERTED")
-            line = replace(line, "EQUATIONS_FILES_TO_BE_INSERTED" => EQUATIONS_FILES_TO_BE_INSERTED)
+            line = replace(line,
+                           "EQUATIONS_FILES_TO_BE_INSERTED" => EQUATIONS_FILES_TO_BE_INSERTED)
         end
         if contains(line, "CALLBACKS_STEP_FILES_TO_BE_INSERTED")
-            line = replace(line, "CALLBACKS_STEP_FILES_TO_BE_INSERTED" => CALLBACKS_STEP_FILES_TO_BE_INSERTED)
+            line = replace(line,
+                           "CALLBACKS_STEP_FILES_TO_BE_INSERTED" => CALLBACKS_STEP_FILES_TO_BE_INSERTED)
         end
         println(io, line)
     end
