@@ -947,7 +947,7 @@ function energy_total_modified(q_global,
     N = length(v)
     e = zeros(eltype(q_global), N)
 
-    # 1/2 g h^2 + 1/2 h v^2 + 1/6 h^3 w^2
+    # 1/2 g eta^2 + 1/2 h v^2 + 1/6 h^3 w^2
     # and + 1/8 h (v b_x)^2 for full bathymetry without mild-slope approximation
     if D isa PeriodicUpwindOperators
         mul!(v_x, D.minus, v)
