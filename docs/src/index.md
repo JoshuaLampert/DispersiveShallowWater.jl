@@ -10,13 +10,14 @@
 [![DOI](https://zenodo.org/badge/635090135.svg)](https://zenodo.org/doi/10.5281/zenodo.10034636)
 
 [**DispersiveShallowWater.jl**](https://github.com/JoshuaLampert/DispersiveShallowWater.jl) is a [Julia](https://julialang.org/) package that implements structure-preserving numerical methods for dispersive shallow water models.
-To date, it provides provably conservative, entropy-conserving and well-balanced numerical schemes for two dispersive shallow water models:
+To date, it provides provably conservative, entropy-conserving and well-balanced numerical schemes for some dispersive shallow water models:
 
 * the [BBM-BBM equations with varying bottom topography](https://iopscience.iop.org/article/10.1088/1361-6544/ac3c29),
-* the [dispersive shallow water model proposed by Magnus Svärd and Henrik Kalisch](https://arxiv.org/abs/2302.09924).
+* the [dispersive shallow water model proposed by Magnus Svärd and Henrik Kalisch](https://arxiv.org/abs/2302.09924),
+* the [Serre-Green-Naghdi equations](https://arxiv.org/abs/2408.02665).
 
-The semidiscretizations are based on summation by parts (SBP) operators, which are implemented in [SummationByPartsOperators.jl](https://github.com/ranocha/SummationByPartsOperators.jl/).
-In order to obtain fully discrete schemes, the time integration methods from [OrdinaryDiffEq.jl](https://github.com/SciML/OrdinaryDiffEq.jl) are used to solve the resulting ordinary differential equations.
+The semidiscretizations are based on summation-by-parts (SBP) operators, which are implemented in [SummationByPartsOperators.jl](https://github.com/ranocha/SummationByPartsOperators.jl/).
+To obtain fully discrete schemes, the time integration methods from [OrdinaryDiffEq.jl](https://github.com/SciML/OrdinaryDiffEq.jl) are used to solve the resulting ordinary differential equations.
 Fully discrete entropy-conservative methods can be obtained by using the [relaxation method](https://epubs.siam.org/doi/10.1137/19M1263662) provided by DispersiveShallowWater.jl.
 
 ## Installation

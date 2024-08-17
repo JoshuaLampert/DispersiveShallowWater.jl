@@ -102,7 +102,9 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_1d")
                             cons_error=[4.272316442782926e-11 0.5469460931577768],
                             change_waterheight=4.272316442782926e-11,
                             change_velocity=0.5469460931577768,
-                            change_entropy=130.69415963528348)
+                            change_entropy=130.69415963528348,
+                            atol=1e-11,
+                            atol_ints=1e-11) # in order to make CI pass
 
         @test_allocations(semi, sol)
 

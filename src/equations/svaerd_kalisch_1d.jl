@@ -15,7 +15,7 @@ where ``\hat\alpha^2 = \alpha\sqrt{gD}D^2``, ``\hat\beta = \beta D^3``, ``\hat\g
 The equations can be rewritten in primitive variables as
 ```math
 \begin{aligned}
-  \eta_t + ((\eta + D)v)_x = (\hat\alpha(\hat\alpha\eta_x)_x)_x,\\
+  \eta_t + ((\eta + D)v)_x &= (\hat\alpha(\hat\alpha\eta_x)_x)_x,\\
   v_t(\eta + D) - v((\eta + D)v)_x + ((\eta + D)v^2)_x + g(\eta + D)\eta_x &= (\hat\alpha v(\hat\alpha\eta_x)_x)_x - v(\hat\alpha(\hat\alpha\eta_x)_x)_x + (\hat\beta v_x)_{xt} + \frac{1}{2}(\hat\gamma v_x)_{xx} + \frac{1}{2}(\hat\gamma v_{xx})_x.
 \end{aligned}
 ```
@@ -337,9 +337,12 @@ end
     energy_total_modified(q_global, equations::SvaerdKalischEquations1D, cache)
 
 Return the modified total energy of the primitive variables `q_global` for the
-`SvaerdKalischEquations1D`. It contains an additional term containing a
-derivative compared to the usual `energy_total`. The `energy_total_modified`
-is a conserved quantity of the Svärd-Kalisch equations.
+[`SvaerdKalischEquations1D`](@ref). It contains an additional term containing a
+derivative compared to the usual [`energy_total`](@ref). The `energy_total_modified`
+is a conserved quantity of the Svärd-Kalisch equations given by
+```math
+\\frac{1}{2} g h^2 + \\frac{1}{2} h v^2 + \\frac{1}{2} \\hat\\beta v_x^2.
+```
 
 `q_global` is a vector of the primitive variables at ALL nodes.
 `cache` needs to hold the first-derivative SBP operator `D1`.

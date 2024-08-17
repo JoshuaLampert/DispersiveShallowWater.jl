@@ -8,7 +8,7 @@ abstract type AbstractSolver end
 """
     Solver
 
-A `struct` that holds the summation by parts (SBP) operators that are used for the spatial discretization.
+A `struct` that holds the summation-by-parts (SBP) operators that are used for the spatial discretization.
 """
 struct Solver{RealT <: Real,
               FirstDerivative <: AbstractDerivativeOperator{RealT},
@@ -36,7 +36,7 @@ end
 """
     Solver(mesh, accuracy_order)
 
-Create a solver, where the summation by parts (SBP) operators are of order `accuracy_order` and
+Create a solver, where the summation-by-parts (SBP) operators are of order `accuracy_order` and
 associated to the `mesh`.
 """
 function Solver(mesh, accuracy_order)

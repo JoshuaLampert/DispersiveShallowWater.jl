@@ -48,3 +48,6 @@ julia --project=docs --color=yes docs/make.jl
 ```
 
 The resulting `.html` files can then be found in `docs/build/` and you can look at them by opening them in a browser.
+For pull requests from the main repository (i.e. not from a fork), the documentation is automatically built and can
+be previewed under `https://joshualampert.github.io/DispersiveShallowWater.jl/previews/PRXXX/` where `XXX` is the number
+of the pull request.

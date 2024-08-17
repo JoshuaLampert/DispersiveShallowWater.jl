@@ -42,7 +42,7 @@ Common choices of the `conversion_function` are [`prim2prim`](@ref) and
 """
 function varnames end
 
-"""
+@doc raw"""
     AbstractShallowWaterEquations{NDIMS, NVARS}
 
 An abstract supertype of all equation system that contain the classical
