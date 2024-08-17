@@ -343,7 +343,7 @@ is a conserved quantity of the Svärd-Kalisch equations.
 
 The total energy is given by
 ```math
-    \\frac{1}{2} g h^2 + \\frac{1}{2} h v^2 + \\frac{1}{2} \\hat\\beta v_x^2.
+\\frac{1}{2} g h^2 + \\frac{1}{2} h v^2 + \\frac{1}{2} \\hat\\beta v_x^2.
 ```
 
 `q_global` is a vector of the primitive variables at ALL nodes.
