@@ -15,8 +15,7 @@ The unknown quantities of the Serre-Green-Naghdi equations are the
 total water height ``\eta = h + b`` and the velocity ``v``.
 The gravitational constant is denoted by `g` and the bottom topography
 (bathymetry) ``b = \eta_0 - D``. The water height above the bathymetry
-is therefore given by ``h = \eta - \eta_0 + D``. The Serre-Green-Naghdi
-equations are only implemented for ``\eta_0 = 0``.
+is therefore given by ``h = \eta - \eta_0 + D``.
 The total water height is therefore given by ``\eta = h + b``.
 
 Three types of variable `bathymetry_type` are supported:
@@ -81,7 +80,7 @@ function SerreGreenNaghdiEquations1D(bathymetry_type = bathymetry_flat;
     SerreGreenNaghdiEquations1D(bathymetry_type, gravity_constant, eta0)
 end
 
-function get_name(equations::SerreGreenNaghdiEquations1D)
+function get_name(equations::AbstractSerreGreenNaghdiEquations1D)
     name = equations |> typeof |> nameof |> string
     bathymetry_type = equations.bathymetry_type
     if bathymetry_type isa BathymetryFlat
@@ -101,7 +100,7 @@ A soliton solution used for convergence tests in a periodic domain.
 """
 function initial_condition_convergence_test(x, t, equations::SerreGreenNaghdiEquations1D,
                                             mesh)
-    g = equations.gravity
+    g = gravity_constant(equations)
 
     # setup parameters data
     h1 = 1.0
@@ -381,7 +380,7 @@ end
 # Discretization that conserves
 # - the total water mass (integral of h) as a linear invariant
 # - the total momentum (integral of h v) as a nonlinear invariant
-# - the total energy
+# - the total modified energy
 # for periodic boundary conditions, see
 # - Hendrik Ranocha and Mario Ricchiuto (2024)
 #   Structure-preserving approximations of the Serre-Green-Naghdi
@@ -807,15 +806,15 @@ end
     return SVector(eta, v, D)
 end
 
-@inline function waterheight_total(q, equations::SerreGreenNaghdiEquations1D)
+@inline function waterheight_total(q, equations::AbstractSerreGreenNaghdiEquations1D)
     return q[1]
 end
 
-@inline function velocity(q, equations::SerreGreenNaghdiEquations1D)
+@inline function velocity(q, equations::AbstractSerreGreenNaghdiEquations1D)
     return q[2]
 end
 
-@inline function bathymetry(q, equations::SerreGreenNaghdiEquations1D)
+@inline function bathymetry(q, equations::AbstractSerreGreenNaghdiEquations1D)
     D = q[3]
     return equations.eta0 - D
 end
@@ -828,7 +827,7 @@ Return the modified total energy of the primitive variables `q_global` for the
 [`SerreGreenNaghdiEquations1D`](@ref).
 It contains an additional term containing a
 derivative compared to the usual [`energy_total`](@ref) modeling
-non-hydrostatic contributions. The [`energy_total_modified`](@ref)
+non-hydrostatic contributions. The `energy_total_modified`
 is a conserved quantity (for periodic boundary conditions).
 
 For a [`bathymetry_flat`](@ref) the total modified energy is given by
@@ -851,7 +850,7 @@ function energy_total_modified(q_global,
                                equations::SerreGreenNaghdiEquations1D,
                                cache)
     # unpack physical parameters and SBP operator `D1`
-    g = equations.gravity
+    g = gravity_constant(equations)
     (; D1, h, b, v_x) = cache
 
     # `q_global` is an `ArrayPartition`. It collects the individual arrays for
