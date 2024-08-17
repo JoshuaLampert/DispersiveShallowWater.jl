@@ -13,8 +13,8 @@ initial_condition = initial_condition_dingemans
 boundary_conditions = boundary_condition_periodic
 
 # create homogeneous mesh
-coordinates_min = -140.0
-coordinates_max = 100.0
+coordinates_min = -138.0
+coordinates_max = 46.0
 N = 512
 mesh = Mesh1D(coordinates_min, coordinates_max, N)
 
