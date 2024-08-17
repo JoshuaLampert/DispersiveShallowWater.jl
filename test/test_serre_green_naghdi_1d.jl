@@ -239,6 +239,31 @@ EXAMPLES_DIR = joinpath(examples_dir(), "serre_green_naghdi_1d")
 
         @test_allocations(semi, sol, allocs=750_000)
     end
+
+    @trixi_testset "serre_green_naghdi_conservation.jl" begin
+        @test_trixi_include(joinpath(EXAMPLES_DIR,
+                                     "serre_green_naghdi_conservation.jl"),
+                            l2=[1.3655498085989206, 2.3967486930606716, 0.0],
+                            linf=[1.001076318001934, 0.8052527556023067, 0.0],
+                            cons_error=[0.0, 0.0002674927404067162, 0.0],
+                            change_entropy=-0.0584189861183404,
+                            change_entropy_modified=0.059273537492344985)
+
+        @test_allocations(semi, sol, allocs=900_000)
+    end
+
+    @trixi_testset "serre_green_naghdi_conservation.jl with bathymetry_mild_slope" begin
+        @test_trixi_include(joinpath(EXAMPLES_DIR,
+                                     "serre_green_naghdi_conservation.jl"),
+                            bathymetry_type=bathymetry_mild_slope,
+                            l2=[1.3655493671985637, 2.3967828251339003, 0.0],
+                            linf=[1.001075913983051, 0.8052680970114169, 0.0],
+                            cons_error=[1.1368683772161603e-13, 0.00026407261543415217, 0.0],
+                            change_entropy=-0.058352284294869605,
+                            change_entropy_modified=0.05927339747017868)
+
+        @test_allocations(semi, sol, allocs=900_000)
+    end
 end
 
 end # module
