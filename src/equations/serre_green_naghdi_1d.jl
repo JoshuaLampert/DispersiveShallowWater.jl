@@ -354,6 +354,28 @@ function assemble_system_matrix!(cache, h, b_x, D1, D1mat,
                               - Diagonal(M_h2_bx) * D1mat)
 end
 
+function solve_system_matrix!(dv, system_matrix, rhs,
+                              ::SerreGreenNaghdiEquations1D,
+                              D1, cache)
+    if issparse(system_matrix)
+        (; factorization) = cache
+        cholesky!(factorization, system_matrix; check = false)
+        if issuccess(factorization)
+            scale_by_mass_matrix!(rhs, D1)
+            dv .= factorization \ rhs
+        else
+            # The factorization may fail if the time step is too large
+            # and h becomes negative.
+            fill!(dv, NaN)
+        end
+    else
+        factorization = cholesky!(system_matrix)
+        scale_by_mass_matrix!(rhs, D1)
+        ldiv!(dv, factorization, rhs)
+    end
+    return nothing
+end
+
 # Discretization that conserves
 # - the total water mass (integral of h) as a linear invariant
 # - the total momentum (integral of h v) as a nonlinear invariant
@@ -452,22 +474,8 @@ function rhs_sgn_central!(dq, q, equations, source_terms, cache, ::BathymetryFla
     end
 
     @trixi_timeit timer() "solving elliptic system" begin
-        if issparse(system_matrix)
-            (; factorization) = cache
-            cholesky!(factorization, system_matrix; check = false)
-            if issuccess(factorization)
-                scale_by_mass_matrix!(tmp, D1)
-                dv .= factorization \ tmp
-            else
-                # The factorization may fail if the time step is too large
-                # and h becomes negative.
-                fill!(dv, NaN)
-            end
-        else
-            factorization = cholesky!(system_matrix)
-            scale_by_mass_matrix!(tmp, D1)
-            ldiv!(dv, factorization, tmp)
-        end
+        solve_system_matrix!(dv, system_matrix, tmp,
+                             equations, D1, cache)
     end
 
     return nothing
@@ -552,16 +560,8 @@ function rhs_sgn_upwind!(dq, q, equations, source_terms, cache, ::BathymetryFlat
     end
 
     @trixi_timeit timer() "solving elliptic system" begin
-        (; factorization) = cache
-        cholesky!(factorization, system_matrix; check = false)
-        if issuccess(factorization)
-            scale_by_mass_matrix!(tmp, D1)
-            dv .= factorization \ tmp
-        else
-            # The factorization may fail if the time step is too large
-            # and h becomes negative.
-            fill!(dv, NaN)
-        end
+        solve_system_matrix!(dv, system_matrix, tmp,
+                             equations, D1, cache)
     end
 
     return nothing
@@ -666,22 +666,8 @@ function rhs_sgn_central!(dq, q, equations, source_terms, cache,
     end
 
     @trixi_timeit timer() "solving elliptic system" begin
-        if issparse(system_matrix)
-            (; factorization) = cache
-            cholesky!(factorization, system_matrix; check = false)
-            if issuccess(factorization)
-                scale_by_mass_matrix!(tmp, D1)
-                dv .= factorization \ tmp
-            else
-                # The factorization may fail if the time step is too large
-                # and h becomes negative.
-                fill!(dv, NaN)
-            end
-        else
-            factorization = cholesky!(system_matrix)
-            scale_by_mass_matrix!(tmp, D1)
-            ldiv!(dv, factorization, tmp)
-        end
+        solve_system_matrix!(dv, system_matrix, tmp,
+                             equations, D1, cache)
     end
 
     return nothing
@@ -794,22 +780,8 @@ function rhs_sgn_upwind!(dq, q, equations, source_terms, cache,
     end
 
     @trixi_timeit timer() "solving elliptic system" begin
-        if issparse(system_matrix)
-            (; factorization) = cache
-            cholesky!(factorization, system_matrix; check = false)
-            if issuccess(factorization)
-                scale_by_mass_matrix!(tmp, D1)
-                dv .= factorization \ tmp
-            else
-                # The factorization may fail if the time step is too large
-                # and h becomes negative.
-                fill!(dv, NaN)
-            end
-        else
-            factorization = cholesky!(system_matrix)
-            scale_by_mass_matrix!(tmp, D1)
-            ldiv!(dv, factorization, tmp)
-        end
+        solve_system_matrix!(dv, system_matrix, tmp,
+                             equations, D1, cache)
     end
 
     return nothing
