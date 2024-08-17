@@ -186,17 +186,10 @@ function create_cache(mesh,
 
         D1mat_minus = sparse(D1.minus)
 
-        @. M_h = h
-        scale_by_mass_matrix!(M_h, D1)
-        @. M_h3_3 = (1 / 3) * h^3
-        scale_by_mass_matrix!(M_h3_3, D1)
-        # Floating point errors accumulate a bit and the system matrix
-        # is not necessarily perfectly symmetric but only up to
-        # round-off errors. We wrap it here to avoid issues with the
-        # factorization.
-        system_matrix = Symmetric(Diagonal(M_h)
-                                  +
-                                  D1mat_minus' * Diagonal(M_h3_3) * D1mat_minus)
+        system_matrix = let cache = (; M_h, M_h3_3)
+            assemble_system_matrix!(cache, h,
+                                    D1, D1mat_minus, equations)
+        end
         factorization = cholesky(system_matrix)
 
         cache = (; h, b, h_x, v_x, v_x_upwind, h2_x, hv_x, v2_x,
@@ -214,18 +207,10 @@ function create_cache(mesh,
         else
             D1mat = sparse(D1)
 
-            @. M_h = h
-            scale_by_mass_matrix!(M_h, D1)
-            @. M_h3_3 = (1 / 3) * h^3
-            scale_by_mass_matrix!(M_h3_3, D1)
-            # Floating point errors accumulate a bit and the system matrix
-            # is not necessarily perfectly symmetric but only up to
-            # round-off errors. We wrap it here to avoid issues with the
-            # factorization.
-            system_matrix = Symmetric(Diagonal(M_h)
-                                      +
-                                      D1mat' * Diagonal(M_h3_3) * D1mat)
-
+            system_matrix = let cache = (; M_h, M_h3_3)
+                assemble_system_matrix!(cache, h,
+                                        D1, D1mat, equations)
+            end
             factorization = cholesky(system_matrix)
 
             cache = (; h, b, h_x, v_x, h2_x, hv_x, v2_x,
@@ -273,6 +258,7 @@ function create_cache(mesh,
     # TODO: This is a hack and should be improved. It would be ideal if we
     #       had access to the initial condition and the exact value of the
     #       bathymetry here.
+    @show initial_condition
     let x = grid(D1)
         @. b_x = x^3
     end
@@ -283,32 +269,10 @@ function create_cache(mesh,
 
         D1mat_minus = sparse(D1.minus)
 
-        if equations.bathymetry_type isa BathymetryMildSlope
-            factor = 0.75
-        elseif equations.bathymetry_type isa BathymetryVariable
-            factor = 1.0
-        else
-            throw(ArgumentError("Unsupported bathymetry type $(equations.bathymetry_type)"))
+        system_matrix = let cache = (; M_h_p_h_bx2, M_h3_3, M_h2_bx)
+            assemble_system_matrix!(cache, h, b_x,
+                                    D1, D1mat_minus, equations)
         end
-        @. M_h_p_h_bx2 = h + factor * h * b_x^2
-        scale_by_mass_matrix!(M_h_p_h_bx2, D1)
-        inv3 = 1 / 3
-        @. M_h3_3 = inv3 * h^3
-        scale_by_mass_matrix!(M_h3_3, D1)
-        @. M_h2_bx = 0.5 * h^2 * b_x
-        scale_by_mass_matrix!(M_h2_bx, D1)
-        # Floating point errors accumulate a bit and the system matrix
-        # is not necessarily perfectly symmetric but only up to
-        # round-off errors. We wrap it here to avoid issues with the
-        # factorization.
-        system_matrix = Symmetric(Diagonal(M_h_p_h_bx2)
-                                  +
-                                  D1mat_minus' * (Diagonal(M_h3_3) * D1mat_minus
-                                   -
-                                   Diagonal(M_h2_bx))
-                                  -
-                                  Diagonal(M_h2_bx) * D1mat_minus)
-
         factorization = cholesky(system_matrix)
 
         cache = (; h, h_x, v_x, v_x_upwind, h_hpb_x, b, b_x, hv_x, v2_x,
@@ -326,32 +290,10 @@ function create_cache(mesh,
         else
             D1mat = sparse(D1)
 
-            if equations.bathymetry_type isa BathymetryMildSlope
-                factor = 0.75
-            elseif equations.bathymetry_type isa BathymetryVariable
-                factor = 1.0
-            else
-                throw(ArgumentError("Unsupported bathymetry type $(equations.bathymetry_type)"))
+            system_matrix = let cache = (; M_h_p_h_bx2, M_h3_3, M_h2_bx)
+                assemble_system_matrix!(cache, h, b_x,
+                                        D1, D1mat, equations)
             end
-            @. M_h_p_h_bx2 = h + factor * h * b_x^2
-            scale_by_mass_matrix!(M_h_p_h_bx2, D1)
-            inv3 = 1 / 3
-            @. M_h3_3 = inv3 * h^3
-            scale_by_mass_matrix!(M_h3_3, D1)
-            @. M_h2_bx = 0.5 * h^2 * b_x
-            scale_by_mass_matrix!(M_h2_bx, D1)
-            # Floating point errors accumulate a bit and the system matrix
-            # is not necessarily perfectly symmetric but only up to
-            # round-off errors. We wrap it here to avoid issues with the
-            # factorization.
-            system_matrix = Symmetric(Diagonal(M_h_p_h_bx2)
-                                      +
-                                      D1mat' * (Diagonal(M_h3_3) * D1mat
-                                       -
-                                       Diagonal(M_h2_bx))
-                                      -
-                                      Diagonal(M_h2_bx) * D1mat)
-
             factorization = cholesky(system_matrix)
 
             cache = (; h, h_x, v_x, h_hpb_x, b, b_x, hv_x, v2_x,
@@ -367,6 +309,49 @@ function create_cache(mesh,
     end
 
     return cache
+end
+
+function assemble_system_matrix!(cache, h, D1, D1mat,
+                                 equations::SerreGreenNaghdiEquations1D{BathymetryFlat})
+    (; M_h, M_h3_3) = cache
+
+    @. M_h = h
+    scale_by_mass_matrix!(M_h, D1)
+    @. M_h3_3 = (1 / 3) * h^3
+    scale_by_mass_matrix!(M_h3_3, D1)
+
+    # Floating point errors accumulate a bit and the system matrix
+    # is not necessarily perfectly symmetric but only up to
+    # round-off errors. We wrap it here to avoid issues with the
+    # factorization.
+    return Symmetric(Diagonal(M_h) + D1mat' * Diagonal(M_h3_3) * D1mat)
+end
+
+# variable bathymetry
+function assemble_system_matrix!(cache, h, b_x, D1, D1mat,
+                                 equations::SerreGreenNaghdiEquations1D)
+    (; M_h_p_h_bx2, M_h3_3, M_h2_bx) = cache
+
+    if equations.bathymetry_type isa BathymetryMildSlope
+        factor = 0.75
+    elseif equations.bathymetry_type isa BathymetryVariable
+        factor = 1.0
+    end
+    @. M_h_p_h_bx2 = h + factor * h * b_x^2
+    scale_by_mass_matrix!(M_h_p_h_bx2, D1)
+    inv3 = 1 / 3
+    @. M_h3_3 = inv3 * h^3
+    scale_by_mass_matrix!(M_h3_3, D1)
+    @. M_h2_bx = 0.5 * h^2 * b_x
+    scale_by_mass_matrix!(M_h2_bx, D1)
+    # Floating point errors accumulate a bit and the system matrix
+    # is not necessarily perfectly symmetric but only up to
+    # round-off errors. We wrap it here to avoid issues with the
+    # factorization.
+    return Symmetric(Diagonal(M_h_p_h_bx2)
+                              + D1mat' * (Diagonal(M_h3_3) * D1mat
+                               - Diagonal(M_h2_bx))
+                              - Diagonal(M_h2_bx) * D1mat)
 end
 
 # Discretization that conserves
@@ -457,21 +442,13 @@ function rhs_sgn_central!(dq, q, equations, source_terms, cache, ::BathymetryFla
                    p_x)
     end
 
+    # The code below is equivalent to
+    #   dv .= (Diagonal(h) - D1mat * Diagonal(1/3 .* h.^3) * D1mat) \ tmp
+    # but faster since the symbolic factorization is reused.
     @trixi_timeit timer() "assembling elliptic operator" begin
-        # The code below is equivalent to
-        #   dv .= (Diagonal(h) - D1mat * Diagonal(1/3 .* h.^3) * D1mat) \ tmp
-        # but faster since the symbolic factorization is reused.
-        @. M_h = h
-        scale_by_mass_matrix!(M_h, D1)
-        inv3 = 1 / 3
-        @. M_h3_3 = inv3 * h^3
-        scale_by_mass_matrix!(M_h3_3, D1)
-        # Floating point errors accumulate a bit and the system matrix
-        # is not necessarily perfectly symmetric but only up to round-off
-        # errors. We wrap it here to avoid issues with the factorization.
-        system_matrix = Symmetric(Diagonal(M_h)
-                                  +
-                                  D1mat' * Diagonal(M_h3_3) * D1mat)
+        system_matrix = assemble_system_matrix!(cache, h,
+                                                D1, D1mat,
+                                                equations)
     end
 
     @trixi_timeit timer() "solving elliptic system" begin
@@ -565,21 +542,13 @@ function rhs_sgn_upwind!(dq, q, equations, source_terms, cache, ::BathymetryFlat
                    p_x)
     end
 
+    # The code below is equivalent to
+    #   dv .= (Diagonal(h) - D1mat_plus * Diagonal(1/3 .* h.^3) * D1mat_minus) \ tmp
+    # but faster since the symbolic factorization is reused.
     @trixi_timeit timer() "assembling elliptic operator" begin
-        # The code below is equivalent to
-        #   dv .= (Diagonal(h) - D1mat_plus * Diagonal(1/3 .* h.^3) * D1mat_minus) \ tmp
-        # but faster since the symbolic factorization is reused.
-        @. M_h = h
-        scale_by_mass_matrix!(M_h, D1)
-        inv3 = 1 / 3
-        @. M_h3_3 = inv3 * h^3
-        scale_by_mass_matrix!(M_h3_3, D1)
-        # Floating point errors accumulate a bit and the system matrix
-        # is not necessarily perfectly symmetric but only up to round-off errors.
-        # We wrap it here to avoid issues with the factorization.
-        system_matrix = Symmetric(Diagonal(M_h)
-                                  +
-                                  D1mat_minus' * Diagonal(M_h3_3) * D1mat_minus)
+        system_matrix = assemble_system_matrix!(cache, h,
+                                                D1, D1mat_minus,
+                                                equations)
     end
 
     @trixi_timeit timer() "solving elliptic system" begin
@@ -687,32 +656,13 @@ function rhs_sgn_central!(dq, q, equations, source_terms, cache,
         end
     end
 
+    # The code below is equivalent to
+    #   dv .= (Diagonal(h .+ factor .* h .* b_x.^2) - D1mat * (Diagonal(1/3 .* h.^3) * D1mat - Diagonal(0.5 .* h.^2 .* b_x) * D1mat) \ tmp
+    # but faster since the symbolic factorization is reused.
     @trixi_timeit timer() "assembling elliptic operator" begin
-        if equations.bathymetry_type isa BathymetryMildSlope
-            factor = 0.75
-        else # equations.bathymetry_type isa BathymetryVariable
-            factor = 1.0
-        end
-        # The code below is equivalent to
-        #   dv .= (Diagonal(h .+ factor .* h .* b_x.^2) - D1mat * (Diagonal(1/3 .* h.^3) * D1mat - Diagonal(0.5 .* h.^2 .* b_x) * D1mat) \ tmp
-        # but faster since the symbolic factorization is reused.
-        @. M_h_p_h_bx2 = h + factor * h * b_x^2
-        scale_by_mass_matrix!(M_h_p_h_bx2, D1)
-        inv3 = 1 / 3
-        @. M_h3_3 = inv3 * h^3
-        scale_by_mass_matrix!(M_h3_3, D1)
-        @. M_h2_bx = 0.5 * h^2 * b_x
-        scale_by_mass_matrix!(M_h2_bx, D1)
-        # Floating point errors accumulate a bit and the system matrix
-        # is not necessarily perfectly symmetric but only up to round-off
-        # errors. We wrap it here to avoid issues with the factorization.
-        system_matrix = Symmetric(Diagonal(M_h_p_h_bx2)
-                                  +
-                                  D1mat' * (Diagonal(M_h3_3) * D1mat
-                                            -
-                                            Diagonal(M_h2_bx))
-                                  -
-                                  Diagonal(M_h2_bx) * D1mat)
+        system_matrix = assemble_system_matrix!(cache, h, b_x,
+                                                D1, D1mat,
+                                                equations)
     end
 
     @trixi_timeit timer() "solving elliptic system" begin
@@ -834,32 +784,13 @@ function rhs_sgn_upwind!(dq, q, equations, source_terms, cache,
         end
     end
 
+    # The code below is equivalent to
+    #   dv .= (Diagonal(h .+ 0.75 .* h .* b_x.^2) - D1mat * (Diagonal(1/3 .* h.^3) * D1mat - Diagonal(0.5 .* h.^2 .* b_x)) - Diagonal(0.5 .* h.^2 .* b_x) * D1mat) \ tmp
+    # but faster since the symbolic factorization is reused.
     @trixi_timeit timer() "assembling elliptic operator" begin
-        if equations.bathymetry_type isa BathymetryMildSlope
-            factor = 0.75
-        else # equations.bathymetry_type isa BathymetryVariable
-            factor = 1.0
-        end
-        # The code below is equivalent to
-        #   dv .= (Diagonal(h .+ 0.75 .* h .* b_x.^2) - D1mat * (Diagonal(1/3 .* h.^3) * D1mat - Diagonal(0.5 .* h.^2 .* b_x)) - Diagonal(0.5 .* h.^2 .* b_x) * D1mat) \ tmp
-        # but faster since the symbolic factorization is reused.
-        @. M_h_p_h_bx2 = h + factor * h * b_x^2
-        scale_by_mass_matrix!(M_h_p_h_bx2, D1)
-        inv3 = 1 / 3
-        @. M_h3_3 = inv3 * h^3
-        scale_by_mass_matrix!(M_h3_3, D1)
-        @. M_h2_bx = 0.5 * h^2 * b_x
-        scale_by_mass_matrix!(M_h2_bx, D1)
-        # Floating point errors accumulate a bit and the system matrix
-        # is not necessarily perfectly symmetric but only up to round-off
-        # errors. We wrap it here to avoid issues with the factorization.
-        system_matrix = Symmetric(Diagonal(M_h_p_h_bx2)
-                                  +
-                                  D1mat_minus' * (Diagonal(M_h3_3) * D1mat_minus
-                                   -
-                                   Diagonal(M_h2_bx))
-                                  -
-                                  Diagonal(M_h2_bx) * D1mat_minus)
+        system_matrix = assemble_system_matrix!(cache, h, b_x,
+                                                D1, D1mat_minus,
+                                                equations)
     end
 
     @trixi_timeit timer() "solving elliptic system" begin
