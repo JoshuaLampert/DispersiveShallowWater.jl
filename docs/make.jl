@@ -5,9 +5,11 @@ using TrixiBase
 # Dynamically replace all files in subdirectories of the source directory to include all files in these subdirectories
 # This way they don't need to be listed explicitly
 EQUATIONS_FILES_TO_BE_INSERTED = joinpath.(Ref("equations"),
-                                           readdir(joinpath(dirname(@__DIR__), "src", "equations")))
+                                           readdir(joinpath(dirname(@__DIR__), "src",
+                                                            "equations")))
 CALLBACKS_STEP_FILES_TO_BE_INSERTED = joinpath.(Ref("callbacks_step"),
-                                                readdir(joinpath(dirname(@__DIR__), "src", "callbacks_step")))
+                                                readdir(joinpath(dirname(@__DIR__), "src",
+                                                                 "callbacks_step")))
 
 ref_path = joinpath(@__DIR__, "src", "ref.md")
 lines = readlines(ref_path)
