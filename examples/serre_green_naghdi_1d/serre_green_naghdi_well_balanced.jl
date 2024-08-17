@@ -3,7 +3,7 @@ using DispersiveShallowWater
 using SummationByPartsOperators: upwind_operators, periodic_derivative_operator
 
 ###############################################################################
-# Semidiscretization of the BBM-BBM equations
+# Semidiscretization of the Serre-Green-Naghdi equations
 
 bathymetry_type = bathymetry_variable # or bathymetry_mild_slope
 equations = SerreGreenNaghdiEquations1D(bathymetry_type;
