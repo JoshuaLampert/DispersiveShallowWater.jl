@@ -349,9 +349,12 @@ function assemble_system_matrix!(cache, h, b_x, D1, D1mat,
     # round-off errors. We wrap it here to avoid issues with the
     # factorization.
     return Symmetric(Diagonal(M_h_p_h_bx2)
-                              + D1mat' * (Diagonal(M_h3_3) * D1mat
-                               - Diagonal(M_h2_bx))
-                              - Diagonal(M_h2_bx) * D1mat)
+                     +
+                     D1mat' * (Diagonal(M_h3_3) * D1mat
+                               -
+                               Diagonal(M_h2_bx))
+                     -
+                     Diagonal(M_h2_bx) * D1mat)
 end
 
 function solve_system_matrix!(dv, system_matrix, rhs,
