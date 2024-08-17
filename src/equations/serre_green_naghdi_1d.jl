@@ -258,7 +258,6 @@ function create_cache(mesh,
     # TODO: This is a hack and should be improved. It would be ideal if we
     #       had access to the initial condition and the exact value of the
     #       bathymetry here.
-    @show initial_condition
     let x = grid(D1)
         @. b_x = x^3
     end
