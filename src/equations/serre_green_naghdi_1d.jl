@@ -645,7 +645,7 @@ function rhs_sgn_central!(dq, q, equations, source_terms, cache,
         end
         @. p_h = p_h - 0.25 * (h_x * v + h * v_x) * b_x * v
         if equations.bathymetry_type isa BathymetryVariable
-            @. psi = psi - 0.125 * (h_x * v + h * v_x) * b_x * v
+            @. psi -= 0.125 * (h_x * v + h * v_x) * b_x * v
         end
         @. tmp = p_h * h
         mul!(p_x, D1, tmp)
@@ -791,7 +791,7 @@ function rhs_sgn_upwind!(dq, q, equations, source_terms, cache,
                   -
                   0.25 * (h_x * v + h * v_x) * b_x * v)
         if equations.bathymetry_type isa BathymetryVariable
-            @. psi = psi - 0.125 * (h_x * v + h * v_x) * b_x * v
+            @. psi -= 0.125 * (h_x * v + h * v_x) * b_x * v
         end
         @. p_h = p_h + tmp
         @. tmp = tmp * h
