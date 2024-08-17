@@ -96,8 +96,8 @@ function cons2prim end
     waterheight_total(q, equations)
 
 Return the total waterheight of the primitive variables `q` for a given set of
-`equations`, i.e., the [`waterheight`](@ref) plus the
-[`bathymetry`](@ref).
+`equations`, i.e., the [`waterheight`](@ref) ``h`` plus the
+[`bathymetry`](@ref) ``b``.
 
 `q` is a vector of the primitive variables at a single node, i.e., a vector
 of the correct length `nvariables(equations)`.
@@ -107,15 +107,19 @@ function waterheight_total end
 varnames(::typeof(waterheight_total), equations) = ("η",)
 
 """
-    waterheight(q, equations)
+    waterheight(q, equations::AbstractShallowWaterEquations)
 
 Return the waterheight of the primitive variables `q` for a given set of
-`equations`, i.e., the waterheight above the bathymetry.
+`equations`, i.e., the waterheight ``h`` above the bathymetry ``b``.
 
 `q` is a vector of the primitive variables at a single node, i.e., a vector
 of the correct length `nvariables(equations)`.
+
+See also [`waterheight_total`](@ref), [`bathymetry`](@ref).
 """
-function waterheight end
+@inline function waterheight(q, equations::AbstractShallowWaterEquations)
+    return waterheight_total(q, equations) - bathymetry(q, equations)
+end
 
 varnames(::typeof(waterheight), equations) = ("h",)
 
@@ -183,6 +187,19 @@ Return the bathymetry of the primitive variables `q` for a given set of
 of the correct length `nvariables(equations)`.
 """
 function bathymetry end
+
+"""
+        lake_at_rest_error(q, equations::AbstractShallowWaterEquations)
+
+Calculate the error for the "lake-at-rest" test case where the
+[`waterheight_total`](@ref) ``\\eta = h + b`` should
+be a constant value over time (given by the value ``\\eta_0`` passed to the
+`equations` when constructing them).
+"""
+@inline function lake_at_rest_error(q, equations::AbstractShallowWaterEquations)
+    eta = waterheight_total(q, equations)
+    return abs(equations.eta0 - eta)
+end
 
 """
     entropy(q, equations)
@@ -325,13 +342,39 @@ Default analysis integrals used by the [`AnalysisCallback`](@ref).
 default_analysis_integrals(::AbstractEquations) = Symbol[]
 
 abstract type AbstractBathymetry end
+
 struct BathymetryFlat <: AbstractBathymetry end
 """
     bathymetry_flat = DispersiveShallowWater.BathymetryFlat()
 
 A singleton struct indicating a flat bathymetry.
+
+See also [`bathymetry_mild_slope`](@ref) and [`bathymetry_variable`](@ref).
 """
 const bathymetry_flat = BathymetryFlat()
+
+struct BathymetryMildSlope <: AbstractBathymetry end
+"""
+    bathymetry_mild_slope = DispersiveShallowWater.BathymetryMildSlope()
+
+A singleton struct indicating a variable bathymetry with mild-slope
+approximation. Typically, this means that some terms like ``b_x^2``
+are neglected.
+
+See also [`bathymetry_flat`](@ref) and [`bathymetry_variable`](@ref).
+"""
+const bathymetry_mild_slope = BathymetryMildSlope()
+
+struct BathymetryVariable <: AbstractBathymetry end
+"""
+    bathymetry_variable = DispersiveShallowWater.BathymetryVariable()
+
+A singleton struct indicating a variable bathymetry (without
+mild-slope approximation).
+
+See also [`bathymetry_flat`](@ref) and [`bathymetry_mild_slope`](@ref).
+"""
+const bathymetry_variable = BathymetryVariable()
 
 # BBM-BBM equations
 abstract type AbstractBBMBBMEquations{NDIMS, NVARS} <:
