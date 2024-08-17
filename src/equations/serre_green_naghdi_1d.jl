@@ -335,8 +335,8 @@ function create_cache(mesh,
             system_matrix = Symmetric(Diagonal(M_h_p_h_bx2)
                                       +
                                       D1mat' * (Diagonal(M_h3_3) * D1mat
-                                               -
-                                               Diagonal(M_h2_bx))
+                                       -
+                                       Diagonal(M_h2_bx))
                                       -
                                       Diagonal(M_h2_bx) * D1mat)
 
@@ -697,8 +697,8 @@ function rhs_sgn_central!(dq, q, equations, source_terms, cache,
         system_matrix = Symmetric(Diagonal(M_h_p_h_bx2)
                                   +
                                   D1mat' * (Diagonal(M_h3_3) * D1mat
-                                           -
-                                           Diagonal(M_h2_bx))
+                                            -
+                                            Diagonal(M_h2_bx))
                                   -
                                   Diagonal(M_h2_bx) * D1mat)
     end
