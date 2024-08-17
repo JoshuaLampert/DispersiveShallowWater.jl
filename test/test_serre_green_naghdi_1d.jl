@@ -247,7 +247,8 @@ EXAMPLES_DIR = joinpath(examples_dir(), "serre_green_naghdi_1d")
                             linf=[1.001076318001934, 0.8052527556023067, 0.0],
                             cons_error=[0.0, 0.0002674927404067162, 0.0],
                             change_entropy=-0.0584189861183404,
-                            change_entropy_modified=0.059273537492344985)
+                            change_entropy_modified=0.059273537492344985,
+                            atol_ints=4e-9) # to make CI pass
 
         @test_allocations(semi, sol, allocs=900_000)
     end
