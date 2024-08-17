@@ -613,7 +613,7 @@ function rhs_sgn_central!(dq, q, equations, source_terms, cache,
 
         mul!(h_x, D, h)
         mul!(v_x, D, v)
-        @. tmp = h * (h + b)
+        @. tmp = h * eta
         mul!(h_hpb_x, D, tmp)
         @. tmp = h * v
         mul!(hv_x, D, tmp)
