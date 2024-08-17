@@ -161,7 +161,7 @@ Dingemans. The topography is a trapezoidal.
 !!! warning "Translation of water height"
     The initial condition for the water height is translated to be around 0, which is
     needed for the simulation because the `BBMBBMVariableEquations1D` are only implemented
-    for ``\eta_0 = 0``.
+    for ``\\eta_0 = 0``.
 
 References:
 - Magnus Svärd, Henrik Kalisch (2023)
