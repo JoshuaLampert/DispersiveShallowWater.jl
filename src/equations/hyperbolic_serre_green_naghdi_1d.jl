@@ -1,6 +1,6 @@
 @doc raw"""
     HyperbolicSerreGreenNaghdiEquations1D(bathymetry_type = bathymetry_mild_slope;
-                                          gravity_constant, eta0 = 0.0)
+                                          gravity_constant, eta0 = 0.0, λ)
 
 Hyperbolic approximation of the Serre-Green-Naghdi system in one spatial
 dimension. The equations for flat bathymetry are given by
@@ -68,8 +68,9 @@ end
 
 function HyperbolicSerreGreenNaghdiEquations1D(bathymetry_type = bathymetry_mild_slope;
                                                gravity_constant,
-                                               eta0 = 0.0)
-    HyperbolicSerreGreenNaghdiEquations1D(bathymetry_type, gravity_constant, eta0)
+                                               eta0 = 0.0,
+                                               λ)
+    HyperbolicSerreGreenNaghdiEquations1D(bathymetry_type, gravity_constant, eta0, λ)
 end
 
 # TODO: How shall we handle eta=h+b vs the new variable η?
@@ -78,6 +79,38 @@ function varnames(::typeof(prim2prim), ::HyperbolicSerreGreenNaghdiEquations1D)
 end
 function varnames(::typeof(prim2cons), ::HyperbolicSerreGreenNaghdiEquations1D)
   return ("h", "hv", "b", "hw", "hη")
+end
+
+# TODO: There is another name clash. For the SerreGreenNaghdiEquations1D,
+#       the corresponding function is called initial_condition_convergence_test
+#       However, we cannot use that name since it's not an analytical solution.
+#       How shall we handle this?
+"""
+    initial_condition_soliton(x, t, equations::HyperbolicSerreGreenNaghdiEquations1D, mesh)
+
+A soliton solution of the [`SerreGreenNaghdiEquations1D`](@ref)
+used for convergence tests in a periodic domain.
+
+See also [`initial_condition_convergence_test`](@ref).
+"""
+function initial_condition_soliton(x, t, equations::HyperbolicSerreGreenNaghdiEquations1D,
+                                            mesh)
+    g = gravity_constant(equations)
+
+    # setup parameters data
+    h1 = 1.0
+    h2 = 1.2
+    c = sqrt(g * h2)
+
+    x_t = mod(x - c * t - xmin(mesh), xmax(mesh) - xmin(mesh)) + xmin(mesh)
+
+    h = h1 + (h2 - h1) * sech(x_t / 2 * sqrt(3 * (h2 - h1) / (h1^2 * h2)))^2
+    v = c * (1 - h1 / h)
+    # w = -h v_x
+    w = -h1*sqrt(g*h2)*sqrt((-3*h1 + 3*h2)/(h1^2*h2))*(-h1 + h2)*(-h1 - (-h1 + h2)*sech(x*sqrt((-3*h1 + 3*h2)/(h1^2*h2))/2)^2)*tanh(x*sqrt((-3*h1 + 3*h2)/(h1^2*h2))/2)*sech(x*sqrt((-3*h1 + 3*h2)/(h1^2*h2))/2)^2/(h1 + (-h1 + h2)*sech(x*sqrt((-3*h1 + 3*h2)/(h1^2*h2))/2)^2)^2
+    η = h
+
+    return SVector(h, v, 0, w, η)
 end
 
 """
@@ -93,7 +126,7 @@ function initial_condition_manufactured(x, t, equations::HyperbolicSerreGreenNag
     h = eta - b
     v = sinpi(2 * (x - t / 2))
     D = equations.eta0 - b
-    w = 0.0 # TODO: fix
+    w = 0.0 # TODO: fix, w = -h v_x
     h_approx = h
     return SVector(eta, v, D, w, h_approx)
 end
@@ -133,7 +166,8 @@ function create_cache(mesh, equations::HyperbolicSerreGreenNaghdiEquations1D,
                       solver, initial_condition,
                       ::BoundaryConditionPeriodic,
                       RealT, uEltype)
-    h = ones(RealT, length(mesh))
+    # TODO: Reduce size of the cache for flat bathymetry
+    h = ones(RealT, nnodes(mesh))
     b = zero(h)
     b_x = zero(h)
     η_over_h = zero(h)
@@ -169,7 +203,7 @@ function rhs!(dq, q, t, mesh,
     # Unpack physical parameters and SBP operator `D1`
     g = gravity_constant(equations)
     (; λ) = equations
-    (; D1) = cache
+    (; D1) = solver
 
     # `q` and `dq` are `ArrayPartition`s. They collect the individual
     # arrays for the total water height `eta = h + b`, the velocity `v`,
@@ -178,6 +212,7 @@ function rhs!(dq, q, t, mesh,
     dh, dv, dD, dw, dη = dq.x # dh = deta since b is constant in time
     fill!(dD, zero(eltype(dD)))
 
+    # TODO: Improve performance for flat bathymetry
     @trixi_timeit timer() "hyperbolic terms" begin
         # Compute all derivatives required below
         (; h, b, b_x, η_over_h, h_x, v_x, hv_x, v2_x, h_hpb_x, η_x, η2_h_x, w_x, hvw_x, tmp) = cache
@@ -311,11 +346,12 @@ function energy_total_modified(q_global,
                                cache)
     # unpack physical parameters and SBP operator `D1`
     g = gravity_constant(equations)
+    (; λ) = equations
     (; h, b) = cache
 
     # `q_global` is an `ArrayPartition`. It collects the individual arrays for
     # the total water height `eta = h + b` and the velocity `v`.
-    eta, v, D = q_global.x
+    eta, v, D, w, η = q_global.x
     @. b = equations.eta0 - D
     @. h = eta - b
 
