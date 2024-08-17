@@ -265,6 +265,18 @@ function create_cache(mesh,
     M_h3_3 = zero(h)
     M_h2_bx = zero(h)
 
+    # b_x appears in the system matrix, so it must not be zero to get the
+    # correct pattern of the factorization. Just setting it to unity does
+    # also not work since some terms cancel. Thus, b_x needs to be
+    # "variable enough" to get the correct pattern of non-zero entries in
+    # the system matrix and the factorization.
+    # TODO: This is a hack and should be improved. It would be ideal if we
+    #       had access to the initial condition and the exact value of the
+    #       bathymetry here.
+    let x = grid(D1)
+        @. b_x = x^3
+    end
+
     if D1 isa PeriodicUpwindOperators
         v_x_upwind = zero(h)
         p_0 = zero(h)
