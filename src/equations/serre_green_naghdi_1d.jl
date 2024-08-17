@@ -831,15 +831,15 @@ derivative compared to the usual [`energy_total`](@ref) modeling
 non-hydrostatic contributions. The [`energy_total_modified`](@ref)
 is a conserved quantity (for periodic boundary conditions).
 
-For a [`bathymetry_flat`](@ref) the total energy is given by
+For a [`bathymetry_flat`](@ref) the total modified energy is given by
 ```math
 \\frac{1}{2} g \\eta^2 + \\frac{1}{2} h v^2 + \\frac{1}{6} h^3 v_x^2.
 ```
-For a [`bathymetry_mild_slope`](@ref) the total energy is given by
+For a [`bathymetry_mild_slope`](@ref) the total modified energy is given by
 ```math
 \\frac{1}{2} g \\eta^2 + \\frac{1}{2} h v^2 + \\frac{1}{6} h (-h v_x + 1.5 v b_x)^2.
 ```
-For a [`bathymetry_variable`](@ref) the total energy has the additional term
+For a [`bathymetry_variable`](@ref) the total modified energy has the additional term
 ```math
 + \\frac{1}{8} h (v b_x)^2.
 ```
