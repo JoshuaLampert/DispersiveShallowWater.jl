@@ -288,8 +288,4 @@ end
     return equations.eta0 - equations.D
 end
 
-@inline function waterheight(q, equations::BBMBBMEquations1D)
-    return waterheight_total(q, equations) - bathymetry(q, equations)
-end
-
 @inline entropy(q, equations::BBMBBMEquations1D) = energy_total(q, equations)

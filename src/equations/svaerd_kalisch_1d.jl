@@ -326,10 +326,6 @@ end
     return equations.eta0 - D
 end
 
-@inline function waterheight(q, equations::SvaerdKalischEquations1D)
-    return waterheight_total(q, equations) - bathymetry(q, equations)
-end
-
 @inline entropy(u, equations::SvaerdKalischEquations1D) = energy_total(u, equations)
 
 # The modified entropy/total energy takes the whole `q` for every point in space
@@ -367,11 +363,4 @@ is a conserved quantity of the Svärd-Kalisch equations given by
                         tmp[i]
     end
     return e_modified
-end
-
-# Calculate the error for the "lake-at-rest" test case where eta should
-# be a constant value over time
-@inline function lake_at_rest_error(u, equations::SvaerdKalischEquations1D)
-    eta, _, _ = u
-    return abs(equations.eta0 - eta)
 end

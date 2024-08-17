@@ -8,3 +8,4 @@ out*/
 /docs/build/
 run
 run/*
+**/*.code-workspace
