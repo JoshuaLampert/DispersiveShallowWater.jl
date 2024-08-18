@@ -51,6 +51,10 @@ jobs:
           - windows-latest
         arch:
           - x64
+        include:
+          - version: '1.9'
+            os: ubuntu-latest
+            arch: x64
     steps:
       - uses: actions/checkout@v4
       - uses: julia-actions/setup-julia@v2
