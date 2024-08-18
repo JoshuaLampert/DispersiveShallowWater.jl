@@ -377,12 +377,10 @@ function rhs!(dq, q, t, mesh,
         #       + λ/2 b_x - λ/2 H/h b_x = 0
         lambda_6 = lambda / 6
         lambda_3 = lambda / 3
-        @.. dv = -(g * h_hpb_x - g * (h + b) * h_x
-                   +
-                   0.5 * h * v2_x - 0.5 * v^2 * h_x
-                   +
-                   0.5 * hv_x * v - 0.5 * h * v * v_x
-                   + lambda_6 * (H_over_h * H_over_h * h_x - H2_h_x)
+        @.. dv = -(g * h_hpb_x - g * eta * h_x
+                   + 0.5 * (h * v2_x - v^2 * h_x)
+                   + 0.5 * v * (hv_x - h * v_x)
+                   + lambda_6 * (H_over_h^2 * h_x - H2_h_x)
                    + lambda_3 * (1 - H_over_h) * H_x) / h
         if !(bathymetry_type isa BathymetryFlat)
             lambda_2 = lambda / 2
@@ -394,17 +392,12 @@ function rhs!(dq, q, t, mesh,
         # Split form for energy conservation:
         # h w_t + 1/2 (h v w)_x + 1/2 h v w_x
         #       - 1/2 h_x v w - 1/2 h w v_x = λ - λ H / h
-        @.. dw = (-(0.5 * hvw_x
-                    +
-                    0.5 * h * v * w_x
-                    -
-                    0.5 * h_x * v * w
-                    -
-                    0.5 * h * w * v_x) + lambda * (1 - H_over_h)) / h
+        @.. dw = (-0.5 * (hvw_x + h * v * w_x + dh * w) +
+                  lambda * (1 - H_over_h)) / h
 
         # No special split form for energy conservation required:
         # H_t + v H_x + 3/2 v b_x = w
-        @.. dH = -v * H_x + w
+        @.. dH = w - v * H_x
         if !(bathymetry_type isa BathymetryFlat)
             @.. dH -= 1.5 * v * b_x
         end
