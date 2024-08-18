@@ -304,7 +304,6 @@ function rhs!(dq, q, t, mesh,
     dh, dv, dD, dw, dH = dq.x # dh = deta since b is constant in time
     fill!(dD, zero(eltype(dD)))
 
-    # TODO: Improve performance for flat bathymetry
     @trixi_timeit timer() "hyperbolic terms" begin
         # Compute all derivatives required below
         (; h, b, b_x, H_over_h, h_x, v_x, hv_x, v2_x, h_hpb_x, H_x, H2_h_x, w_x, hvw_x, tmp) = cache
@@ -315,7 +314,7 @@ function rhs!(dq, q, t, mesh,
             mul!(b_x, D1, b)
         end
 
-        # h_x = D1 * D1
+        # h_x = D1 * h
         mul!(h_x, D1, h)
 
         # v_x = D1 * v
@@ -329,8 +328,8 @@ function rhs!(dq, q, t, mesh,
         @. tmp = v^2
         mul!(v2_x, D1, tmp)
 
-        # h_hpb_x = D1 * (h .* (h + b)
-        @. tmp = h * (h + b)
+        # h_hpb_x = D1 * (h .* eta)
+        @. tmp = h * eta
         mul!(h_hpb_x, D1, tmp)
 
         # H_x = D1 * H

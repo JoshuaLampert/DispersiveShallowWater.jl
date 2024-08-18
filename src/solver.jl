@@ -122,7 +122,7 @@ end
 
 # For a hyperbolic approximation, we allow returning either the full set
 # of variables or a reduced number determining only the limit system.
-# In the second case, we compute the remainign variables using the default
+# In the second case, we compute the remaining variables using the default
 # initialization specific to the equations.
 function compute_coefficients!(q, func, t, mesh::Mesh1D,
                                is_hyperbolic_appproximation::Val{true},
@@ -134,7 +134,7 @@ function compute_coefficients!(q, func, t, mesh::Mesh1D,
         compute_coefficients!(q, func, t, mesh, Val(false), equations, solver)
     else
         # reduced set of variables, fill remaining ones with NaN and
-        # initialize them afterawards
+        # initialize them afterwards
         for i in eachnode(solver)
             q_node = func(x[i], t, equations, mesh)
             z = ntuple(_ -> convert(eltype(q_node), NaN),

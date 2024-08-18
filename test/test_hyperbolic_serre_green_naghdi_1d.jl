@@ -1,4 +1,4 @@
-module TestSerreGreenNaghdi1D
+module TestHyperbolicSerreGreenNaghdi1D
 
 using Test
 using DispersiveShallowWater
