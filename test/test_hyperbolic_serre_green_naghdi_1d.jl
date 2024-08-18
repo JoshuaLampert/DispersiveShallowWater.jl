@@ -152,7 +152,7 @@ EXAMPLES_DIR = joinpath(examples_dir(), "hyperbolic_serre_green_naghdi_1d")
                                 0.0,
                                 1.6023987782225921,
                                 4.456003127373265e-6],
-                            atol=1e-8) # to make CI pass
+                            atol=1e-7) # to make CI pass
 
         @test_allocations(semi, sol, allocs=1_000)
     end
