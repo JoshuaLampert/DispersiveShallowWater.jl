@@ -341,6 +341,38 @@ Default analysis integrals used by the [`AnalysisCallback`](@ref).
 """
 default_analysis_integrals(::AbstractEquations) = Symbol[]
 
+"""
+    DispersiveShallowWater.is_hyperbolic_appproximation(equations)
+
+Returns `Val{true}()` if the equations are a hyperbolic approximation
+of another set of equations and `Val{false}()` otherwise (default).
+For example, the [`HyperbolicSerreGreenNaghdiEquations1D`](@ref) are
+a hyperbolic approximation of the [`SerreGreenNaghdiEquations1D`](@ref).
+
+See also [`hyperbolic_approximation_limit`](@ref).
+
+!!! note "Implementation details"
+    This function is mostly used for some internal dispatch. For example,
+    it allows to return a reduced set of variables from initial conditions
+    for hyperbolic approximations.
+"""
+is_hyperbolic_appproximation(::AbstractEquations) = Val{false}()
+
+"""
+    DispersiveShallowWater.hyperbolic_approximation_limit(equations)
+
+If the equations are a hyperbolic approximation of another set of equations,
+return the equations of the limit system. Otherwise, return the input equations.
+
+See also [`is_hyperbolic_appproximation`](@ref).
+
+!!! note "Implementation details"
+    This function is mostly used for some internal dispatch. For example,
+    it allows to return a reduced set of variables from initial conditions
+    for hyperbolic approximations.
+"""
+hyperbolic_approximation_limit(equations::AbstractEquations) = equations
+
 abstract type AbstractBathymetry end
 
 struct BathymetryFlat <: AbstractBathymetry end

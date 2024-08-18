@@ -126,6 +126,23 @@ EXAMPLES_DIR = joinpath(examples_dir(), "hyperbolic_serre_green_naghdi_1d")
 
         @test_allocations(semi, sol, allocs=1_000)
     end
+
+    @trixi_testset "hyperbolic_serre_green_naghdi_dingemans.jl" begin
+        @test_trixi_include(joinpath(EXAMPLES_DIR,
+                                     "hyperbolic_serre_green_naghdi_dingemans.jl"),
+                            tspan=(0.0, 1.0),
+                            l2=[0.2462244051802164, 0.8029763168465812, 2.7915052205763788e-15, 0.5551546220119555, 0.24713044468457937],
+                            linf=[0.036247749895408465, 0.11854596450185799, 1.7763568394002505e-15, 0.08108267786804652, 0.03638811200117753],
+                            cons_error=[2.3874235921539366e-12,
+                            0.0008126525572541851,
+                            1.0658141036401503e-14,
+                            0.042057974454022734,
+                            0.00020913260897259534],
+                            change_entropy=-0.0016060760596019463,
+                            change_entropy_modified=-3.1413295573656796e-6)
+
+        @test_allocations(semi, sol, allocs=1_000)
+    end
 end
 
 end # module

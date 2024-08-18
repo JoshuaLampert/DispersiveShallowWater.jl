@@ -193,7 +193,10 @@ end
 
 function compute_coefficients!(q, func, t, semi::Semidiscretization)
     # Call `compute_coefficients` defined by the solver
-    compute_coefficients!(q, func, t, mesh_equations_solver(semi)...)
+    mesh, equations, solver = mesh_equations_solver(semi)
+    compute_coefficients!(q, func, t, mesh,
+                          is_hyperbolic_appproximation(equations), equations,
+                          solver)
 end
 
 """
