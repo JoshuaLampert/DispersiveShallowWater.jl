@@ -155,7 +155,8 @@ function initial_condition_manufactured(x, t,
     h = eta - b
     v = sinpi(2 * (x - t / 2))
     D = equations.eta0 - b
-    w = 0.0 # TODO: fix, w = -h v_x
+    # w = -h v_x
+    w = -h * 2 * pi * cospi(2 * (x - t / 2))
     H = h
     return SVector(eta, v, D, w, H)
 end
