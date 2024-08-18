@@ -398,10 +398,9 @@ function rhs!(dq, q, t, mesh,
 
         # No special split form for energy conservation required:
         # H_t + v H_x + 3/2 v b_x = w
-        if bathymetry_type isa BathymetryFlat
-            @. dH = -v * H_x + w
-        else
-            @. dH = -v * H_x - 1.5 * v * b_x + w
+        @. dH = -v * H_x + w
+        if !(bathymetry_type isa BathymetryFlat)
+            @. dH -= 1.5 * v * b_x
         end
     end
 
@@ -423,13 +422,13 @@ end
 end
 
 @inline function cons2prim(u, equations::HyperbolicSerreGreenNaghdiEquations1D)
-    h, hv, b = u
+    h, hv, b, hw, hH = u
 
     eta = h + b
     v = hv / h
     D = equations.eta0 - b
-    w = u[4] / h
-    H = u[5] / h
+    w = hw / h
+    H = hH / h
     return SVector(eta, v, D, w, H)
 end
 
