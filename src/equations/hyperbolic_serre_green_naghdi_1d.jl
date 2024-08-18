@@ -1,6 +1,8 @@
 @doc raw"""
     HyperbolicSerreGreenNaghdiEquations1D(bathymetry_type = bathymetry_mild_slope;
-                                          gravity_constant, eta0 = 0.0, λ)
+                                          gravity_constant,
+                                          eta0 = 0.0,
+                                          lambda)
 
 Hyperbolic approximation of the Serre-Green-Naghdi system in one spatial
 dimension. The equations for flat bathymetry are given by
@@ -8,9 +10,9 @@ dimension. The equations for flat bathymetry are given by
 \begin{aligned}
   h_t + (h v)_x &= 0,\\
   h v_t + \frac{1}{2} g (h^2)_x + \frac{1}{2} h (v^2)_x
-    + \biggl( \frac{\lambda}{3} \eta (1 - \eta / h) \biggr)_x &= 0,\\
-  h w_t + h v w_x &= \lambda (1 - \eta / h),\\
-  \eta_t + \eta_x u &= w.
+    + \biggl( \frac{\lambda}{3} H (1 - H / h) \biggr)_x &= 0,\\
+  h w_t + h v w_x &= \lambda (1 - H / h),\\
+  H_t + H_x u &= w.
 \end{aligned}
 ```
 The unknown quantities of the hyperbolized Serre-Green-Naghdi equations are the
@@ -19,6 +21,20 @@ The gravitational constant is denoted by `g` and the bottom topography
 (bathymetry) ``b = \eta_0 - D``. The water height above the bathymetry
 is therefore given by ``h = \eta - \eta_0 + D``.
 The total water height is therefore given by ``\eta = h + b``.
+
+There are two additional variables ``w \approx -h v_x`` and ``H \approx h``
+compared to the [`SerreGreenNaghdiEquations1D`](@ref). In the original papers
+of Gavrilyuk et al., the variable ``H`` is called ``\eta``. Here, we
+use ``\eta`` for the total water height and ``H`` for auxiliary variable
+introduced in the hyperbolic approximation.
+
+The relaxation parameter `lambda` (``\lambda``) introduced to obtain
+this hyperbolic approximation of the [`SerreGreenNaghdiEquations1D`](@ref)
+influences the stiffness of the system. For ``\lambda \to \infty``, the
+hyperbolic Serre-Green-Naghdi equations converge (at least formally)
+to the original [`SerreGreenNaghdiEquations1D`](@ref). However, the
+wave speeds of the hyperbolic system increase with increasing ``\lambda``,
+so that explicit time integration methods become more expensive.
 
 Two types of variable `bathymetry_type` are supported:
 - [`bathymetry_flat`](@ref): flat bathymetry (typically ``b = 0`` everywhere)
@@ -29,10 +45,10 @@ For the mild-slope approximation, the Serre-Green-Naghdi equations are
 \begin{aligned}
   h_t + (h v)_x &= 0,\\
   h v_t + \frac{1}{2} g (h^2)_x + \frac{1}{2} h (v^2)_x
-    + \biggl( \frac{\lambda}{3} \eta (1 - \eta / h) \biggr)_x
-    + \biggl( g h + \frac{\lambda}{2} (1 - \eta / h) \biggr) b_x &= 0,\\
-  h w_t + h v w_x &= \lambda (1 - \eta / h),\\
-  \eta_t + \eta_x u + \frac{3}{2} b_x v &= w.
+    + \biggl( \frac{\lambda}{3} H (1 - H / h) \biggr)_x
+    + \biggl( g h + \frac{\lambda}{2} (1 - H / h) \biggr) b_x &= 0,\\
+  h w_t + h v w_x &= \lambda (1 - H / h),\\
+  H_t + H_x u + \frac{3}{2} b_x v &= w.
 \end{aligned}
 ```
 
@@ -62,22 +78,21 @@ struct HyperbolicSerreGreenNaghdiEquations1D{Bathymetry <: Union{BathymetryFlat,
     bathymetry_type::Bathymetry # type of bathymetry
     gravity::RealT # gravitational constant
     eta0::RealT # constant still-water surface
-    λ::RealT # hyperbolic relaxation parameter (→ ∞ for Serre-Green-Naghdi)
+    lambda::RealT # hyperbolic relaxation parameter (→ ∞ for Serre-Green-Naghdi)
 end
 
 function HyperbolicSerreGreenNaghdiEquations1D(bathymetry_type = bathymetry_mild_slope;
                                                gravity_constant,
                                                eta0 = 0.0,
-                                               λ)
-    HyperbolicSerreGreenNaghdiEquations1D(bathymetry_type, gravity_constant, eta0, λ)
+                                               lambda)
+    HyperbolicSerreGreenNaghdiEquations1D(bathymetry_type, gravity_constant, eta0, lambda)
 end
 
-# TODO: How shall we handle eta=h+b vs the new variable η?
 function varnames(::typeof(prim2prim), ::HyperbolicSerreGreenNaghdiEquations1D)
-  return ("η", "v", "D", "w", "η")
+  return ("η", "v", "D", "w", "H")
 end
 function varnames(::typeof(prim2cons), ::HyperbolicSerreGreenNaghdiEquations1D)
-  return ("h", "hv", "b", "hw", "hη")
+  return ("h", "hv", "b", "hw", "hH")
 end
 
 # TODO: There is another name clash. For the SerreGreenNaghdiEquations1D,
@@ -111,16 +126,20 @@ function initial_condition_soliton(x, t, equations::HyperbolicSerreGreenNaghdiEq
     v = c * (1 - h1 / h)
     # w = -h v_x
     w = -h1*sqrt(g*h2)*sqrt((-3*h1 + 3*h2)/(h1^2*h2))*(-h1 + h2)*(-h1 - (-h1 + h2)*sech(x*sqrt((-3*h1 + 3*h2)/(h1^2*h2))/2)^2)*tanh(x*sqrt((-3*h1 + 3*h2)/(h1^2*h2))/2)*sech(x*sqrt((-3*h1 + 3*h2)/(h1^2*h2))/2)^2/(h1 + (-h1 + h2)*sech(x*sqrt((-3*h1 + 3*h2)/(h1^2*h2))/2)^2)^2
-    η = h
+    H = h
 
-    return SVector(h, v, 0, w, η)
+    return SVector(h, v, 0, w, H)
 end
 
 """
     initial_condition_manufactured(x, t, equations::HyperbolicSerreGreenNaghdiEquations1D, mesh)
 
 A smooth manufactured solution in combination with
-[`source_terms_manufactured`](@ref).
+[`source_terms_manufactured`](@ref), see
+- Hendrik Ranocha and Mario Ricchiuto (2024)
+  Structure-preserving approximations of the Serre-Green-Naghdi
+  equations in standard and hyperbolic form
+  [arXiv: 2408.02665](https://arxiv.org/abs/2408.02665)
 """
 function initial_condition_manufactured(x, t, equations::HyperbolicSerreGreenNaghdiEquations1D,
                                             mesh)
@@ -130,8 +149,8 @@ function initial_condition_manufactured(x, t, equations::HyperbolicSerreGreenNag
     v = sinpi(2 * (x - t / 2))
     D = equations.eta0 - b
     w = 0.0 # TODO: fix, w = -h v_x
-    h_approx = h
-    return SVector(eta, v, D, w, h_approx)
+    H = h
+    return SVector(eta, v, D, w, H)
 end
 
 """
@@ -160,9 +179,9 @@ function source_terms_manufactured(q, x, t, equations::HyperbolicSerreGreenNaghd
     dv = -2*pi*a5*a6 - pi*a6 + 4*pi*a7*g + g*(2*pi*a1 - 4*pi*a7)
     dD = 0.0
     dw = 8*pi^2*a1*a6 - a5*(4*pi^2*a5*(-a2 - 2*a8 - 7) + 2*pi*a6*(-2*pi*a1 + 4*pi*a7)) - 2*pi^2*a5*(-a2 - 2*a8 - 7)
-    dh_approx = -4*pi*a1 - 6*pi*a5*a7 - a5*(2*pi*a1 - 4*pi*a7) - 2*pi*a6*(-a2 - 2*a8 - 7)
+    dH = -4*pi*a1 - 6*pi*a5*a7 - a5*(2*pi*a1 - 4*pi*a7) - 2*pi*a6*(-a2 - 2*a8 - 7)
 
-    return SVector(dh, dv, dD, dw, dh_approx)
+    return SVector(dh, dv, dD, dw, dH)
 end
 
 function create_cache(mesh, equations::HyperbolicSerreGreenNaghdiEquations1D,
@@ -173,19 +192,19 @@ function create_cache(mesh, equations::HyperbolicSerreGreenNaghdiEquations1D,
     h = ones(RealT, nnodes(mesh))
     b = zero(h)
     b_x = zero(h)
-    η_over_h = zero(h)
+    H_over_h = zero(h)
     h_x = zero(h)
     v_x = zero(h)
     hv_x = zero(h)
     v2_x = zero(h)
     h_hpb_x = zero(h)
-    η_x = zero(h)
-    η2_h_x = zero(h)
+    H_x = zero(h)
+    H2_h_x = zero(h)
     w_x = zero(h)
     hvw_x = zero(h)
     tmp = zero(h)
 
-    cache = (; h, b, b_x, η_over_h, h_x, v_x, hv_x, v2_x, h_hpb_x, η_x, η2_h_x, w_x, hvw_x, tmp)
+    cache = (; h, b, b_x, H_over_h, h_x, v_x, hv_x, v2_x, h_hpb_x, H_x, H2_h_x, w_x, hvw_x, tmp)
     return cache
 end
 
@@ -205,20 +224,20 @@ function rhs!(dq, q, t, mesh,
               solver, cache)
     # Unpack physical parameters and SBP operator `D1`
     g = gravity_constant(equations)
-    (; λ) = equations
+    (; lambda) = equations
     (; D1) = solver
 
     # `q` and `dq` are `ArrayPartition`s. They collect the individual
     # arrays for the total water height `eta = h + b`, the velocity `v`,
-    # and the additional variables `w` and `η`.
-    eta, v, D, w, η = q.x
-    dh, dv, dD, dw, dη = dq.x # dh = deta since b is constant in time
+    # and the additional variables `w` and `H`.
+    eta, v, D, w, H = q.x
+    dh, dv, dD, dw, dH = dq.x # dh = deta since b is constant in time
     fill!(dD, zero(eltype(dD)))
 
     # TODO: Improve performance for flat bathymetry
     @trixi_timeit timer() "hyperbolic terms" begin
         # Compute all derivatives required below
-        (; h, b, b_x, η_over_h, h_x, v_x, hv_x, v2_x, h_hpb_x, η_x, η2_h_x, w_x, hvw_x, tmp) = cache
+        (; h, b, b_x, H_over_h, h_x, v_x, hv_x, v2_x, h_hpb_x, H_x, H2_h_x, w_x, hvw_x, tmp) = cache
 
         @. b = equations.eta0 - D
         @. h = eta - b
@@ -242,13 +261,13 @@ function rhs!(dq, q, t, mesh,
         @. tmp = h * (h + b)
         mul!(h_hpb_x, D1, tmp)
 
-        # η_x = D1 * η
-        mul!(η_x, D1, η)
+        # H_x = D1 * H
+        mul!(H_x, D1, H)
 
-        # η2_h_x = D1 * (η^2 / h)
-        @. η_over_h = η / h
-        @. tmp = η * η_over_h
-        mul!(η2_h_x, D1, tmp)
+        # H2_h_x = D1 * (H^2 / h)
+        @. H_over_h = H / h
+        @. tmp = H * H_over_h
+        mul!(H2_h_x, D1, tmp)
 
         # w_x = D1 * w
         mul!(w_x, D1, w)
@@ -269,31 +288,31 @@ function rhs!(dq, q, t, mesh,
         # Split form for energy conservation:
         # h v_t + g (h (h + b))_x - g (h + b) h_x
         #       + 1/2 h (v^2)_x - 1/2 v^2 h_x  + 1/2 v (h v)_x - 1/2 h v v_x
-        #       + λ/6 η^2 / h^2 h_x + λ/3 η_x - λ/3 η/h η_x - λ/6 (η^2 / h)_x
-        #       + λ/2 b_x - λ/2 η/h b_x = 0
-        λ_6 = λ / 6
-        λ_3 = λ / 3
-        λ_2 = λ / 2
+        #       + λ/6 H^2 / h^2 h_x + λ/3 H_x - λ/3 H/h H_x - λ/6 (H^2 / h)_x
+        #       + λ/2 b_x - λ/2 H/h b_x = 0
+        lambda_6 = lambda / 6
+        lambda_3 = lambda / 3
+        lambda_2 = lambda / 2
         @. dv = -(g * h_hpb_x - g * (h + b) * h_x
                     + 0.5 * h * v2_x - 0.5 * v^2 * h_x
                     + 0.5 * hv_x * v - 0.5 * h * v * v_x
-                    + λ_6 * (η_over_h * η_over_h * h_x - η2_h_x)
-                    + λ_3 * (1 - η_over_h) * η_x
-                    + λ_2 * (1 - η_over_h) * b_x) / h
+                    + lambda_6 * (H_over_h * H_over_h * h_x - H2_h_x)
+                    + lambda_3 * (1 - H_over_h) * H_x
+                    + lambda_2 * (1 - H_over_h) * b_x) / h
 
-        # Plain: h w_t + h v w_x = λ - λ η / h
+        # Plain: h w_t + h v w_x = λ - λ H / h
         #
         # Split form for energy conservation:
         # h w_t + 1/2 (h v w)_x + 1/2 h v w_x
-        #       - 1/2 h_x v w - 1/2 h w v_x = λ - λ η / h
+        #       - 1/2 h_x v w - 1/2 h w v_x = λ - λ H / h
         @. dw = ( -(  0.5 * hvw_x
                     + 0.5 * h * v * w_x
                     - 0.5 * h_x * v * w
-                    - 0.5 * h * w * v_x) + λ * (1 - η_over_h)) / h
+                    - 0.5 * h * w * v_x) + lambda * (1 - H_over_h)) / h
 
         # No special split form for energy conservation required:
-        # η_t + v η_x + 3/2 v b_x = w
-        @. dη = -v * η_x - 1.5 * v * b_x + w
+        # H_t + v H_x + 3/2 v b_x = w
+        @. dH = -v * H_x - 1.5 * v * b_x + w
     end
 
     @trixi_timeit timer() "source terms" calc_sources!(dq, q, t, source_terms, equations,
@@ -309,8 +328,8 @@ end
 
     hv = h * v
     hw = h * q[4]
-    hη = h * q[5]
-    return SVector(h, hv, b, hw, hη)
+    hH = h * q[5]
+    return SVector(h, hv, b, hw, hH)
 end
 
 @inline function cons2prim(u, equations::HyperbolicSerreGreenNaghdiEquations1D)
@@ -320,8 +339,8 @@ end
     v = hv / h
     D = equations.eta0 - b
     w = u[4] / h
-    η = u[5] / h
-    return SVector(eta, v, D, w, η)
+    H = u[5] / h
+    return SVector(eta, v, D, w, H)
 end
 
 # The entropy/energy takes the whole `q` for every point in space
@@ -348,19 +367,19 @@ function energy_total_modified(q_global,
                                cache)
     # unpack physical parameters and SBP operator `D1`
     g = gravity_constant(equations)
-    (; λ) = equations
+    (; lambda) = equations
     (; h, b) = cache
 
     # `q_global` is an `ArrayPartition`. It collects the individual arrays for
     # the total water height `eta = h + b` and the velocity `v`.
-    eta, v, D, w, η = q_global.x
+    eta, v, D, w, H = q_global.x
     @. b = equations.eta0 - D
     @. h = eta - b
 
     e = zero(h)
 
-    # 1/2 g eta^2 + 1/2 h v^2 + 1/6 h^3 w^2 + λ/6 h (1 - η/h)^2
-    @. e = 1/2 * g * eta^2 + 1/2 * h * v^2 + 1/6 * h * w^2 + λ/6 * h * (1 - η/h)^2
+    # 1/2 g eta^2 + 1/2 h v^2 + 1/6 h^3 w^2 + λ/6 h (1 - H/h)^2
+    @. e = 1/2 * g * eta^2 + 1/2 * h * v^2 + 1/6 * h * w^2 + lambda/6 * h * (1 - H/h)^2
 
     return e
 end

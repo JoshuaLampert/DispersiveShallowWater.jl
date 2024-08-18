@@ -6,7 +6,7 @@ using DispersiveShallowWater
 
 bathymetry_type = bathymetry_flat
 equations = HyperbolicSerreGreenNaghdiEquations1D(bathymetry_type;
-                                                  λ = 500.0,
+                                                  lambda = 500.0,
                                                   gravity_constant = 9.81)
 
 initial_condition = initial_condition_soliton
@@ -38,6 +38,8 @@ analysis_callback = AnalysisCallback(semi; interval = 100,
 callbacks = CallbackSet(analysis_callback, summary_callback)
 
 saveat = range(tspan..., length = 100)
-alg = RDPK3SpFSAL35() # this is much more efficient for stiff problems (λ big)
+# optimized time integration methods like this one are much more efficient
+# for stiff problems (λ big) than standard methods like Tsit5()
+alg = RDPK3SpFSAL35()
 sol = solve(ode, alg, abstol = 1e-7, reltol = 1e-7,
             save_everystep = false, callback = callbacks, saveat = saveat)
