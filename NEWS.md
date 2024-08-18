@@ -10,6 +10,7 @@ for human readability.
 
 #### Added
 - The `SerreGreenNaghdiEquations1D` were added for different types of bathymetry ([#127], [#135]).
+- The `HyperbolicSerreGreenNaghdiEquations1D` were added for different types of bathymetry ([#139]).
 - The abstract interface `AbstractShallowWaterEquations` was added to unify several
   systems such as the `SerreGreenNaghdiEquations1D`, the `BBMBBMEquations1D`, and the
   `SvärdKalischEquations1D` ([#127]).
