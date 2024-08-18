@@ -379,7 +379,7 @@ end
 
 # Discretization that conserves
 # - the total water mass (integral of h) as a linear invariant
-# - the total momentum (integral of h v) as a nonlinear invariant
+# - the total momentum (integral of h v) as a nonlinear invariant for flat bathymetry
 # - the total modified energy
 # for periodic boundary conditions, see
 # - Hendrik Ranocha and Mario Ricchiuto (2024)

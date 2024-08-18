@@ -12,7 +12,6 @@ dimension. The equations for flat bathymetry are given by
   h w_t + h v w_x &= \lambda (1 - \eta / h),\\
   \eta_t + \eta_x u &= w.
 \end{aligned}
-\end{aligned}
 ```
 The unknown quantities of the hyperbolized Serre-Green-Naghdi equations are the
 total water height ``\eta = h + b`` and the velocity ``v``.
@@ -339,7 +338,6 @@ the total modified energy is given by
 ```
 
 `q_global` is a vector of the primitive variables at ALL nodes.
-`cache` needs to hold the SBP operators used by the `solver`.
 """
 function energy_total_modified(q_global,
                                equations::HyperbolicSerreGreenNaghdiEquations1D,
