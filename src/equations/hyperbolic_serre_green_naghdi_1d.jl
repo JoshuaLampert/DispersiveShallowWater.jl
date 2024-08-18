@@ -146,7 +146,7 @@ function set_approximation_variables!(q, mesh,
     return nothing
 end
 
-# TODO: There is another name clash. For the SerreGreenNaghdiEquations1D,
+# TODO: There is name clash. For the SerreGreenNaghdiEquations1D,
 #       the corresponding function is called initial_condition_convergence_test
 #       However, we cannot use that name since it's not an analytical solution.
 #       How shall we handle this?

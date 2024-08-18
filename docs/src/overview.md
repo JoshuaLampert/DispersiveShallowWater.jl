@@ -146,7 +146,8 @@ always plot to first subplot) and `plot_initial`. You can also provide a `conver
 of the primitive variables `q` at one node, and the `equations` as input and should return an `SVector` of any length as output. For a user defined conversion function,
 there should also exist a function `varnames(conversion, equations)` that returns a `Tuple` of the variable names used for labelling. The conversion function can, e.g.,
 be [`prim2cons`](@ref) or [`waterheight_total`](@ref) if one only wants to plot the total water height. The resulting plot will have one subplot for each of the returned
-variables of the conversion variable. By default, the conversion function is just [`prim2phys`](@ref), i.e., the identity for most equations.
+variables of the conversion variable. By default, the conversion function is just [`prim2phys`](@ref), which computes the physical variables
+from the primitive ones, i.e., the identity for most equations.
 
 Plotting an animation over time can, e.g., be done by the following command, which uses `step` to plot the solution at a specific time step.
 
