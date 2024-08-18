@@ -363,24 +363,16 @@ function rhs!(dq, q, t, mesh,
         #       + λ/2 b_x - λ/2 H/h b_x = 0
         lambda_6 = lambda / 6
         lambda_3 = lambda / 3
-        lambda_2 = lambda / 2
-        if bathymetry_type isa BathymetryFlat
-            @. dv = -(g * h_hpb_x - g * (h + b) * h_x
-                      +
-                      0.5 * h * v2_x - 0.5 * v^2 * h_x
-                      +
-                      0.5 * hv_x * v - 0.5 * h * v * v_x
-                      + lambda_6 * (H_over_h * H_over_h * h_x - H2_h_x)
-                      + lambda_3 * (1 - H_over_h) * H_x) / h
-        else
-            @. dv = -(g * h_hpb_x - g * (h + b) * h_x
-                      +
-                      0.5 * h * v2_x - 0.5 * v^2 * h_x
-                      +
-                      0.5 * hv_x * v - 0.5 * h * v * v_x
-                      + lambda_6 * (H_over_h * H_over_h * h_x - H2_h_x)
-                      + lambda_3 * (1 - H_over_h) * H_x
-                      + lambda_2 * (1 - H_over_h) * b_x) / h
+        @. dv = -(g * h_hpb_x - g * (h + b) * h_x
+                  +
+                  0.5 * h * v2_x - 0.5 * v^2 * h_x
+                  +
+                  0.5 * hv_x * v - 0.5 * h * v * v_x
+                  + lambda_6 * (H_over_h * H_over_h * h_x - H2_h_x)
+                  + lambda_3 * (1 - H_over_h) * H_x) / h
+        if !(bathymetry_type isa BathymetryFlat)
+            lambda_2 = lambda / 2
+            @. dv -= lambda_2 * (1 - H_over_h) * b_x / h
         end
 
         # Plain: h w_t + h v w_x = λ - λ H / h
