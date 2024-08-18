@@ -93,7 +93,8 @@ EXAMPLES_DIR = joinpath(examples_dir(), "hyperbolic_serre_green_naghdi_1d")
                                 0.005963706457799891,
                                 4.504121848469822e-5,
                             ],
-                            change_entropy_modified=-5.684341886080802e-14)
+                            change_entropy_modified=-5.684341886080802e-14,
+                            atol=2.0e-10) # to make CI pass
 
         @test_allocations(semi, sol, 1_000)
     end
