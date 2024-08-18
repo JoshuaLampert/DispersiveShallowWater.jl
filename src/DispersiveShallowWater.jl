@@ -4,9 +4,9 @@
 **DispersiveShallowWater.jl** is a Julia package that implements structure-preserving numerical methods for dispersive shallow water models.
 It provides provably conservative, entropy-conserving, and well-balanced numerical schemes for some dispersive shallow water models.
 
-The semidiscretizations are based on summation-by-parts (SBP) operators, which are implemented in 
+The semidiscretizations are based on summation-by-parts (SBP) operators, which are implemented in
 [SummationByPartsOperators.jl](https://github.com/ranocha/SummationByPartsOperators.jl). To
-obtain fully discrete schemes, the time integration methods from 
+obtain fully discrete schemes, the time integration methods from
 [OrdinaryDiffEq.jl](https://github.com/SciML/OrdinaryDiffEq.jl)
 are used to solve the resulting ordinary differential equations.
 Fully discrete entropy-conservative methods can be obtained by using the relaxation method provided by DispersiveShallowWater.jl.
@@ -62,9 +62,9 @@ export examples_dir, get_examples, default_example, convergence_test
 export AbstractShallowWaterEquations,
        BBMBBMEquations1D, BBMBBMVariableEquations1D,
        SvärdKalischEquations1D, SvaerdKalischEquations1D,
-       SerreGreenNaghdiEquations1D
+       SerreGreenNaghdiEquations1D, HyperbolicSerreGreenNaghdiEquations1D
 
-export prim2prim, prim2cons, cons2prim,
+export prim2prim, prim2cons, cons2prim, prim2phys,
        waterheight_total, waterheight,
        velocity, momentum, discharge,
        gravity_constant,
@@ -83,6 +83,7 @@ export boundary_condition_periodic, boundary_condition_reflecting
 export bathymetry_flat, bathymetry_mild_slope, bathymetry_variable
 
 export initial_condition_convergence_test,
+       initial_condition_soliton,
        initial_condition_manufactured, source_terms_manufactured,
        initial_condition_manufactured_reflecting, source_terms_manufactured_reflecting,
        initial_condition_dingemans

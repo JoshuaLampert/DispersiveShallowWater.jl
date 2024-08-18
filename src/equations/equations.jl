@@ -37,8 +37,8 @@ get_name(equations::AbstractEquations) = equations |> typeof |> nameof |> string
 
 Return the list of variable names when applying `conversion_function` to the
 conserved variables associated to `equations`.
-Common choices of the `conversion_function` are [`prim2prim`](@ref) and
-[`prim2cons`](@ref).
+Common choices of the `conversion_function` are [`prim2prim`](@ref),
+[`prim2cons`](@ref), and [`prim2phys`](@ref).
 """
 function varnames end
 
@@ -341,6 +341,61 @@ Default analysis integrals used by the [`AnalysisCallback`](@ref).
 """
 default_analysis_integrals(::AbstractEquations) = Symbol[]
 
+"""
+    DispersiveShallowWater.is_hyperbolic_appproximation(equations)
+
+Returns `Val{true}()` if the equations are a hyperbolic approximation
+of another set of equations and `Val{false}()` otherwise (default).
+For example, the [`HyperbolicSerreGreenNaghdiEquations1D`](@ref) are
+a hyperbolic approximation of the [`SerreGreenNaghdiEquations1D`](@ref).
+
+See also [`hyperbolic_approximation_limit`](@ref) and [`prim2phys`](@ref).
+
+!!! note "Implementation details"
+    This function is mostly used for some internal dispatch. For example,
+    it allows to return a reduced set of variables from initial conditions
+    for hyperbolic approximations.
+"""
+is_hyperbolic_appproximation(::AbstractEquations) = Val{false}()
+
+"""
+    DispersiveShallowWater.hyperbolic_approximation_limit(equations)
+
+If the equations are a hyperbolic approximation of another set of equations,
+return the equations of the limit system. Otherwise, return the input equations.
+
+See also [`is_hyperbolic_appproximation`](@ref) and [`prim2phys`](@ref).
+
+!!! note "Implementation details"
+    This function is mostly used for some internal dispatch. For example,
+    it allows to return a reduced set of variables from initial conditions
+    for hyperbolic approximations.
+"""
+hyperbolic_approximation_limit(equations::AbstractEquations) = equations
+
+"""
+    prim2phys(q, equations)
+
+Convert the primitive variables `q` to the physically meaningful variables
+for a given set of `equations`. By default, this is the same as
+[`prim2prim`](@ref) for most equations. However, some equations like the
+[`HyperbolicSerreGreenNaghdiEquations1D`](@ref) return a reduced set of
+variables since they are a hyperbolic approximation of another set of
+equations (in this case the [`SerreGreenNaghdiEquations1D`](@ref)).
+
+See also [`is_hyperbolic_appproximation`](@ref) and
+[`hyperbolic_approximation_limit`](@ref).
+
+`q` is a vector type of the correct length `nvariables(equations)`.
+Notice the function doesn't include any error checks for the purpose of
+efficiency, so please make sure your input is correct.
+"""
+prim2phys(q, equations::AbstractEquations) = prim2prim(q, equations)
+
+function varnames(::typeof(prim2phys), equations::AbstractEquations)
+    return varnames(prim2prim, equations)
+end
+
 abstract type AbstractBathymetry end
 
 struct BathymetryFlat <: AbstractBathymetry end
@@ -390,4 +445,6 @@ include("svaerd_kalisch_1d.jl")
 # Serre-Green-Naghdi equations
 abstract type AbstractSerreGreenNaghdiEquations{NDIMS, NVARS} <:
               AbstractShallowWaterEquations{NDIMS, NVARS} end
+const AbstractSerreGreenNaghdiEquations1D = AbstractSerreGreenNaghdiEquations{1}
 include("serre_green_naghdi_1d.jl")
+include("hyperbolic_serre_green_naghdi_1d.jl")

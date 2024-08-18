@@ -1,4 +1,4 @@
-module TestBBMBBMVariableBathymetry1D
+module TestSvaerdKalisch1D
 
 using Test
 using DispersiveShallowWater

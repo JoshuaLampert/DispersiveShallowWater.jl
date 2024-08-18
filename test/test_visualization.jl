@@ -1,4 +1,4 @@
-module TestUnit
+module TestVisualization
 
 using Test
 using DispersiveShallowWater

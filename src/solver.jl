@@ -110,7 +110,9 @@ function allocate_coefficients(mesh::Mesh1D, equations, solver::AbstractSolver)
                                  Val(nvariables(equations))))
 end
 
-function compute_coefficients!(q, func, t, mesh::Mesh1D, equations, solver::AbstractSolver)
+function compute_coefficients!(q, func, t, mesh::Mesh1D,
+                               is_hyperbolic_appproximation::Val{false},
+                               equations, solver::AbstractSolver)
     x = grid(solver)
     for i in eachnode(solver)
         q_node = func(x[i], t, equations, mesh)
@@ -118,18 +120,43 @@ function compute_coefficients!(q, func, t, mesh::Mesh1D, equations, solver::Abst
     end
 end
 
+# For a hyperbolic approximation, we allow returning either the full set
+# of variables or a reduced number determining only the limit system.
+# In the second case, we compute the remaining variables using the default
+# initialization specific to the equations.
+function compute_coefficients!(q, func, t, mesh::Mesh1D,
+                               is_hyperbolic_appproximation::Val{true},
+                               equations, solver::AbstractSolver)
+    x = grid(solver)
+    q_node = func(x[begin], t, equations, mesh)
+    if length(q_node) == nvariables(equations)
+        # full set of variables, proceed as usual
+        compute_coefficients!(q, func, t, mesh, Val(false), equations, solver)
+    else
+        # reduced set of variables, fill remaining ones with NaN and
+        # initialize them afterwards
+        for i in eachnode(solver)
+            q_node = func(x[i], t, equations, mesh)
+            z = ntuple(_ -> convert(eltype(q_node), NaN),
+                       Val(nvariables(equations) - length(q_node)))
+            q_node = SVector(q_node..., z...)
+            set_node_vars!(q, q_node, equations, i)
+        end
+        set_approximation_variables!(q, mesh, equations, solver)
+    end
+end
+
 function calc_error_norms(q, t, initial_condition, mesh::Mesh1D, equations,
                           solver::AbstractSolver)
-    x = grid(solver)
-    q_exact = zeros(real(solver), (nvariables(equations), nnodes(mesh)))
-    for i in eachnode(solver)
-        q_exact[:, i] = initial_condition(x[i], t, equations, mesh)
-    end
+    q_exact = similar(q)
+    compute_coefficients!(q_exact, initial_condition, t, mesh,
+                          is_hyperbolic_appproximation(equations), equations,
+                          solver)
     l2_error = zeros(real(solver), nvariables(equations))
     linf_error = similar(l2_error)
     for v in eachvariable(equations)
-        @views diff = q.x[v] - q_exact[v, :]
-        l2_error[v] = integrate(q -> q^2, diff, solver.D1) |> sqrt
+        diff = q.x[v] - q_exact.x[v]
+        l2_error[v] = integrate(abs2, diff, solver.D1) |> sqrt
         linf_error[v] = maximum(abs.(diff))
     end
     return l2_error, linf_error

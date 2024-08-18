@@ -14,6 +14,7 @@ for human readability.
 - The abstract interface `AbstractShallowWaterEquations` was added to unify several
   systems such as the `SerreGreenNaghdiEquations1D`, the `BBMBBMEquations1D`, and the
   `SvärdKalischEquations1D` ([#127]).
+- A new conversion function `prim2phys` was introduced, defaulting to `prim2prim`. `prim2phys` is the default conversion function for plotting.
 
 ## Changes when updating to v0.4 from v0.3.x
 
