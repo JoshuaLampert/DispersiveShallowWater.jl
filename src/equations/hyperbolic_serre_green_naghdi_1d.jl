@@ -258,7 +258,6 @@ function create_cache(mesh, equations::HyperbolicSerreGreenNaghdiEquations1D,
                       solver, initial_condition,
                       ::BoundaryConditionPeriodic,
                       RealT, uEltype)
-    # TODO: Reduce size of the cache for flat bathymetry
     h = ones(RealT, nnodes(mesh))
     b = zero(h)
     b_x = zero(h)
@@ -295,7 +294,7 @@ function rhs!(dq, q, t, mesh,
               solver, cache)
     # Unpack physical parameters and SBP operator `D1`
     g = gravity_constant(equations)
-    (; lambda) = equations
+    (; lambda, bathymetry_type) = equations
     (; D1) = solver
 
     # `q` and `dq` are `ArrayPartition`s. They collect the individual
@@ -312,7 +311,9 @@ function rhs!(dq, q, t, mesh,
 
         @. b = equations.eta0 - D
         @. h = eta - b
-        mul!(b_x, D1, b)
+        if !(bathymetry_type isa BathymetryFlat)
+            mul!(b_x, D1, b)
+        end
 
         # h_x = D1 * D1
         mul!(h_x, D1, h)
@@ -364,14 +365,24 @@ function rhs!(dq, q, t, mesh,
         lambda_6 = lambda / 6
         lambda_3 = lambda / 3
         lambda_2 = lambda / 2
-        @. dv = -(g * h_hpb_x - g * (h + b) * h_x
-                  +
-                  0.5 * h * v2_x - 0.5 * v^2 * h_x
-                  +
-                  0.5 * hv_x * v - 0.5 * h * v * v_x
-                  + lambda_6 * (H_over_h * H_over_h * h_x - H2_h_x)
-                  + lambda_3 * (1 - H_over_h) * H_x
-                  + lambda_2 * (1 - H_over_h) * b_x) / h
+        if bathymetry_type isa BathymetryFlat
+            @. dv = -(g * h_hpb_x - g * (h + b) * h_x
+                      +
+                      0.5 * h * v2_x - 0.5 * v^2 * h_x
+                      +
+                      0.5 * hv_x * v - 0.5 * h * v * v_x
+                      + lambda_6 * (H_over_h * H_over_h * h_x - H2_h_x)
+                      + lambda_3 * (1 - H_over_h) * H_x) / h
+        else
+            @. dv = -(g * h_hpb_x - g * (h + b) * h_x
+                      +
+                      0.5 * h * v2_x - 0.5 * v^2 * h_x
+                      +
+                      0.5 * hv_x * v - 0.5 * h * v * v_x
+                      + lambda_6 * (H_over_h * H_over_h * h_x - H2_h_x)
+                      + lambda_3 * (1 - H_over_h) * H_x
+                      + lambda_2 * (1 - H_over_h) * b_x) / h
+        end
 
         # Plain: h w_t + h v w_x = λ - λ H / h
         #
@@ -388,7 +399,11 @@ function rhs!(dq, q, t, mesh,
 
         # No special split form for energy conservation required:
         # H_t + v H_x + 3/2 v b_x = w
-        @. dH = -v * H_x - 1.5 * v * b_x + w
+        if bathymetry_type isa BathymetryFlat
+            @. dH = -v * H_x + w
+        else
+            @. dH = -v * H_x - 1.5 * v * b_x + w
+        end
     end
 
     @trixi_timeit timer() "source terms" calc_sources!(dq, q, t, source_terms, equations,
