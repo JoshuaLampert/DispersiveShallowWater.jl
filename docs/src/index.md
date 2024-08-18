@@ -64,7 +64,7 @@ You can directly refer to DispersiveShallowWater.jl as
 @misc{lampert2023dispersive,
   title={{D}ispersive{S}hallow{W}ater.jl: {S}tructure-preserving numerical
          methods for dispersive shallow water models},
-  author={Lampert, Joshua},
+  author={Lampert, Joshua and Ranocha, Hendrik},
   year={2023},
   month={10},
   howpublished={\url{https://github.com/JoshuaLampert/DispersiveShallowWater.jl}},
@@ -74,9 +74,12 @@ You can directly refer to DispersiveShallowWater.jl as
 
 ## Authors
 
-The package is developed and maintained by Joshua Lampert (University of Hamburg).
-Some parts of this repository are based on parts of [Dispersive-wave-schemes-notebooks. A Broad Class of Conservative Numerical Methods for Dispersive Wave Equations](https://github.com/ranocha/Dispersive-wave-schemes-notebooks)
-by Hendrik Ranocha, Dimitrios Mitsotakis and David Ketcheson. The code structure is inspired by [Trixi.jl](https://github.com/trixi-framework/Trixi.jl/).
+The package is developed and maintained by Joshua Lampert (University of Hamburg)
+with contributions from Hendrik Ranocha (Johannes Gutenberg University Mainz).
+Some parts of this repository are based on parts of
+[Dispersive-wave-schemes-notebooks. A Broad Class of Conservative Numerical Methods for Dispersive Wave Equations](https://github.com/ranocha/Dispersive-wave-schemes-notebooks)
+by Hendrik Ranocha, Dimitrios Mitsotakis and David Ketcheson.
+The code structure is inspired by [Trixi.jl](https://github.com/trixi-framework/Trixi.jl/).
 
 ## License and contributing
 
