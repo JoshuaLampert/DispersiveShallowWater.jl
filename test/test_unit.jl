@@ -262,7 +262,8 @@ using SparseArrays: sparse, SparseMatrixCSC
     end
 
     @testset "HyperbolicSerreGreenNaghdiEquations1D" begin
-        equations = @test_nowarn @inferred HyperbolicSerreGreenNaghdiEquations1D(gravity_constant = 9.81, lambda = 500.0)
+        equations = @test_nowarn @inferred HyperbolicSerreGreenNaghdiEquations1D(gravity_constant = 9.81,
+                                                                                 lambda = 500.0)
         @test_nowarn print(equations)
         @test_nowarn display(equations)
         conversion_functions = [
