@@ -141,22 +141,22 @@ end
 end
 
 @recipe function f(semisol::Pair{<:Semidiscretization, <:ODESolution}; plot_initial = false,
-                   plot_bathymetry = true, conversion = prim2prim, step = -1)
+                   plot_bathymetry = true, conversion = prim2phys, step = -1)
     PlotData(semisol, plot_initial, plot_bathymetry, conversion, step)
 end
 
 @recipe function f(semi::Semidiscretization, sol::ODESolution; plot_initial = false,
-                   plot_bathymetry = true, conversion = prim2prim, step = -1)
+                   plot_bathymetry = true, conversion = prim2phys, step = -1)
     PlotData(semi => sol, plot_initial, plot_bathymetry, conversion, step)
 end
 
 @recipe function f(semisol::Pair{<:Semidiscretization, <:ODESolution}, x_value;
-                   conversion = prim2prim)
+                   conversion = prim2phys)
     PlotDataOverTime(semisol, x_value, conversion)
 end
 
 @recipe function f(semi::Semidiscretization, sol::ODESolution, x_value;
-                   conversion = prim2prim)
+                   conversion = prim2phys)
     PlotDataOverTime(semi => sol, x_value, conversion)
 end
 

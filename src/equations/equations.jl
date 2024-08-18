@@ -37,8 +37,8 @@ get_name(equations::AbstractEquations) = equations |> typeof |> nameof |> string
 
 Return the list of variable names when applying `conversion_function` to the
 conserved variables associated to `equations`.
-Common choices of the `conversion_function` are [`prim2prim`](@ref) and
-[`prim2cons`](@ref).
+Common choices of the `conversion_function` are [`prim2prim`](@ref),
+[`prim2cons`](@ref), and [`prim2phys`](@ref).
 """
 function varnames end
 
