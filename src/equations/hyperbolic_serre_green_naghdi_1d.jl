@@ -116,7 +116,9 @@ end
 
 # compute the auxiliary variables from the main ones
 # using the default initialization
-function set_approximation_variables!(q, mesh, equations::HyperbolicSerreGreenNaghdiEquations1D, solver)
+function set_approximation_variables!(q, mesh,
+                                      equations::HyperbolicSerreGreenNaghdiEquations1D,
+                                      solver)
     (; D1) = solver
     eta, v, D, w, H = q.x
 
@@ -246,7 +248,8 @@ References:
   Comparison of computations with Boussinesq-like models and laboratory measurements
   [link](https://repository.tudelft.nl/islandora/object/uuid:c2091d53-f455-48af-a84b-ac86680455e9/datastream/OBJ/download)
 """
-function initial_condition_dingemans(x, t, equations::HyperbolicSerreGreenNaghdiEquations1D, mesh)
+function initial_condition_dingemans(x, t, equations::HyperbolicSerreGreenNaghdiEquations1D,
+                                     mesh)
     equations_original = hyperbolic_approximation_limit(equations)
     return initial_condition_dingemans(x, t, equations_original, mesh)
 end
