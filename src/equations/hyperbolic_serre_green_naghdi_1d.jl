@@ -73,7 +73,9 @@ Additionally, it is well-balanced for the lake-at-rest stationary solution, see
   equations in standard and hyperbolic form
   [arXiv: 2408.02665](https://arxiv.org/abs/2408.02665)
 """
-struct HyperbolicSerreGreenNaghdiEquations1D{Bathymetry <: Union{BathymetryFlat, BathymetryMildSlope}, RealT <: Real} <:
+struct HyperbolicSerreGreenNaghdiEquations1D{Bathymetry <:
+                                             Union{BathymetryFlat, BathymetryMildSlope},
+                                             RealT <: Real} <:
        AbstractSerreGreenNaghdiEquations{1, 5}
     bathymetry_type::Bathymetry # type of bathymetry
     gravity::RealT # gravitational constant
@@ -89,10 +91,10 @@ function HyperbolicSerreGreenNaghdiEquations1D(bathymetry_type = bathymetry_mild
 end
 
 function varnames(::typeof(prim2prim), ::HyperbolicSerreGreenNaghdiEquations1D)
-  return ("η", "v", "D", "w", "H")
+    return ("η", "v", "D", "w", "H")
 end
 function varnames(::typeof(prim2cons), ::HyperbolicSerreGreenNaghdiEquations1D)
-  return ("h", "hv", "b", "hw", "hH")
+    return ("h", "hv", "b", "hw", "hH")
 end
 
 # TODO: There is another name clash. For the SerreGreenNaghdiEquations1D,
@@ -112,7 +114,7 @@ exact solution of the [`HyperbolicSerreGreenNaghdiEquations1D`](@ref)
 See also [`initial_condition_convergence_test`](@ref).
 """
 function initial_condition_soliton(x, t, equations::HyperbolicSerreGreenNaghdiEquations1D,
-                                            mesh)
+                                   mesh)
     g = gravity_constant(equations)
 
     # setup parameters data
@@ -125,7 +127,11 @@ function initial_condition_soliton(x, t, equations::HyperbolicSerreGreenNaghdiEq
     h = h1 + (h2 - h1) * sech(x_t / 2 * sqrt(3 * (h2 - h1) / (h1^2 * h2)))^2
     v = c * (1 - h1 / h)
     # w = -h v_x
-    w = -h1*sqrt(g*h2)*sqrt((-3*h1 + 3*h2)/(h1^2*h2))*(-h1 + h2)*(-h1 - (-h1 + h2)*sech(x*sqrt((-3*h1 + 3*h2)/(h1^2*h2))/2)^2)*tanh(x*sqrt((-3*h1 + 3*h2)/(h1^2*h2))/2)*sech(x*sqrt((-3*h1 + 3*h2)/(h1^2*h2))/2)^2/(h1 + (-h1 + h2)*sech(x*sqrt((-3*h1 + 3*h2)/(h1^2*h2))/2)^2)^2
+    w = -h1 * sqrt(g * h2) * sqrt((-3 * h1 + 3 * h2) / (h1^2 * h2)) * (-h1 + h2) *
+        (-h1 - (-h1 + h2) * sech(x * sqrt((-3 * h1 + 3 * h2) / (h1^2 * h2)) / 2)^2) *
+        tanh(x * sqrt((-3 * h1 + 3 * h2) / (h1^2 * h2)) / 2) *
+        sech(x * sqrt((-3 * h1 + 3 * h2) / (h1^2 * h2)) / 2)^2 /
+        (h1 + (-h1 + h2) * sech(x * sqrt((-3 * h1 + 3 * h2) / (h1^2 * h2)) / 2)^2)^2
     H = h
 
     return SVector(h, v, 0, w, H)
@@ -141,8 +147,9 @@ A smooth manufactured solution in combination with
   equations in standard and hyperbolic form
   [arXiv: 2408.02665](https://arxiv.org/abs/2408.02665)
 """
-function initial_condition_manufactured(x, t, equations::HyperbolicSerreGreenNaghdiEquations1D,
-                                            mesh)
+function initial_condition_manufactured(x, t,
+                                        equations::HyperbolicSerreGreenNaghdiEquations1D,
+                                        mesh)
     eta = 2 + cospi(2 * (x - 2 * t))
     b = -5 - 2 * cospi(2 * x)
     h = eta - b
@@ -159,7 +166,8 @@ end
 A smooth manufactured solution in combination with
 [`initial_condition_manufactured`](@ref).
 """
-function source_terms_manufactured(q, x, t, equations::HyperbolicSerreGreenNaghdiEquations1D)
+function source_terms_manufactured(q, x, t,
+                                   equations::HyperbolicSerreGreenNaghdiEquations1D)
     g = gravity_constant(equations)
 
     a1 = sinpi(4 * t - 2 * x)
@@ -175,11 +183,15 @@ function source_terms_manufactured(q, x, t, equations::HyperbolicSerreGreenNaghd
     e2 = exp(t / 2)
 
     # Source terms for variable bathymetry
-    dh = -4*pi*a1 - a5*(2*pi*a1 - 4*pi*a7) + 2*pi*a6*(a2 + 2*a8 + 7)
-    dv = -2*pi*a5*a6 - pi*a6 + 4*pi*a7*g + g*(2*pi*a1 - 4*pi*a7)
+    dh = -4 * pi * a1 - a5 * (2 * pi * a1 - 4 * pi * a7) + 2 * pi * a6 * (a2 + 2 * a8 + 7)
+    dv = -2 * pi * a5 * a6 - pi * a6 + 4 * pi * a7 * g + g * (2 * pi * a1 - 4 * pi * a7)
     dD = 0.0
-    dw = 8*pi^2*a1*a6 - a5*(4*pi^2*a5*(-a2 - 2*a8 - 7) + 2*pi*a6*(-2*pi*a1 + 4*pi*a7)) - 2*pi^2*a5*(-a2 - 2*a8 - 7)
-    dH = -4*pi*a1 - 6*pi*a5*a7 - a5*(2*pi*a1 - 4*pi*a7) - 2*pi*a6*(-a2 - 2*a8 - 7)
+    dw = 8 * pi^2 * a1 * a6 -
+         a5 *
+         (4 * pi^2 * a5 * (-a2 - 2 * a8 - 7) + 2 * pi * a6 * (-2 * pi * a1 + 4 * pi * a7)) -
+         2 * pi^2 * a5 * (-a2 - 2 * a8 - 7)
+    dH = -4 * pi * a1 - 6 * pi * a5 * a7 - a5 * (2 * pi * a1 - 4 * pi * a7) -
+         2 * pi * a6 * (-a2 - 2 * a8 - 7)
 
     return SVector(dh, dv, dD, dw, dH)
 end
@@ -204,7 +216,8 @@ function create_cache(mesh, equations::HyperbolicSerreGreenNaghdiEquations1D,
     hvw_x = zero(h)
     tmp = zero(h)
 
-    cache = (; h, b, b_x, H_over_h, h_x, v_x, hv_x, v2_x, h_hpb_x, H_x, H2_h_x, w_x, hvw_x, tmp)
+    cache = (; h, b, b_x, H_over_h, h_x, v_x, hv_x, v2_x, h_hpb_x, H_x, H2_h_x, w_x, hvw_x,
+             tmp)
     return cache
 end
 
@@ -294,21 +307,26 @@ function rhs!(dq, q, t, mesh,
         lambda_3 = lambda / 3
         lambda_2 = lambda / 2
         @. dv = -(g * h_hpb_x - g * (h + b) * h_x
-                    + 0.5 * h * v2_x - 0.5 * v^2 * h_x
-                    + 0.5 * hv_x * v - 0.5 * h * v * v_x
-                    + lambda_6 * (H_over_h * H_over_h * h_x - H2_h_x)
-                    + lambda_3 * (1 - H_over_h) * H_x
-                    + lambda_2 * (1 - H_over_h) * b_x) / h
+                  +
+                  0.5 * h * v2_x - 0.5 * v^2 * h_x
+                  +
+                  0.5 * hv_x * v - 0.5 * h * v * v_x
+                  + lambda_6 * (H_over_h * H_over_h * h_x - H2_h_x)
+                  + lambda_3 * (1 - H_over_h) * H_x
+                  + lambda_2 * (1 - H_over_h) * b_x) / h
 
         # Plain: h w_t + h v w_x = λ - λ H / h
         #
         # Split form for energy conservation:
         # h w_t + 1/2 (h v w)_x + 1/2 h v w_x
         #       - 1/2 h_x v w - 1/2 h w v_x = λ - λ H / h
-        @. dw = ( -(  0.5 * hvw_x
-                    + 0.5 * h * v * w_x
-                    - 0.5 * h_x * v * w
-                    - 0.5 * h * w * v_x) + lambda * (1 - H_over_h)) / h
+        @. dw = (-(0.5 * hvw_x
+                   +
+                   0.5 * h * v * w_x
+                   -
+                   0.5 * h_x * v * w
+                   -
+                   0.5 * h * w * v_x) + lambda * (1 - H_over_h)) / h
 
         # No special split form for energy conservation required:
         # H_t + v H_x + 3/2 v b_x = w
@@ -379,7 +397,8 @@ function energy_total_modified(q_global,
     e = zero(h)
 
     # 1/2 g eta^2 + 1/2 h v^2 + 1/6 h^3 w^2 + λ/6 h (1 - H/h)^2
-    @. e = 1/2 * g * eta^2 + 1/2 * h * v^2 + 1/6 * h * w^2 + lambda/6 * h * (1 - H/h)^2
+    @. e = 1 / 2 * g * eta^2 + 1 / 2 * h * v^2 + 1 / 6 * h * w^2 +
+           lambda / 6 * h * (1 - H / h)^2
 
     return e
 end
