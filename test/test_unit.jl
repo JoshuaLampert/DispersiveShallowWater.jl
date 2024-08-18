@@ -113,6 +113,7 @@ using SparseArrays: sparse, SparseMatrixCSC
             energy_total,
             prim2cons,
             prim2prim,
+            prim2phys,
         ]
         for conversion in conversion_functions
             @test DispersiveShallowWater.varnames(conversion, equations) isa Tuple
@@ -128,6 +129,7 @@ using SparseArrays: sparse, SparseMatrixCSC
         @test @inferred(still_water_surface(q, equations)) == 0.0
         @test isapprox(@inferred(energy_total(q, equations)), 8740.42)
         @test @inferred(energy_total(q, equations)) == @inferred(entropy(q, equations))
+        @test @inferred(prim2phys(q, equations)) == @inferred(prim2prim(q, equations))
 
         @testset "default implementation of energy_total_modified" begin
             initial_condition = initial_condition_convergence_test
@@ -162,6 +164,7 @@ using SparseArrays: sparse, SparseMatrixCSC
             energy_total,
             prim2cons,
             prim2prim,
+            prim2phys,
         ]
         for conversion in conversion_functions
             @test DispersiveShallowWater.varnames(conversion, equations) isa Tuple
@@ -177,6 +180,7 @@ using SparseArrays: sparse, SparseMatrixCSC
         @test @inferred(still_water_surface(q, equations)) == 0.0
         @test isapprox(@inferred(energy_total(q, equations)), 8740.42)
         @test @inferred(energy_total(q, equations)) == @inferred(entropy(q, equations))
+        @test @inferred(prim2phys(q, equations)) == @inferred(prim2prim(q, equations))
 
         @testset "default implementation of energy_total_modified" begin
             initial_condition = initial_condition_convergence_test
@@ -214,6 +218,7 @@ using SparseArrays: sparse, SparseMatrixCSC
             energy_total,
             prim2cons,
             prim2prim,
+            prim2phys,
             energy_total_modified,
             entropy_modified,
         ]
@@ -230,6 +235,7 @@ using SparseArrays: sparse, SparseMatrixCSC
         @test @inferred(discharge(q, equations)) == 88.0
         @test @inferred(still_water_surface(q, equations)) == 0.0
         @test isapprox(@inferred(energy_total(q, equations)), 8740.42)
+        @test @inferred(prim2phys(q, equations)) == @inferred(prim2prim(q, equations))
     end
 
     @testset "SerreGreenNaghdiEquations1D" begin
@@ -246,6 +252,7 @@ using SparseArrays: sparse, SparseMatrixCSC
             energy_total,
             prim2cons,
             prim2prim,
+            prim2phys,
         ]
         for conversion in conversion_functions
             @test DispersiveShallowWater.varnames(conversion, equations) isa Tuple
@@ -259,6 +266,7 @@ using SparseArrays: sparse, SparseMatrixCSC
         @test @inferred(momentum(q, equations)) == 84.0
         @test @inferred(discharge(q, equations)) == 84.0
         @test @inferred(still_water_surface(q, equations)) == 0.0
+        @test @inferred(prim2phys(q, equations)) == @inferred(prim2prim(q, equations))
     end
 
     @testset "HyperbolicSerreGreenNaghdiEquations1D" begin
@@ -276,6 +284,7 @@ using SparseArrays: sparse, SparseMatrixCSC
             energy_total,
             prim2cons,
             prim2prim,
+            prim2phys,
         ]
         for conversion in conversion_functions
             @test DispersiveShallowWater.varnames(conversion, equations) isa Tuple
@@ -289,6 +298,7 @@ using SparseArrays: sparse, SparseMatrixCSC
         @test @inferred(momentum(q, equations)) == 84.0
         @test @inferred(discharge(q, equations)) == 84.0
         @test @inferred(still_water_surface(q, equations)) == 0.0
+        @test @inferred(prim2phys(q, equations)) == [42.0, 2.0, 0.0]
     end
 
     @testset "AnalysisCallback" begin

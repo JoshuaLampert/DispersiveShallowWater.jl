@@ -64,7 +64,7 @@ export AbstractShallowWaterEquations,
        SvärdKalischEquations1D, SvaerdKalischEquations1D,
        SerreGreenNaghdiEquations1D, HyperbolicSerreGreenNaghdiEquations1D
 
-export prim2prim, prim2cons, cons2prim,
+export prim2prim, prim2cons, cons2prim, prim2phys,
        waterheight_total, waterheight,
        velocity, momentum, discharge,
        gravity_constant,

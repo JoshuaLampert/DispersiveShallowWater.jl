@@ -107,6 +107,20 @@ function varnames(::typeof(prim2cons), ::HyperbolicSerreGreenNaghdiEquations1D)
     return ("h", "hv", "b", "hw", "hH")
 end
 
+"""
+    prim2phys(q, equations::HyperbolicSerreGreenNaghdiEquations1D)
+
+Return the physical variables ``\\eta, v, D`` used also by the
+[`SerreGreenNaghdiEquations1D`](@ref) from the main variables
+`q` for the [`HyperbolicSerreGreenNaghdiEquations1D`](@ref).
+"""
+function prim2phys(q, ::HyperbolicSerreGreenNaghdiEquations1D)
+    eta, v, D = q
+    return SVector(eta, v, D)
+end
+
+varnames(::typeof(prim2phys), ::HyperbolicSerreGreenNaghdiEquations1D) = ("η", "v", "D")
+
 is_hyperbolic_appproximation(::HyperbolicSerreGreenNaghdiEquations1D) = Val{true}()
 
 function hyperbolic_approximation_limit(equations::HyperbolicSerreGreenNaghdiEquations1D)
