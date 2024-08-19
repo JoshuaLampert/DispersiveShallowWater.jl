@@ -10,20 +10,24 @@ using OrdinaryDiffEq
 using DispersiveShallowWater
 
 ###############################################################################
-# Semidiscretization of the Serre-Green-Naghdi equations
+# Semidiscretization of the hyperbolic Serre-Green-Naghdi equations
 
-bathymetry_type = bathymetry_variable # or bathymetry_mild_slope
-equations = SerreGreenNaghdiEquations1D(bathymetry_type;
-                                        gravity_constant = 9.81,
-                                        eta0 = 1.0)
+bathymetry_type = bathymetry_mild_slope
+equations = HyperbolicSerreGreenNaghdiEquations1D(bathymetry_type;
+                                                  lambda = 500.0,
+                                                  gravity_constant = 9.81,
+                                                  eta0 = 1.0)
 
 function initial_condition_conservation_test(x, t,
-                                             equations::SerreGreenNaghdiEquations1D,
+                                             equations::HyperbolicSerreGreenNaghdiEquations1D,
                                              mesh)
     eta = 1 + exp(-x^2)
     v = 1.0e-2 # set this to zero to test a directional bias
     b = 0.25 * cospi(x / 75)
 
+    # We use the feature that we can only return the physical variables
+    # used by the `hyperbolic_approximation_limit`, i.e., the
+    # `SerreGreenNaghdiEquations1D.`
     D = equations.eta0 - b
     return SVector(eta, v, D)
 end
@@ -64,5 +68,8 @@ analysis_callback = AnalysisCallback(semi; interval = 10, io,
 
 callbacks = CallbackSet(analysis_callback, summary_callback)
 
-sol = solve(ode, Tsit5();
+# optimized time integration methods like this one are much more efficient
+# for stiff problems (λ big) than standard methods like Tsit5()
+alg = RDPK3SpFSAL35()
+sol = solve(ode, alg;
             save_everystep = false, callback = callbacks)

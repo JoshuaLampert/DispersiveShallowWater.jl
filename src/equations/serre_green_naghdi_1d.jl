@@ -258,7 +258,7 @@ function create_cache(mesh,
     #       had access to the initial condition and the exact value of the
     #       bathymetry here.
     let x = grid(D1)
-        @. b_x = x^3
+        @.. b_x = x^3
     end
 
     if D1 isa PeriodicUpwindOperators
@@ -313,9 +313,9 @@ function assemble_system_matrix!(cache, h, D1, D1mat,
                                  equations::SerreGreenNaghdiEquations1D{BathymetryFlat})
     (; M_h, M_h3_3) = cache
 
-    @. M_h = h
+    @.. M_h = h
     scale_by_mass_matrix!(M_h, D1)
-    @. M_h3_3 = (1 / 3) * h^3
+    @.. M_h3_3 = (1 / 3) * h^3
     scale_by_mass_matrix!(M_h3_3, D1)
 
     # Floating point errors accumulate a bit and the system matrix
@@ -335,12 +335,12 @@ function assemble_system_matrix!(cache, h, b_x, D1, D1mat,
     elseif equations.bathymetry_type isa BathymetryVariable
         factor = 1.0
     end
-    @. M_h_p_h_bx2 = h + factor * h * b_x^2
+    @.. M_h_p_h_bx2 = h + factor * h * b_x^2
     scale_by_mass_matrix!(M_h_p_h_bx2, D1)
     inv3 = 1 / 3
-    @. M_h3_3 = inv3 * h^3
+    @.. M_h3_3 = inv3 * h^3
     scale_by_mass_matrix!(M_h3_3, D1)
-    @. M_h2_bx = 0.5 * h^2 * b_x
+    @.. M_h2_bx = 0.5 * h^2 * b_x
     scale_by_mass_matrix!(M_h2_bx, D1)
     # Floating point errors accumulate a bit and the system matrix
     # is not necessarily perfectly symmetric but only up to
@@ -419,50 +419,50 @@ function rhs_sgn_central!(dq, q, equations, source_terms, cache, ::BathymetryFla
         (; h, b, h_x, v_x, h2_x, hv_x, v2_x, h2_v_vx_x,
         h_vx_x, p_x, tmp, M_h, M_h3_3) = cache
 
-        @. b = equations.eta0 - D
-        @. h = eta - b
+        @.. b = equations.eta0 - D
+        @.. h = eta - b
 
         mul!(h_x, D1, h)
         mul!(v_x, D1, v)
-        @. tmp = h^2
+        @.. tmp = h^2
         mul!(h2_x, D1, tmp)
-        @. tmp = h * v
+        @.. tmp = h * v
         mul!(hv_x, D1, tmp)
-        @. tmp = v^2
+        @.. tmp = v^2
         mul!(v2_x, D1, tmp)
 
-        @. tmp = h^2 * v * v_x
+        @.. tmp = h^2 * v * v_x
         mul!(h2_v_vx_x, D1, tmp)
-        @. tmp = h * v_x
+        @.. tmp = h * v_x
         mul!(h_vx_x, D1, tmp)
         inv6 = 1 / 6
-        @. tmp = (0.5 * h^2 * (h * v_x + h_x * v) * v_x
-                  -
-                  inv6 * h * h2_v_vx_x
-                  -
-                  inv6 * h^2 * v * h_vx_x)
+        @.. tmp = (0.5 * h^2 * (h * v_x + h_x * v) * v_x
+                   -
+                   inv6 * h * h2_v_vx_x
+                   -
+                   inv6 * h^2 * v * h_vx_x)
         mul!(p_x, D1, tmp)
 
         # Plain: h_t + (h v)_x = 0
         #
         # Split form for energy conservation:
         # h_t + h_x v + h v_x = 0
-        @. dh = -(h_x * v + h * v_x)
+        @.. dh = -(h_x * v + h * v_x)
 
         # Plain: h v_t + ... = 0
         #
         # Split form for energy conservation:
-        @. tmp = -(g * h2_x - g * h * h_x
-                   +
-                   0.5 * h * v2_x
-                   -
-                   0.5 * v^2 * h_x
-                   +
-                   0.5 * hv_x * v
-                   -
-                   0.5 * h * v * v_x
-                   +
-                   p_x)
+        @.. tmp = -(g * h2_x - g * h * h_x
+                    +
+                    0.5 * h * v2_x
+                    -
+                    0.5 * v^2 * h_x
+                    +
+                    0.5 * hv_x * v
+                    -
+                    0.5 * h * v * v_x
+                    +
+                    p_x)
     end
 
     # The code below is equivalent to
@@ -502,53 +502,53 @@ function rhs_sgn_upwind!(dq, q, equations, source_terms, cache, ::BathymetryFlat
         h2_v_vx_x, h_vx_x, p_x, tmp,
         M_h, M_h3_3) = cache
 
-        @. b = equations.eta0 - D
-        @. h = eta - b
+        @.. b = equations.eta0 - D
+        @.. h = eta - b
 
         mul!(h_x, D1, h)
         mul!(v_x, D1, v)
         mul!(v_x_upwind, D1_upwind.minus, v)
-        @. tmp = h^2
+        @.. tmp = h^2
         mul!(h2_x, D1, tmp)
-        @. tmp = h * v
+        @.. tmp = h * v
         mul!(hv_x, D1, tmp)
-        @. tmp = v^2
+        @.. tmp = v^2
         mul!(v2_x, D1, tmp)
 
-        @. tmp = h^2 * v * v_x
+        @.. tmp = h^2 * v * v_x
         mul!(h2_v_vx_x, D1, tmp)
-        @. tmp = h * v_x
+        @.. tmp = h * v_x
         mul!(h_vx_x, D1, tmp)
         # p_+
-        @. tmp = 0.5 * h^2 * (h * v_x + h_x * v) * v_x_upwind
+        @.. tmp = 0.5 * h^2 * (h * v_x + h_x * v) * v_x_upwind
         mul!(p_x, D1_upwind.plus, tmp)
         # p_0
         minv6 = -1 / 6
-        @. tmp = minv6 * (h * h2_v_vx_x
-                          +
-                          h^2 * v * h_vx_x)
+        @.. tmp = minv6 * (h * h2_v_vx_x
+                           +
+                           h^2 * v * h_vx_x)
         mul!(p_x, D1, tmp, 1.0, 1.0)
 
         # Plain: h_t + (h v)_x = 0
         #
         # Split form for energy conservation:
         # h_t + h_x v + h v_x = 0
-        @. dh = -(h_x * v + h * v_x)
+        @.. dh = -(h_x * v + h * v_x)
 
         # Plain: h v_t + ... = 0
         #
         # Split form for energy conservation:
-        @. tmp = -(g * h2_x - g * h * h_x
-                   +
-                   0.5 * h * v2_x
-                   -
-                   0.5 * v^2 * h_x
-                   +
-                   0.5 * hv_x * v
-                   -
-                   0.5 * h * v * v_x
-                   +
-                   p_x)
+        @.. tmp = -(g * h2_x - g * h * h_x
+                    +
+                    0.5 * h * v2_x
+                    -
+                    0.5 * v^2 * h_x
+                    +
+                    0.5 * hv_x * v
+                    -
+                    0.5 * h * v * v_x
+                    +
+                    p_x)
     end
 
     # The code below is equivalent to
@@ -590,70 +590,70 @@ function rhs_sgn_central!(dq, q, equations, source_terms, cache,
             (; psi) = cache
         end
 
-        @. b = equations.eta0 - D
-        @. h = eta - b
+        @.. b = equations.eta0 - D
+        @.. h = eta - b
         mul!(b_x, D1, b)
 
         mul!(h_x, D1, h)
         mul!(v_x, D1, v)
-        @. tmp = h * eta
+        @.. tmp = h * eta
         mul!(h_hpb_x, D1, tmp)
-        @. tmp = h * v
+        @.. tmp = h * v
         mul!(hv_x, D1, tmp)
-        @. tmp = v^2
+        @.. tmp = v^2
         mul!(v2_x, D1, tmp)
 
-        @. tmp = h^2 * v * v_x
+        @.. tmp = h^2 * v * v_x
         mul!(h2_v_vx_x, D1, tmp)
-        @. tmp = h * v_x
+        @.. tmp = h * v_x
         mul!(h_vx_x, D1, tmp)
         inv6 = 1 / 6
-        @. p_h = (0.5 * h * (h * v_x + h_x * v) * v_x
-                  -
-                  inv6 * h2_v_vx_x
-                  -
-                  inv6 * h * v * h_vx_x)
-        @. tmp = h * b_x * v^2
+        @.. p_h = (0.5 * h * (h * v_x + h_x * v) * v_x
+                   -
+                   inv6 * h2_v_vx_x
+                   -
+                   inv6 * h * v * h_vx_x)
+        @.. tmp = h * b_x * v^2
         mul!(p_x, D1, tmp)
-        @. p_h += 0.25 * p_x
+        @.. p_h += 0.25 * p_x
         if equations.bathymetry_type isa BathymetryVariable
-            @. psi = 0.125 * p_x
+            @.. psi = 0.125 * p_x
         end
-        @. tmp = b_x * v
+        @.. tmp = b_x * v
         mul!(p_x, D1, tmp)
-        @. p_h += 0.25 * h * v * p_x
+        @.. p_h += 0.25 * h * v * p_x
         if equations.bathymetry_type isa BathymetryVariable
-            @. psi += 0.125 * h * v * p_x
+            @.. psi += 0.125 * h * v * p_x
         end
-        @. p_h = p_h - 0.25 * (h_x * v + h * v_x) * b_x * v
+        @.. p_h = p_h - 0.25 * (h_x * v + h * v_x) * b_x * v
         if equations.bathymetry_type isa BathymetryVariable
-            @. psi -= 0.125 * (h_x * v + h * v_x) * b_x * v
+            @.. psi -= 0.125 * (h_x * v + h * v_x) * b_x * v
         end
-        @. tmp = p_h * h
+        @.. tmp = p_h * h
         mul!(p_x, D1, tmp)
 
         # Plain: h_t + (h v)_x = 0
         #
         # Split form for energy conservation:
         # h_t + h_x v + h v_x = 0
-        @. dh = -(h_x * v + h * v_x)
+        @.. dh = -(h_x * v + h * v_x)
 
         # Plain: h v_t + ... = 0
         #
         # Split form for energy conservation:
-        @. tmp = -(g * h_hpb_x - g * eta * h_x
-                   +
-                   0.5 * h * v2_x
-                   -
-                   0.5 * v^2 * h_x
-                   +
-                   0.5 * hv_x * v
-                   -
-                   0.5 * h * v * v_x
-                   + p_x
-                   + 1.5 * p_h * b_x)
+        @.. tmp = -(g * h_hpb_x - g * eta * h_x
+                    +
+                    0.5 * h * v2_x
+                    -
+                    0.5 * v^2 * h_x
+                    +
+                    0.5 * hv_x * v
+                    -
+                    0.5 * h * v * v_x
+                    + p_x
+                    + 1.5 * p_h * b_x)
         if equations.bathymetry_type isa BathymetryVariable
-            @. tmp = tmp - psi * b_x
+            @.. tmp = tmp - psi * b_x
         end
     end
 
@@ -698,76 +698,76 @@ function rhs_sgn_upwind!(dq, q, equations, source_terms, cache,
             (; psi) = cache
         end
 
-        @. b = equations.eta0 - D
-        @. h = eta - b
+        @.. b = equations.eta0 - D
+        @.. h = eta - b
         mul!(b_x, D1, b)
 
         mul!(h_x, D1, h)
         mul!(v_x, D1, v)
         mul!(v_x_upwind, D1_upwind.minus, v)
-        @. tmp = h * eta
+        @.. tmp = h * eta
         mul!(h_hpb_x, D1, tmp)
-        @. tmp = h * v
+        @.. tmp = h * v
         mul!(hv_x, D1, tmp)
-        @. tmp = v^2
+        @.. tmp = v^2
         mul!(v2_x, D1, tmp)
 
-        @. tmp = h^2 * v * v_x
+        @.. tmp = h^2 * v * v_x
         mul!(h2_v_vx_x, D1, tmp)
-        @. tmp = h * v_x
+        @.. tmp = h * v_x
         mul!(h_vx_x, D1, tmp)
         # p_0
         minv6 = -1 / 6
-        @. p_h = minv6 * (h2_v_vx_x
-                          +
-                          h * v * h_vx_x)
-        @. tmp = h * b_x * v^2
+        @.. p_h = minv6 * (h2_v_vx_x
+                           +
+                           h * v * h_vx_x)
+        @.. tmp = h * b_x * v^2
         mul!(p_x, D1, tmp)
-        @. p_h += 0.25 * p_x
+        @.. p_h += 0.25 * p_x
         if equations.bathymetry_type isa BathymetryVariable
-            @. psi = 0.125 * p_x
+            @.. psi = 0.125 * p_x
         end
-        @. tmp = b_x * v
+        @.. tmp = b_x * v
         mul!(p_x, D1, tmp)
-        @. p_h += 0.25 * h * v * p_x
+        @.. p_h += 0.25 * h * v * p_x
         if equations.bathymetry_type isa BathymetryVariable
-            @. psi += 0.125 * h * v * p_x
+            @.. psi += 0.125 * h * v * p_x
         end
-        @. p_0 = p_h * h
+        @.. p_0 = p_h * h
         mul!(p_x, D1, p_0)
         # p_+
-        @. tmp = (0.5 * h * (h * v_x + h_x * v) * v_x_upwind
-                  -
-                  0.25 * (h_x * v + h * v_x) * b_x * v)
+        @.. tmp = (0.5 * h * (h * v_x + h_x * v) * v_x_upwind
+                   -
+                   0.25 * (h_x * v + h * v_x) * b_x * v)
         if equations.bathymetry_type isa BathymetryVariable
-            @. psi -= 0.125 * (h_x * v + h * v_x) * b_x * v
+            @.. psi -= 0.125 * (h_x * v + h * v_x) * b_x * v
         end
-        @. p_h = p_h + tmp
-        @. tmp = tmp * h
+        @.. p_h = p_h + tmp
+        @.. tmp = tmp * h
         mul!(p_x, D1_upwind.plus, tmp, 1.0, 1.0)
 
         # Plain: h_t + (h v)_x = 0
         #
         # Split form for energy conservation:
         # h_t + h_x v + h v_x = 0
-        @. dh = -(h_x * v + h * v_x)
+        @.. dh = -(h_x * v + h * v_x)
 
         # Plain: h v_t + ... = 0
         #
         # Split form for energy conservation:
-        @. tmp = -(g * h_hpb_x - g * eta * h_x
-                   +
-                   0.5 * h * v2_x
-                   -
-                   0.5 * v^2 * h_x
-                   +
-                   0.5 * hv_x * v
-                   -
-                   0.5 * h * v * v_x
-                   + p_x
-                   + 1.5 * p_h * b_x)
+        @.. tmp = -(g * h_hpb_x - g * eta * h_x
+                    +
+                    0.5 * h * v2_x
+                    -
+                    0.5 * v^2 * h_x
+                    +
+                    0.5 * hv_x * v
+                    -
+                    0.5 * h * v * v_x
+                    + p_x
+                    + 1.5 * p_h * b_x)
         if equations.bathymetry_type isa BathymetryVariable
-            @. tmp = tmp - psi * b_x
+            @.. tmp = tmp - psi * b_x
         end
     end
 
@@ -857,8 +857,8 @@ function energy_total_modified(q_global,
     # the total water height `eta = h + b` and the velocity `v`.
     eta, v = q_global.x
     let D = q_global.x[3]
-        @. b = equations.eta0 - D
-        @. h = eta - b
+        @.. b = equations.eta0 - D
+        @.. h = eta - b
     end
 
     N = length(v)
@@ -877,7 +877,7 @@ function energy_total_modified(q_global,
         fill!(b_x, zero(eltype(b_x)))
     else
         (; b, b_x) = cache
-        @. b = equations.eta0 - q_global.x[3]
+        @.. b = equations.eta0 - q_global.x[3]
         if D1 isa PeriodicUpwindOperators
             mul!(b_x, D1.central, b)
         else
@@ -885,9 +885,9 @@ function energy_total_modified(q_global,
         end
     end
 
-    @. e = 1 / 2 * g * eta^2 + 1 / 2 * h * v^2 + 1 / 6 * h * (-h * v_x + 1.5 * v * b_x)^2
+    @.. e = 1 / 2 * g * eta^2 + 1 / 2 * h * v^2 + 1 / 6 * h * (-h * v_x + 1.5 * v * b_x)^2
     if equations.bathymetry_type isa BathymetryVariable
-        @. e += 1 / 8 * h * (v * b_x)^2
+        @.. e += 1 / 8 * h * (v * b_x)^2
     end
 
     return e

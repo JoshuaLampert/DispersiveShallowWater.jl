@@ -137,11 +137,11 @@ function set_approximation_variables!(q, mesh,
     eta, v, D, w, H = q.x
 
     # H ≈ h
-    @. H = eta + D - equations.eta0 # h = (h + b) + (eta0 - b) - eta0
+    @.. H = eta + D - equations.eta0 # h = (h + b) + (eta0 - b) - eta0
 
     # w ≈ -h v_x
     mul!(w, D1, v)
-    @. w = -H * w
+    @.. w = -H * w
 
     return nothing
 end
@@ -322,8 +322,8 @@ function rhs!(dq, q, t, mesh,
         # Compute all derivatives required below
         (; h, b, b_x, H_over_h, h_x, v_x, hv_x, v2_x, h_hpb_x, H_x, H2_h_x, w_x, hvw_x, tmp) = cache
 
-        @. b = equations.eta0 - D
-        @. h = eta - b
+        @.. b = equations.eta0 - D
+        @.. h = eta - b
         if !(bathymetry_type isa BathymetryFlat)
             mul!(b_x, D1, b)
         end
@@ -335,37 +335,37 @@ function rhs!(dq, q, t, mesh,
         mul!(v_x, D1, v)
 
         # hv2_x = D1 * (h * v)
-        @. tmp = h * v
+        @.. tmp = h * v
         mul!(hv_x, D1, tmp)
 
         # v2_x = D1 * (v.^2)
-        @. tmp = v^2
+        @.. tmp = v^2
         mul!(v2_x, D1, tmp)
 
         # h_hpb_x = D1 * (h .* eta)
-        @. tmp = h * eta
+        @.. tmp = h * eta
         mul!(h_hpb_x, D1, tmp)
 
         # H_x = D1 * H
         mul!(H_x, D1, H)
 
         # H2_h_x = D1 * (H^2 / h)
-        @. H_over_h = H / h
-        @. tmp = H * H_over_h
+        @.. H_over_h = H / h
+        @.. tmp = H * H_over_h
         mul!(H2_h_x, D1, tmp)
 
         # w_x = D1 * w
         mul!(w_x, D1, w)
 
         # hvw_x = D1 * (h * v * w)
-        @. tmp = h * v * w
+        @.. tmp = h * v * w
         mul!(hvw_x, D1, tmp)
 
         # Plain: h_t + (h v)_x = 0
         #
         # Split form for energy conservation:
         # h_t + h_x v + h v_x = 0
-        @. dh = -(h_x * v + h * v_x)
+        @.. dh = -(h_x * v + h * v_x)
 
         # Plain: h v_t + h v v_x + g (h + b) h_x
         #              + ... = 0
@@ -377,16 +377,14 @@ function rhs!(dq, q, t, mesh,
         #       + λ/2 b_x - λ/2 H/h b_x = 0
         lambda_6 = lambda / 6
         lambda_3 = lambda / 3
-        @. dv = -(g * h_hpb_x - g * (h + b) * h_x
-                  +
-                  0.5 * h * v2_x - 0.5 * v^2 * h_x
-                  +
-                  0.5 * hv_x * v - 0.5 * h * v * v_x
-                  + lambda_6 * (H_over_h * H_over_h * h_x - H2_h_x)
-                  + lambda_3 * (1 - H_over_h) * H_x) / h
+        @.. dv = -(g * h_hpb_x - g * eta * h_x
+                   + 0.5 * (h * v2_x - v^2 * h_x)
+                   + 0.5 * v * (hv_x - h * v_x)
+                   + lambda_6 * (H_over_h^2 * h_x - H2_h_x)
+                   + lambda_3 * (1 - H_over_h) * H_x) / h
         if !(bathymetry_type isa BathymetryFlat)
             lambda_2 = lambda / 2
-            @. dv -= lambda_2 * (1 - H_over_h) * b_x / h
+            @.. dv -= lambda_2 * (1 - H_over_h) * b_x / h
         end
 
         # Plain: h w_t + h v w_x = λ - λ H / h
@@ -394,19 +392,14 @@ function rhs!(dq, q, t, mesh,
         # Split form for energy conservation:
         # h w_t + 1/2 (h v w)_x + 1/2 h v w_x
         #       - 1/2 h_x v w - 1/2 h w v_x = λ - λ H / h
-        @. dw = (-(0.5 * hvw_x
-                   +
-                   0.5 * h * v * w_x
-                   -
-                   0.5 * h_x * v * w
-                   -
-                   0.5 * h * w * v_x) + lambda * (1 - H_over_h)) / h
+        @.. dw = (-0.5 * (hvw_x + h * v * w_x + dh * w) +
+                  lambda * (1 - H_over_h)) / h
 
         # No special split form for energy conservation required:
         # H_t + v H_x + 3/2 v b_x = w
-        @. dH = -v * H_x + w
+        @.. dH = w - v * H_x
         if !(bathymetry_type isa BathymetryFlat)
-            @. dH -= 1.5 * v * b_x
+            @.. dH -= 1.5 * v * b_x
         end
     end
 
@@ -468,14 +461,14 @@ function energy_total_modified(q_global,
     # `q_global` is an `ArrayPartition`. It collects the individual arrays for
     # the total water height `eta = h + b` and the velocity `v`.
     eta, v, D, w, H = q_global.x
-    @. b = equations.eta0 - D
-    @. h = eta - b
+    @.. b = equations.eta0 - D
+    @.. h = eta - b
 
     e = zero(h)
 
     # 1/2 g eta^2 + 1/2 h v^2 + 1/6 h^3 w^2 + λ/6 h (1 - H/h)^2
-    @. e = 1 / 2 * g * eta^2 + 1 / 2 * h * v^2 + 1 / 6 * h * w^2 +
-           lambda / 6 * h * (1 - H / h)^2
+    @.. e = 1 / 2 * g * eta^2 + 1 / 2 * h * v^2 + 1 / 6 * h * w^2 +
+            lambda / 6 * h * (1 - H / h)^2
 
     return e
 end
