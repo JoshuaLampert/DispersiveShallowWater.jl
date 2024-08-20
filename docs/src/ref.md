@@ -13,7 +13,7 @@ Pages = ["DispersiveShallowWater.jl"]
 
 ```@autodocs
 Modules = [DispersiveShallowWater]
-Pages = EQUATIONS_FILES_TO_BE_INSERTED
+Pages = Main.EQUATIONS_FILES
 ```
 
 ## Mesh
@@ -48,7 +48,7 @@ Pages = ["semidiscretization.jl"]
 
 ```@autodocs
 Modules = [DispersiveShallowWater]
-Pages = CALLBACKS_STEP_FILES_TO_BE_INSERTED
+Pages = Main.CALLBACKS_STEP_FILES
 ```
 
 ## Utilities
