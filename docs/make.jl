@@ -5,10 +5,12 @@ using Changelog: Changelog
 
 # Dynamically set all files in subdirectories of the source directory to include all files in these subdirectories
 # This way they don't need to be listed explicitly
-EQUATIONS_FILES = joinpath.(Ref("equations"), readdir(joinpath(dirname(@__DIR__), "src",
-                                                               "equations")))
-CALLBACKS_STEP_FILES = joinpath.(Ref("callbacks_step"), readdir(joinpath(dirname(@__DIR__), "src",
-                                                                         "callbacks_step")))
+EQUATIONS_FILES = joinpath.(Ref("equations"),
+                            readdir(joinpath(dirname(@__DIR__), "src",
+                                             "equations")))
+CALLBACKS_STEP_FILES = joinpath.(Ref("callbacks_step"),
+                                 readdir(joinpath(dirname(@__DIR__), "src",
+                                                  "callbacks_step")))
 
 # Define module-wide setups such that the respective modules are available in doctests
 DocMeta.setdocmeta!(DispersiveShallowWater, :DocTestSetup, :(using DispersiveShallowWater);
