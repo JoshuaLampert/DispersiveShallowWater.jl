@@ -3,30 +3,12 @@ using DispersiveShallowWater
 using TrixiBase
 using Changelog: Changelog
 
-# Dynamically replace all files in subdirectories of the source directory to include all files in these subdirectories
+# Dynamically set all files in subdirectories of the source directory to include all files in these subdirectories
 # This way they don't need to be listed explicitly
-EQUATIONS_FILES_TO_BE_INSERTED = joinpath.(Ref("equations"),
-                                           readdir(joinpath(dirname(@__DIR__), "src",
-                                                            "equations")))
-CALLBACKS_STEP_FILES_TO_BE_INSERTED = joinpath.(Ref("callbacks_step"),
-                                                readdir(joinpath(dirname(@__DIR__), "src",
-                                                                 "callbacks_step")))
-
-ref_path = joinpath(@__DIR__, "src", "ref.md")
-lines = readlines(ref_path)
-open(ref_path, "w") do io
-    for line in lines
-        if contains(line, "EQUATIONS_FILES_TO_BE_INSERTED")
-            line = replace(line,
-                           "EQUATIONS_FILES_TO_BE_INSERTED" => EQUATIONS_FILES_TO_BE_INSERTED)
-        end
-        if contains(line, "CALLBACKS_STEP_FILES_TO_BE_INSERTED")
-            line = replace(line,
-                           "CALLBACKS_STEP_FILES_TO_BE_INSERTED" => CALLBACKS_STEP_FILES_TO_BE_INSERTED)
-        end
-        println(io, line)
-    end
-end
+EQUATIONS_FILES = joinpath.(Ref("equations"), readdir(joinpath(dirname(@__DIR__), "src",
+                                                               "equations")))
+CALLBACKS_STEP_FILES = joinpath.(Ref("callbacks_step"), readdir(joinpath(dirname(@__DIR__), "src",
+                                                                         "callbacks_step")))
 
 # Define module-wide setups such that the respective modules are available in doctests
 DocMeta.setdocmeta!(DispersiveShallowWater, :DocTestSetup, :(using DispersiveShallowWater);
