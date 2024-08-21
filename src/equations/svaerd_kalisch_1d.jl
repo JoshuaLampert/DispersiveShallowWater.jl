@@ -191,11 +191,13 @@ function create_cache(mesh, equations::SvaerdKalischEquations1D,
     end
     g = gravity_constant(equations)
     h = ones(RealT, nnodes(mesh))
-    hv = similar(h)
+    hv = zero(h)
+    b = zero(h)
+    v_x = zero(h)
     alpha_hat = sqrt.(equations.alpha * sqrt.(g * D) .* D .^ 2)
     beta_hat = equations.beta * D .^ 3
     gamma_hat = equations.gamma * sqrt.(g * D) .* D .^ 3
-    tmp2 = similar(h)
+    tmp2 = zero(h)
     M = mass_matrix(D1)
     M_h = zero(h)
     M_beta = scale_by_mass_matrix!(beta_hat, D1)
@@ -221,8 +223,8 @@ function create_cache(mesh, equations::SvaerdKalischEquations1D,
     end
     factorization = cholesky(system_matrix)
     return (; factorization = factorization, minus_MD1betaD1 = minus_MD1betaD1, D = D,
-            h = h,
-            hv = hv, alpha_hat = alpha_hat, gamma_hat = gamma_hat,
+            h = h, hv = hv, b = b, v_x = v_x,
+            alpha_hat = alpha_hat, beta_hat = beta_hat, gamma_hat = gamma_hat,
             tmp2 = tmp2, D1_central = D1_central, M = M, D1 = D1, M_h = M_h)
 end
 
@@ -251,7 +253,7 @@ end
 function rhs!(dq, q, t, mesh, equations::SvaerdKalischEquations1D,
               initial_condition, ::BoundaryConditionPeriodic, source_terms,
               solver, cache)
-    @unpack D, h, hv, alpha_hat, gamma_hat, tmp1, tmp2, D1_central, M, D1 = cache
+    @unpack D, h, hv, b, alpha_hat, gamma_hat, tmp1, tmp2, D1_central, M, D1 = cache
 
     g = gravity_constant(equations)
     eta, v = q.x
@@ -259,8 +261,9 @@ function rhs!(dq, q, t, mesh, equations::SvaerdKalischEquations1D,
     fill!(dD, zero(eltype(dD)))
 
     @trixi_timeit timer() "deta hyperbolic" begin
-        @. h = eta + D - equations.eta0
-        @. hv = h * v
+        @.. b = equations.eta0 - D
+        @.. h = eta - b
+        @.. hv = h * v
 
         if D1 isa PeriodicDerivativeOperator ||
            D1 isa UniformPeriodicCoupledOperator
@@ -319,7 +322,7 @@ function rhs!(dq, q, t, mesh, equations::SvaerdKalischEquations1D,
 end
 
 @inline function prim2cons(q, equations::SvaerdKalischEquations1D)
-    eta, v, D = q
+    eta, v = q
 
     b = bathymetry(q, equations)
     h = eta - b
@@ -336,11 +339,11 @@ end
     return SVector(eta, v, D)
 end
 
-@inline function waterheight_total(q, equations::SvaerdKalischEquations1D)
+@inline function waterheight_total(q, ::SvaerdKalischEquations1D)
     return q[1]
 end
 
-@inline function velocity(q, equations::SvaerdKalischEquations1D)
+@inline function velocity(q, ::SvaerdKalischEquations1D)
     return q[2]
 end
 
@@ -363,30 +366,29 @@ is a conserved quantity (for periodic boundary conditions).
 
 It is given by
 ```math
-\\frac{1}{2} g h^2 + \\frac{1}{2} h v^2 + \\frac{1}{2} \\hat\\beta v_x^2.
+\\frac{1}{2} g \\eta^2 + \\frac{1}{2} h v^2 + \\frac{1}{2} \\hat\\beta v_x^2.
 ```
 
 `q_global` is a vector of the primitive variables at ALL nodes.
 `cache` needs to hold the SBP operators used by the `solver`.
 """
 @inline function energy_total_modified(q_global, equations::SvaerdKalischEquations1D, cache)
-    # Need to compute new beta_hat, do not use the old one from the `cache`
-    v = q_global.x[2]
-    D = q_global.x[3]
-    N = length(v)
-    e_modified = zeros(eltype(q_global), N)
-    beta_hat = equations.beta * D .^ 3
-    if cache.D1 isa PeriodicDerivativeOperator ||
-       cache.D1 isa UniformPeriodicCoupledOperator
-        tmp = 0.5 * beta_hat .* ((cache.D1 * v) .^ 2)
-    elseif cache.D1 isa PeriodicUpwindOperators
-        tmp = 0.5 * beta_hat .* ((cache.D1.minus * v) .^ 2)
+    # unpack physical parameters and SBP operator `D1`
+    g = gravity_constant(equations)
+    (; D1, h, b, v_x, beta_hat, tmp1) = cache
+
+    # `q_global` is an `ArrayPartition`. It collects the individual arrays for
+    # the total water height `eta = h + b` and the velocity `v`.
+    eta, v, D = q_global.x
+    @.. b = equations.eta0 - D
+    @.. h = eta - b
+
+    if D1 isa PeriodicUpwindOperators
+        mul!(v_x, D1.minus, v)
     else
-        @error "unknown type of first-derivative operator: $(typeof(cache.D1))"
+        mul!(v_x, D1, v)
     end
-    for i in 1:N
-        e_modified[i] = energy_total(get_node_vars(q_global, equations, i), equations) +
-                        tmp[i]
-    end
-    return e_modified
+
+    @.. tmp1 = 1 / 2 * g * eta^2 + 1 / 2 * h * v^2 + 1 / 2 * beta_hat * v_x^2
+    return tmp1
 end
