@@ -827,16 +827,13 @@ function energy_total_modified(q_global,
                                cache)
     # unpack physical parameters and SBP operator `D1`
     g = gravity_constant(equations)
-    (; D1, h, b, v_x) = cache
+    (; D1, h, b, v_x, tmp) = cache
 
     # `q_global` is an `ArrayPartition`. It collects the individual arrays for
     # the total water height `eta = h + b` and the velocity `v`.
     eta, v, D = q_global.x
     @.. b = equations.eta0 - D
     @.. h = eta - b
-
-    N = length(v)
-    e = zeros(eltype(q_global), N)
 
     # 1/2 g eta^2 + 1/2 h v^2 + 1/6 h^3 w^2
     # and + 1/8 h (v b_x)^2 for full bathymetry without mild-slope approximation
@@ -859,10 +856,10 @@ function energy_total_modified(q_global,
         end
     end
 
-    @.. e = 1 / 2 * g * eta^2 + 1 / 2 * h * v^2 + 1 / 6 * h * (-h * v_x + 1.5 * v * b_x)^2
+    @.. tmp = 1 / 2 * g * eta^2 + 1 / 2 * h * v^2 + 1 / 6 * h * (-h * v_x + 1.5 * v * b_x)^2
     if equations.bathymetry_type isa BathymetryVariable
-        @.. e += 1 / 8 * h * (v * b_x)^2
+        @.. tmp += 1 / 8 * h * (v * b_x)^2
     end
 
-    return e
+    return tmp
 end
