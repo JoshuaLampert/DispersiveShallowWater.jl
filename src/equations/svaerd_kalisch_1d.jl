@@ -310,7 +310,7 @@ function rhs!(dq, q, t, mesh, equations::SvaerdKalischEquations1D,
     @trixi_timeit timer() "assemble system matrix" begin
         system_matrix = assemble_system_matrix!(cache, h, D1, D1_central, equations)
     end
-    @trixi_timeit timer() "dv elliptic" begin
+    @trixi_timeit timer() "solving elliptic system" begin
         solve_system_matrix!(dv, system_matrix, dv,
                              equations, D1, cache)
     end

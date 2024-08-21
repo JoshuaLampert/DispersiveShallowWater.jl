@@ -395,7 +395,7 @@ function rhs_sgn_central!(dq, q, equations, source_terms, cache, ::BathymetryFla
     @trixi_timeit timer() "hyperbolic terms" begin
         # Compute all derivatives required below
         (; h, b, h_x, v_x, h2_x, hv_x, v2_x, h2_v_vx_x,
-        h_vx_x, p_x, tmp, M_h, M_h3_3) = cache
+        h_vx_x, p_x, tmp) = cache
 
         @.. b = equations.eta0 - D
         @.. h = eta - b
@@ -477,8 +477,7 @@ function rhs_sgn_upwind!(dq, q, equations, source_terms, cache, ::BathymetryFlat
     @trixi_timeit timer() "hyperbolic terms" begin
         # Compute all derivatives required below
         (; h, b, h_x, v_x, v_x_upwind, h2_x, hv_x, v2_x,
-        h2_v_vx_x, h_vx_x, p_x, tmp,
-        M_h, M_h3_3) = cache
+        h2_v_vx_x, h_vx_x, p_x, tmp) = cache
 
         @.. b = equations.eta0 - D
         @.. h = eta - b
@@ -670,8 +669,7 @@ function rhs_sgn_upwind!(dq, q, equations, source_terms, cache,
     @trixi_timeit timer() "hyperbolic terms" begin
         # Compute all derivatives required below
         (; h, h_x, v_x, v_x_upwind, h_hpb_x, b, b_x, hv_x, v2_x,
-        h2_v_vx_x, h_vx_x, p_h, p_0, p_x, tmp,
-        M_h_p_h_bx2, M_h3_3, M_h2_bx) = cache
+        h2_v_vx_x, h_vx_x, p_h, p_0, p_x, tmp) = cache
         if equations.bathymetry_type isa BathymetryVariable
             (; psi) = cache
         end
@@ -784,11 +782,11 @@ end
     return SVector(eta, v, D)
 end
 
-@inline function waterheight_total(q, equations::AbstractSerreGreenNaghdiEquations1D)
+@inline function waterheight_total(q, ::AbstractSerreGreenNaghdiEquations1D)
     return q[1]
 end
 
-@inline function velocity(q, equations::AbstractSerreGreenNaghdiEquations1D)
+@inline function velocity(q, ::AbstractSerreGreenNaghdiEquations1D)
     return q[2]
 end
 
@@ -833,11 +831,9 @@ function energy_total_modified(q_global,
 
     # `q_global` is an `ArrayPartition`. It collects the individual arrays for
     # the total water height `eta = h + b` and the velocity `v`.
-    eta, v = q_global.x
-    let D = q_global.x[3]
-        @.. b = equations.eta0 - D
-        @.. h = eta - b
-    end
+    eta, v, D = q_global.x
+    @.. b = equations.eta0 - D
+    @.. h = eta - b
 
     N = length(v)
     e = zeros(eltype(q_global), N)
