@@ -1,8 +1,7 @@
 @doc raw"""
-    SvaerdKalischEquations1D(; gravity_constant, eta0 = 0.0,
-                               alpha = 0.0,
-                               beta = 0.2308939393939394,
-                               gamma = 0.04034343434343434)
+    SvaerdKalischEquations1D(bathymetry_type = bathymetry_variable;
+                             gravity_constant, eta0 = 0.0, alpha = 0.0,
+                             beta = 0.2308939393939394, gamma = 0.04034343434343434)
 
 Dispersive system by Svärd and Kalisch in one spatial dimension with spatially varying bathymetry. The equations are given in conservative variables by
 ```math
@@ -26,8 +25,13 @@ The gravitational constant is denoted by `g` and the bottom topography (bathymet
 `SvärdKalischEquations1D` is an alias for `SvaerdKalischEquations1D`.
 
 The equations by Svärd and Kalisch are presented and analyzed in Svärd and Kalisch (2023).
-The semidiscretization implemented here conserves the mass and the energy, is well-balanced for the lake-at-rest state,
-and is developed in Lampert and Ranocha (2024).
+The semidiscretization implemented here conserves
+# - the total water (integral of h) as a linear invariant
+# - the total momentum (integral of h v) as a nonlinear invariant for flat bathymetry
+# - the total modified energy
+
+for periodic boundary conditions (see Lampert, Ranocha).
+Additionally, it is well-balanced for the lake-at-rest stationary solution, see Lampert and Ranocha (2024).
 
 - Magnus Svärd, Henrik Kalisch (2023)
   A novel energy-bounded Boussinesq model and a well-balanced and stable numerical discretization
@@ -36,7 +40,9 @@ and is developed in Lampert and Ranocha (2024).
   Structure-Preserving Numerical Methods for Two Nonlinear Systems of Dispersive Wave Equations
   [DOI: 10.48550/arXiv.2402.16669](https://doi.org/10.48550/arXiv.2402.16669)
 """
-struct SvaerdKalischEquations1D{RealT <: Real} <: AbstractSvaerdKalischEquations{1, 3}
+struct SvaerdKalischEquations1D{Bathymetry <: AbstractBathymetry, RealT <: Real} <:
+       AbstractSvaerdKalischEquations{1, 3}
+    bathymetry_type::Bathymetry # type of bathymetry
     gravity::RealT # gravitational constant
     eta0::RealT    # constant still-water surface
     alpha::RealT   # coefficient
@@ -46,9 +52,10 @@ end
 
 const SvärdKalischEquations1D = SvaerdKalischEquations1D
 
-function SvaerdKalischEquations1D(; gravity_constant, eta0 = 0.0, alpha = 0.0,
+function SvaerdKalischEquations1D(bathymetry_type = bathymetry_variable;
+                                  gravity_constant, eta0 = 0.0, alpha = 0.0,
                                   beta = 0.2308939393939394, gamma = 0.04034343434343434)
-    SvaerdKalischEquations1D(gravity_constant, eta0, alpha, beta, gamma)
+    SvaerdKalischEquations1D(bathymetry_type, gravity_constant, eta0, alpha, beta, gamma)
 end
 
 varnames(::typeof(prim2prim), ::SvaerdKalischEquations1D) = ("η", "v", "D")
@@ -70,16 +77,17 @@ References:
   [link](https://repository.tudelft.nl/islandora/object/uuid:c2091d53-f455-48af-a84b-ac86680455e9/datastream/OBJ/download)
 """
 function initial_condition_dingemans(x, t, equations::SvaerdKalischEquations1D, mesh)
+    g = gravity_constant(equations)
     h0 = 0.8
     A = 0.02
     # omega = 2*pi/(2.02*sqrt(2))
-    k = 0.8406220896381442 # precomputed result of find_zero(k -> omega^2 - equations.gravity * k * tanh(k * h0), 1.0) using Roots.jl
+    k = 0.8406220896381442 # precomputed result of find_zero(k -> omega^2 - g * k * tanh(k * h0), 1.0) using Roots.jl
     if x < -30.5 * pi / k || x > -8.5 * pi / k
         h = 0.0
     else
         h = A * cos(k * x)
     end
-    v = sqrt(equations.gravity / k * tanh(k * h0)) * h / h0
+    v = sqrt(g / k * tanh(k * h0)) * h / h0
     if 11.01 <= x && x < 23.04
         b = 0.6 * (x - 11.01) / (23.04 - 11.01)
     elseif 23.04 <= x && x < 27.04
@@ -115,8 +123,8 @@ end
 A smooth manufactured solution in combination with [`initial_condition_manufactured`](@ref).
 """
 function source_terms_manufactured(q, x, t, equations::SvaerdKalischEquations1D)
-    g = equations.gravity
-    eta0 = equations.eta0
+    g = gravity_constant(equations)
+    eta0 = still_water_surface(q, equations)
     alpha = equations.alpha
     beta = equations.beta
     gamma = equations.gamma
@@ -174,83 +182,106 @@ function create_cache(mesh, equations::SvaerdKalischEquations1D,
                       solver, initial_condition,
                       ::BoundaryConditionPeriodic,
                       RealT, uEltype)
+    D1 = solver.D1
     #  Assume D is independent of time and compute D evaluated at mesh points once.
     D = Array{RealT}(undef, nnodes(mesh))
     x = grid(solver)
     for i in eachnode(solver)
         D[i] = still_waterdepth(initial_condition(x[i], 0.0, equations, mesh), equations)
     end
-    h = Array{RealT}(undef, nnodes(mesh))
+    g = gravity_constant(equations)
+    h = ones(RealT, nnodes(mesh))
     hv = similar(h)
-    alpha_hat = sqrt.(equations.alpha * sqrt.(equations.gravity * D) .* D .^ 2)
+    alpha_hat = sqrt.(equations.alpha * sqrt.(g * D) .* D .^ 2)
     beta_hat = equations.beta * D .^ 3
-    gamma_hat = equations.gamma * sqrt.(equations.gravity * D) .* D .^ 3
+    gamma_hat = equations.gamma * sqrt.(g * D) .* D .^ 3
     tmp2 = similar(h)
-    M = mass_matrix(solver.D1)
-    if solver.D1 isa PeriodicDerivativeOperator ||
-       solver.D1 isa UniformPeriodicCoupledOperator
-        D1_central = solver.D1
-        sparse_D1 = sparse(D1_central)
-        # We use the periodic SBP property
-        #   M * sparse_D1 == -sparse_D1' * M
-        # to avoid possible floating point errors in the symmetry of the matrix.
-        minus_MD1betaD1 = sparse_D1' * M * Diagonal(beta_hat) * sparse_D1
-    elseif solver.D1 isa PeriodicUpwindOperators
-        D1_central = solver.D1.central
-        # We use the periodic upwind SBP property
-        #   M * sparse_D1plus == -sparse_D1minus' * M
-        # to avoid possible floating point errors in the symmetry of the matrix.
-        sparse_D1minus = sparse(solver.D1.minus)
-        minus_MD1betaD1 = sparse_D1minus' * M * Diagonal(beta_hat) * sparse_D1minus
+    M = mass_matrix(D1)
+    M_h = zero(h)
+    M_beta = scale_by_mass_matrix!(beta_hat, D1)
+    if D1 isa PeriodicDerivativeOperator ||
+       D1 isa UniformPeriodicCoupledOperator
+        D1_central = D1
+        D1mat = sparse(D1_central)
+        minus_MD1betaD1 = D1mat' * Diagonal(M_beta) * D1mat
+        system_matrix = let cache = (; M_h, minus_MD1betaD1)
+            assemble_system_matrix!(cache, h,
+                                    D1, D1mat, equations)
+        end
+    elseif D1 isa PeriodicUpwindOperators
+        D1_central = D1.central
+        D1mat_minus = sparse(D1.minus)
+        minus_MD1betaD1 = D1mat_minus' * Diagonal(M_beta) * D1mat_minus
+        system_matrix = let cache = (; M_h, minus_MD1betaD1)
+            assemble_system_matrix!(cache, h,
+                                    D1, D1mat_minus, equations)
+        end
     else
-        @error "unknown type of first-derivative operator: $(typeof(solver.D1))"
+        @error "unknown type of first-derivative operator: $(typeof(D1))"
     end
-    factorization = cholesky(Symmetric(M * Diagonal(ones(nnodes(mesh))) + minus_MD1betaD1))
-    return (factorization = factorization, minus_MD1betaD1 = minus_MD1betaD1, D = D, h = h,
+    factorization = cholesky(system_matrix)
+    return (; factorization = factorization, minus_MD1betaD1 = minus_MD1betaD1, D = D,
+            h = h,
             hv = hv, alpha_hat = alpha_hat, gamma_hat = gamma_hat,
-            tmp2 = tmp2, D1_central = D1_central, M = M, D1 = solver.D1)
+            tmp2 = tmp2, D1_central = D1_central, M = M, D1 = D1, M_h = M_h)
 end
 
-# Discretization that conserves the mass (for eta and for flat bottom hv) and the energy for periodic boundary conditions, see
+function assemble_system_matrix!(cache, h, D1, D1mat,
+                                 equations::SvaerdKalischEquations1D)
+    (; M_h, minus_MD1betaD1) = cache
+
+    @.. M_h = h
+    scale_by_mass_matrix!(M_h, D1)
+
+    # Floating point errors accumulate a bit and the system matrix
+    # is not necessarily perfectly symmetric but only up to
+    # round-off errors. We wrap it here to avoid issues with the
+    # factorization.
+    return Symmetric(Diagonal(M_h) + minus_MD1betaD1)
+end
+
+# Discretization that conserves
+# - the total water (integral of h) as a linear invariant
+# - the total momentum (integral of h v) as a nonlinear invariant for flat bathymetry
+# - the total modified energy
+# for periodic boundary conditions, see
 # - Joshua Lampert and Hendrik Ranocha (2024)
 #   Structure-Preserving Numerical Methods for Two Nonlinear Systems of Dispersive Wave Equations
 #   [DOI: 10.48550/arXiv.2402.16669](https://doi.org/10.48550/arXiv.2402.16669)
 function rhs!(dq, q, t, mesh, equations::SvaerdKalischEquations1D,
               initial_condition, ::BoundaryConditionPeriodic, source_terms,
               solver, cache)
-    @unpack factorization, minus_MD1betaD1, D, h, hv, alpha_hat, gamma_hat, tmp1, tmp2, D1_central, M = cache
+    @unpack D, h, hv, alpha_hat, gamma_hat, tmp1, tmp2, D1_central, M, D1 = cache
 
-    eta = q.x[1]
-    v = q.x[2]
-    deta = dq.x[1]
-    dv = dq.x[2]
-    dD = dq.x[3]
+    g = gravity_constant(equations)
+    eta, v = q.x
+    deta, dv, dD = dq.x
     fill!(dD, zero(eltype(dD)))
 
     @trixi_timeit timer() "deta hyperbolic" begin
         @. h = eta + D - equations.eta0
         @. hv = h * v
 
-        if solver.D1 isa PeriodicDerivativeOperator ||
-           solver.D1 isa UniformPeriodicCoupledOperator
+        if D1 isa PeriodicDerivativeOperator ||
+           D1 isa UniformPeriodicCoupledOperator
             D1eta = D1_central * eta
             D1v = D1_central * v
             tmp1 = alpha_hat .* (D1_central * (alpha_hat .* D1eta))
             vD1y = v .* (D1_central * tmp1)
             D1vy = D1_central * (v .* tmp1)
             yD1v = tmp1 .* D1v
-            @. tmp2 = tmp1 - hv
+            @.. tmp2 = tmp1 - hv
             mul!(deta, D1_central, tmp2)
-        elseif solver.D1 isa PeriodicUpwindOperators
+        elseif D1 isa PeriodicUpwindOperators
             D1eta = D1_central * eta
             D1v = D1_central * v
-            tmp1 = alpha_hat .* (solver.D1.minus * (alpha_hat .* (solver.D1.plus * eta)))
-            vD1y = v .* (solver.D1.minus * tmp1)
-            D1vy = solver.D1.minus * (v .* tmp1)
-            yD1v = tmp1 .* (solver.D1.plus * v)
-            deta[:] = solver.D1.minus * tmp1 - D1_central * hv
+            tmp1 = alpha_hat .* (D1.minus * (alpha_hat .* (D1.plus * eta)))
+            vD1y = v .* (D1.minus * tmp1)
+            D1vy = D1.minus * (v .* tmp1)
+            yD1v = tmp1 .* (D1.plus * v)
+            deta[:] = D1.minus * tmp1 - D1_central * hv
         else
-            @error "unknown type of first derivative operator: $(typeof(solver.D1))"
+            @error "unknown type of first derivative operator: $(typeof(D1))"
         end
     end
 
@@ -260,36 +291,28 @@ function rhs!(dq, q, t, mesh, equations::SvaerdKalischEquations1D,
         D1_hv2 = D1_central * (hv .* v)
         D1_gamma_hat_D2_v = D1_central * (gamma_hat .* (solver.D2 * v))
         D2_gamma_hat_D1_v = solver.D2 * (gamma_hat .* D1v)
-        @. dv = -(0.5 * (D1_hv2 + hv * D1v - v * D1_hv) +
-                  equations.gravity * h * D1eta +
-                  0.5 * (vD1y - D1vy - yD1v) -
-                  0.5 * D1_gamma_hat_D2_v -
-                  0.5 * D2_gamma_hat_D1_v)
+        @.. dv = -(0.5 * (D1_hv2 + hv * D1v - v * D1_hv) +
+                   g * h * D1eta +
+                   0.5 * (vD1y - D1vy - yD1v) -
+                   0.5 * D1_gamma_hat_D2_v -
+                   0.5 * D2_gamma_hat_D1_v)
     end
 
     # no split form
     #     dv[:] = -(D1_central * (hv .* v) - v .* (D1_central * hv)+
-    #               equations.gravity * h .* D1eta +
+    #               g * h .* D1eta +
     #               vD1y - D1vy -
     #               0.5 * D1_central * (gamma_hat .* (solver.D2 * v)) -
     #               0.5 * solver.D2 * (gamma_hat .* D1v))
 
     @trixi_timeit timer() "source terms" calc_sources!(dq, q, t, source_terms, equations,
                                                        solver)
+    @trixi_timeit timer() "assemble system matrix" begin
+        system_matrix = assemble_system_matrix!(cache, h, D1, D1_central, equations)
+    end
     @trixi_timeit timer() "dv elliptic" begin
-        # decompose M * (h - D1betaD1) because it is guaranteed to be symmetric and pos. def.,
-        # while (h - D1betaD1) is not necessarily
-        hmD1betaD1 = Symmetric(M * Diagonal(h) + minus_MD1betaD1)
-        # If the time integration method takes a too large step, h become become negative
-        # letting the factorization fail. In this case the solution is set to `NaN` to force
-        # rejecting the step
-        cholesky!(factorization, hmD1betaD1, check = false)
-        if issuccess(factorization)
-            mul!(tmp1, M, dv)
-            dv[:] = factorization \ tmp1
-        else
-            fill!(dv, NaN)
-        end
+        solve_system_matrix!(dv, system_matrix, dv,
+                             equations, D1, cache)
     end
 
     return nothing
@@ -328,20 +351,23 @@ end
 
 @inline entropy(u, equations::SvaerdKalischEquations1D) = energy_total(u, equations)
 
-# The modified entropy/total energy takes the whole `q` for every point in space
+# The modified entropy/energy takes the whole `q` for every point in space
 """
     energy_total_modified(q_global, equations::SvaerdKalischEquations1D, cache)
 
 Return the modified total energy of the primitive variables `q_global` for the
 [`SvaerdKalischEquations1D`](@ref). It contains an additional term containing a
-derivative compared to the usual [`energy_total`](@ref). The `energy_total_modified`
-is a conserved quantity of the Svärd-Kalisch equations given by
+derivative compared to the usual [`energy_total`](@ref) modeling
+non-hydrostatic contributions. The `energy_total_modified`
+is a conserved quantity (for periodic boundary conditions).
+
+It is given by
 ```math
 \\frac{1}{2} g h^2 + \\frac{1}{2} h v^2 + \\frac{1}{2} \\hat\\beta v_x^2.
 ```
 
 `q_global` is a vector of the primitive variables at ALL nodes.
-`cache` needs to hold the first-derivative SBP operator `D1`.
+`cache` needs to hold the SBP operators used by the `solver`.
 """
 @inline function energy_total_modified(q_global, equations::SvaerdKalischEquations1D, cache)
     # Need to compute new beta_hat, do not use the old one from the `cache`

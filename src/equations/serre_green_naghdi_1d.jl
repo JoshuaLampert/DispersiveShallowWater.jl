@@ -43,7 +43,7 @@ approximation, the Serre-Green-Naghdi equations are
     + \frac{1}{2} g (h^2)_x + g h b_x + \frac{1}{2} h (v^2)_x
     + p_x + \frac{3}{2} \frac{p}{h} b_x + \psi b_x &= 0,\\
   p &= \frac{1}{3} h^3 v_{x}^2 - \frac{1}{3} h^3 v v_{xx}
-    + \frac{1}{2} h^2 v (b_x v)_x,
+    + \frac{1}{2} h^2 v (b_x v)_x,\\
   \psi &= \frac{1}{4} h v (b_x v)_x.
 \end{aligned}
 ```
@@ -353,28 +353,6 @@ function assemble_system_matrix!(cache, h, b_x, D1, D1mat,
                                Diagonal(M_h2_bx))
                      -
                      Diagonal(M_h2_bx) * D1mat)
-end
-
-function solve_system_matrix!(dv, system_matrix, rhs,
-                              ::SerreGreenNaghdiEquations1D,
-                              D1, cache)
-    if issparse(system_matrix)
-        (; factorization) = cache
-        cholesky!(factorization, system_matrix; check = false)
-        if issuccess(factorization)
-            scale_by_mass_matrix!(rhs, D1)
-            dv .= factorization \ rhs
-        else
-            # The factorization may fail if the time step is too large
-            # and h becomes negative.
-            fill!(dv, NaN)
-        end
-    else
-        factorization = cholesky!(system_matrix)
-        scale_by_mass_matrix!(rhs, D1)
-        ldiv!(dv, factorization, rhs)
-    end
-    return nothing
 end
 
 # Discretization that conserves
@@ -819,7 +797,7 @@ end
     return equations.eta0 - D
 end
 
-# The entropy/energy takes the whole `q` for every point in space
+# The modified entropy/energy takes the whole `q` for every point in space
 """
     energy_total_modified(q_global, equations::SerreGreenNaghdiEquations1D, cache)
 

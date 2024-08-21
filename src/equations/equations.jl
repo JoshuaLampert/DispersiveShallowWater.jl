@@ -189,7 +189,7 @@ of the correct length `nvariables(equations)`.
 function bathymetry end
 
 """
-        lake_at_rest_error(q, equations::AbstractShallowWaterEquations)
+    lake_at_rest_error(q, equations::AbstractShallowWaterEquations)
 
 Calculate the error for the "lake-at-rest" test case where the
 [`waterheight_total`](@ref) ``\\eta = h + b`` should
@@ -448,3 +448,26 @@ abstract type AbstractSerreGreenNaghdiEquations{NDIMS, NVARS} <:
 const AbstractSerreGreenNaghdiEquations1D = AbstractSerreGreenNaghdiEquations{1}
 include("serre_green_naghdi_1d.jl")
 include("hyperbolic_serre_green_naghdi_1d.jl")
+
+function solve_system_matrix!(dv, system_matrix, rhs,
+                              ::Union{SvaerdKalischEquations1D,
+                                      SerreGreenNaghdiEquations1D},
+                              D1, cache)
+    if issparse(system_matrix)
+        (; factorization) = cache
+        cholesky!(factorization, system_matrix; check = false)
+        if issuccess(factorization)
+            scale_by_mass_matrix!(rhs, D1)
+            dv .= factorization \ rhs
+        else
+            # The factorization may fail if the time step is too large
+            # and h becomes negative.
+            fill!(dv, NaN)
+        end
+    else
+        factorization = cholesky!(system_matrix)
+        scale_by_mass_matrix!(rhs, D1)
+        ldiv!(dv, factorization, rhs)
+    end
+    return nothing
+end
