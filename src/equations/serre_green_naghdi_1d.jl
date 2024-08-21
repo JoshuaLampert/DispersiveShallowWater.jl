@@ -561,8 +561,7 @@ function rhs_sgn_central!(dq, q, equations, source_terms, cache,
     @trixi_timeit timer() "hyperbolic terms" begin
         # Compute all derivatives required below
         (; h, h_x, v_x, h_hpb_x, b, b_x, hv_x, v2_x,
-        h2_v_vx_x, h_vx_x, p_h, p_x, tmp,
-        M_h_p_h_bx2, M_h3_3, M_h2_bx) = cache
+        h2_v_vx_x, h_vx_x, p_h, p_x, tmp) = cache
         if equations.bathymetry_type isa BathymetryVariable
             (; psi) = cache
         end

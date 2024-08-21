@@ -274,7 +274,9 @@ end
 function rhs!(dq, q, t, mesh, equations::SvaerdKalischEquations1D,
               initial_condition, ::BoundaryConditionPeriodic, source_terms,
               solver, cache)
-    @unpack D, h, hv, b, eta_x, v_x, alpha_eta_x_x, y_x, v_y_x, yv_x, vy, vy_x, y_v_x, h_v_x, hv2_x, v_xx, gamma_v_xx_x, gamma_v_x_xx, alpha_hat, gamma_hat, tmp1, tmp2, D1_central, M, D1 = cache
+    (; D, h, hv, b, eta_x, v_x, alpha_eta_x_x, y_x, v_y_x, yv_x, vy, vy_x,
+    y_v_x, h_v_x, hv2_x, v_xx, gamma_v_xx_x, gamma_v_x_xx, alpha_hat, gamma_hat,
+    tmp1, tmp2, D1_central, M, D1) = cache
 
     g = gravity_constant(equations)
     eta, v = q.x
