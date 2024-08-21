@@ -310,7 +310,7 @@ function create_cache(mesh,
 end
 
 function assemble_system_matrix!(cache, h, D1, D1mat,
-                                 equations::SerreGreenNaghdiEquations1D{BathymetryFlat})
+                                 ::SerreGreenNaghdiEquations1D{BathymetryFlat})
     (; M_h, M_h3_3) = cache
 
     @.. M_h = h

@@ -274,13 +274,14 @@ terms are present.
 function energy_total_modified(q_global, equations::AbstractShallowWaterEquations, cache)
     # `q_global` is an `ArrayPartition` of the primitive variables at all nodes
     @assert nvariables(equations) == length(q_global.x)
+    # tmp1 is always in the cache
+    @unpack tmp1 = cache
 
-    e = similar(q_global.x[begin])
     for i in eachindex(q_global.x[begin])
-        e[i] = energy_total(get_node_vars(q_global, equations, i), equations)
+        tmp1[i] = energy_total(get_node_vars(q_global, equations, i), equations)
     end
 
-    return e
+    return tmp1
 end
 
 varnames(::typeof(energy_total_modified), equations) = ("e_modified",)
@@ -458,6 +459,7 @@ function solve_system_matrix!(dv, system_matrix, rhs,
         cholesky!(factorization, system_matrix; check = false)
         if issuccess(factorization)
             scale_by_mass_matrix!(rhs, D1)
+            # see https://github.com/JoshuaLampert/DispersiveShallowWater.jl/issues/122
             dv .= factorization \ rhs
         else
             # The factorization may fail if the time step is too large
