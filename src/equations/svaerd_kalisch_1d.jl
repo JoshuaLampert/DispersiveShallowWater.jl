@@ -237,8 +237,9 @@ function create_cache(mesh, equations::SvaerdKalischEquations1D,
     end
     factorization = cholesky(system_matrix)
     cache = (; factorization, minus_MD1betaD1, D, h, hv, b, eta_x, v_x,
-    alpha_eta_x_x, y_x, v_y_x, yv_x, vy, vy_x, y_v_x, h_v_x, hv2_x, v_xx, gamma_v_xx_x, gamma_v_x_xx,
-    alpha_hat, beta_hat, gamma_hat, tmp2, D1_central, M, D1, M_h)
+             alpha_eta_x_x, y_x, v_y_x, yv_x, vy, vy_x, y_v_x, h_v_x, hv2_x, v_xx,
+             gamma_v_xx_x, gamma_v_x_xx,
+             alpha_hat, beta_hat, gamma_hat, tmp2, D1_central, M, D1, M_h)
     if D1 isa PeriodicUpwindOperators
         eta_x_upwind = zero(h)
         v_x_upwind = zero(h)
