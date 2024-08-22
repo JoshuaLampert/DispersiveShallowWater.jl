@@ -143,8 +143,7 @@ using SparseArrays: sparse, SparseMatrixCSC
             _, _, _, cache = @inferred DispersiveShallowWater.mesh_equations_solver_cache(semi)
             e_modified = @inferred energy_total_modified(q, equations, cache)
             e_modified_total = @inferred DispersiveShallowWater.integrate(e_modified, semi)
-            e_total = @inferred DispersiveShallowWater.integrate_quantity(q -> energy_total(q,
-                                                                                            equations),
+            e_total = @inferred DispersiveShallowWater.integrate_quantity(energy_total,
                                                                           q, semi)
             @test isapprox(e_modified_total, e_total)
         end
@@ -194,8 +193,7 @@ using SparseArrays: sparse, SparseMatrixCSC
             _, _, _, cache = @inferred DispersiveShallowWater.mesh_equations_solver_cache(semi)
             e_modified = @inferred energy_total_modified(q, equations, cache)
             e_modified_total = @inferred DispersiveShallowWater.integrate(e_modified, semi)
-            e_total = @inferred DispersiveShallowWater.integrate_quantity(q -> energy_total(q,
-                                                                                            equations),
+            e_total = @inferred DispersiveShallowWater.integrate_quantity(energy_total,
                                                                           q, semi)
             @test isapprox(e_modified_total, e_total)
         end

@@ -298,7 +298,7 @@ function analyze_integrals!(io, current_integrals, i, analysis_integrals::NTuple
     quantity = first(analysis_integrals)
     remaining_quantities = Base.tail(analysis_integrals)
 
-    res = analyze(quantity, q, t, semi)
+    res = analyze!(semi, quantity, q, t)
     current_integrals[i] = res
     @printf(io, " %-12s:", pretty_form_utf(quantity))
     @printf(io, "  % 10.8e", res)
@@ -326,16 +326,7 @@ function (cb::DiscreteCallback{Condition, Affect!})(sol) where {Condition,
     return (; l2 = l2_error, linf = linf_error)
 end
 
-function analyze(quantity, q, t, semi::Semidiscretization)
-    integrate_quantity(q -> quantity(q, semi.equations), q, semi)
-end
-
-# The modified entropy/energy of the Svärd-Kalisch and
-# Serre-Green-Naghdi equations
-# takes the whole `q` for every point in space since it requires
-# the derivative of the velocity `v_x`.
-function analyze(quantity::Union{typeof(energy_total_modified), typeof(entropy_modified)},
-                 q, t, semi::Semidiscretization)
+function analyze!(semi::Semidiscretization, quantity, q, t)
     integrate_quantity!(semi.cache.tmp1, quantity, q, semi)
 end
 
