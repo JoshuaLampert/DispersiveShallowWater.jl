@@ -26,9 +26,9 @@ The gravitational constant is denoted by `g` and the bottom topography (bathymet
 
 The equations by Svärd and Kalisch are presented and analyzed in Svärd and Kalisch (2023).
 The semidiscretization implemented here conserves
-# - the total water (integral of h) as a linear invariant
-# - the total momentum (integral of h v) as a nonlinear invariant for flat bathymetry
-# - the total modified energy
+- the total water (integral of ``h``) as a linear invariant
+- the total momentum (integral of ``h v``) as a nonlinear invariant for flat bathymetry
+- the total modified energy
 
 for periodic boundary conditions (see Lampert, Ranocha).
 Additionally, it is well-balanced for the lake-at-rest stationary solution, see Lampert and Ranocha (2024).
