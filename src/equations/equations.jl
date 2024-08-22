@@ -272,16 +272,19 @@ contributions.
 terms are present.
 """
 function energy_total_modified(q_global, equations::AbstractShallowWaterEquations, cache)
+    e = similar(q_global.x[begin])
+    return energy_total_modified!(e, q_global, equations, cache)
+end
+
+function energy_total_modified!(e, q_global, equations::AbstractShallowWaterEquations, cache)
     # `q_global` is an `ArrayPartition` of the primitive variables at all nodes
     @assert nvariables(equations) == length(q_global.x)
-    # tmp1 is always in the cache
-    @unpack tmp1 = cache
 
     for i in eachindex(q_global.x[begin])
-        tmp1[i] = energy_total(get_node_vars(q_global, equations, i), equations)
+        e[i] = energy_total(get_node_vars(q_global, equations, i), equations)
     end
 
-    return tmp1
+    return e
 end
 
 varnames(::typeof(energy_total_modified), equations) = ("e_modified",)
@@ -294,6 +297,8 @@ Alias for [`energy_total_modified`](@ref).
 @inline function entropy_modified(q_global, equations::AbstractShallowWaterEquations, cache)
     energy_total_modified(q_global, equations, cache)
 end
+
+@inline entropy_modified!(e, q_global, equations, cache) = energy_total_modified!(e, q_global, equations, cache)
 
 varnames(::typeof(entropy_modified), equations) = ("U_modified",)
 

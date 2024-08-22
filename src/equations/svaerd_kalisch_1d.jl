@@ -417,10 +417,10 @@ It is given by
 `q_global` is a vector of the primitive variables at ALL nodes.
 `cache` needs to hold the SBP operators used by the `solver`.
 """
-@inline function energy_total_modified(q_global, equations::SvaerdKalischEquations1D, cache)
+@inline function energy_total_modified!(e, q_global, equations::SvaerdKalischEquations1D, cache)
     # unpack physical parameters and SBP operator `D1`
     g = gravity_constant(equations)
-    (; D1, h, b, v_x, beta_hat, tmp1) = cache
+    (; D1, h, b, v_x, beta_hat) = cache
 
     # `q_global` is an `ArrayPartition`. It collects the individual arrays for
     # the total water height `eta = h + b` and the velocity `v`.
@@ -434,6 +434,6 @@ It is given by
         mul!(v_x, D1, v)
     end
 
-    @.. tmp1 = 1 / 2 * g * eta^2 + 1 / 2 * h * v^2 + 1 / 2 * beta_hat * v_x^2
-    return tmp1
+    @.. e = 1 / 2 * g * eta^2 + 1 / 2 * h * v^2 + 1 / 2 * beta_hat * v_x^2
+    return e
 end

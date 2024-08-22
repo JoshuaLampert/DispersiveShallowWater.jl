@@ -147,18 +147,12 @@ end
 # The entropy/energy of the Svärd-Kalisch and Serre-Green-Naghdi equations
 # takes the whole `q` for every point in space since it requires
 # the derivative of the velocity `v_x`.
-function integrate_quantity(func::Union{typeof(energy_total_modified),
-                                        typeof(entropy_modified)}, q,
-                            semi::Semidiscretization)
-    quantity = func(q, semi.equations, semi.cache)
-    integrate(quantity, semi)
-end
-
 function integrate_quantity!(quantity,
                              func::Union{typeof(energy_total_modified),
                                          typeof(entropy_modified)}, q,
                              semi::Semidiscretization)
-    integrate_quantity(func, q, semi)
+    energy_total_modified!(quantity, q, semi.equations, semi.cache)
+    integrate(quantity, semi)
 end
 
 @inline function mesh_equations_solver(semi::Semidiscretization)

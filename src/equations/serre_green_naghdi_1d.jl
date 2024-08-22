@@ -821,12 +821,12 @@ For a [`bathymetry_variable`](@ref) the total modified energy has the additional
 `q_global` is a vector of the primitive variables at ALL nodes.
 `cache` needs to hold the SBP operators used by the `solver`.
 """
-function energy_total_modified(q_global,
+function energy_total_modified!(e, q_global,
                                equations::SerreGreenNaghdiEquations1D,
                                cache)
     # unpack physical parameters and SBP operator `D1`
     g = gravity_constant(equations)
-    (; D1, h, b, v_x, tmp) = cache
+    (; D1, h, b, v_x) = cache
 
     # `q_global` is an `ArrayPartition`. It collects the individual arrays for
     # the total water height `eta = h + b` and the velocity `v`.
@@ -855,10 +855,10 @@ function energy_total_modified(q_global,
         end
     end
 
-    @.. tmp = 1 / 2 * g * eta^2 + 1 / 2 * h * v^2 + 1 / 6 * h * (-h * v_x + 1.5 * v * b_x)^2
+    @.. e = 1 / 2 * g * eta^2 + 1 / 2 * h * v^2 + 1 / 6 * h * (-h * v_x + 1.5 * v * b_x)^2
     if equations.bathymetry_type isa BathymetryVariable
-        @.. tmp += 1 / 8 * h * (v * b_x)^2
+        @.. e += 1 / 8 * h * (v * b_x)^2
     end
 
-    return tmp
+    return e
 end

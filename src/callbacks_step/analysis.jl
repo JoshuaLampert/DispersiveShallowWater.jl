@@ -336,7 +336,7 @@ end
 # the derivative of the velocity `v_x`.
 function analyze(quantity::Union{typeof(energy_total_modified), typeof(entropy_modified)},
                  q, t, semi::Semidiscretization)
-    integrate_quantity(quantity, q, semi)
+    integrate_quantity!(semi.cache.tmp1, quantity, q, semi)
 end
 
 pretty_form_utf(::typeof(waterheight_total)) = "∫η"
