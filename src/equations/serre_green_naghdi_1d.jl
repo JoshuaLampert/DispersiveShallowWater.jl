@@ -57,8 +57,8 @@ References for the Serre-Green-Naghdi system can be found in
   [DOI: 10.1017/S0022112076002425](https://doi.org/10.1017/S0022112076002425)
 
 The semidiscretization implemented here conserves
-- the total water mass (integral of h) as a linear invariant
-- the total momentum (integral of h v) as a nonlinear invariant if the bathymetry is constant
+- the total water mass (integral of ``h``) as a linear invariant
+- the total momentum (integral of ``h v``) as a nonlinear invariant if the bathymetry is constant
 - the total modified energy
 
 for periodic boundary conditions (see Ranocha and Ricchiuto (2024)).
