@@ -417,7 +417,8 @@ It is given by
 `q_global` is a vector of the primitive variables at ALL nodes.
 `cache` needs to hold the SBP operators used by the `solver`.
 """
-@inline function energy_total_modified!(e, q_global, equations::SvaerdKalischEquations1D, cache)
+@inline function energy_total_modified!(e, q_global, equations::SvaerdKalischEquations1D,
+                                        cache)
     # unpack physical parameters and SBP operator `D1`
     g = gravity_constant(equations)
     (; D1, h, b, v_x, beta_hat) = cache
