@@ -296,7 +296,8 @@ varnames(::typeof(energy_total_modified), equations) = ("e_modified",)
 Alias for [`energy_total_modified`](@ref).
 """
 @inline function entropy_modified(q_global, equations::AbstractShallowWaterEquations, cache)
-    energy_total_modified(q_global, equations, cache)
+    e = similar(q_global.x[begin])
+    return entropy_modified!(e, q_global, equations, cache)
 end
 
 @inline entropy_modified!(e, q_global, equations, cache) = energy_total_modified!(e,
