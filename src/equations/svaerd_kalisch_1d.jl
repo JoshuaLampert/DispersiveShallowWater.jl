@@ -3,14 +3,17 @@
                              gravity_constant, eta0 = 0.0, alpha = 0.0,
                              beta = 0.2308939393939394, gamma = 0.04034343434343434)
 
-Dispersive system by Svärd and Kalisch in one spatial dimension with spatially varying bathymetry. The equations are given in conservative variables by
+Dispersive system by Svärd and Kalisch in one spatial dimension. The equations for variable bathymetry
+are given in conservative variables by
 ```math
 \begin{aligned}
   h_t + (hv)_x &= (\hat\alpha(\hat\alpha(h + b)_x)_x)_x,\\
   (hv)_t + (hv^2)_x + gh(h + b)_x &= (\hat\alpha v(\hat\alpha(h + b)_x)_x)_x + (\hat\beta v_x)_{xt} + \frac{1}{2}(\hat\gamma v_x)_{xx} + \frac{1}{2}(\hat\gamma v_{xx})_x,
 \end{aligned}
 ```
-where ``\hat\alpha^2 = \alpha\sqrt{gD}D^2``, ``\hat\beta = \beta D^3``, ``\hat\gamma = \gamma\sqrt{gD}D^3``. The coefficients ``\alpha``, ``\beta`` and ``\gamma`` are provided in dimensionless form and ``D = \eta_0 - b`` is the still-water depth and `eta0` is the still-water surface (lake-at-rest).
+where ``\hat\alpha^2 = \alpha\sqrt{gD}D^2``, ``\hat\beta = \beta D^3``, ``\hat\gamma = \gamma\sqrt{gD}D^3``.
+The coefficients ``\alpha``, ``\beta`` and ``\gamma`` are provided in dimensionless form and ``D = \eta_0 - b`` is the
+still-water depth and `eta0` is the still-water surface (lake-at-rest).
 The equations can be rewritten in primitive variables as
 ```math
 \begin{aligned}
@@ -19,8 +22,11 @@ The equations can be rewritten in primitive variables as
 \end{aligned}
 ```
 The unknown quantities of the Svärd-Kalisch equations are the total water height ``\eta`` and the velocity ``v``.
-The gravitational constant is denoted by `g` and the bottom topography (bathymetry) ``b = \eta_0 - D``. The water height above the bathymetry is therefore given by
+The gravitational constant is denoted by `g` and the bottom topography (bathymetry) ``b = \eta_0 - D``.
+The water height above the bathymetry is therefore given by
 ``h = \eta - \eta_0 + D``.
+
+Currently, the equations only support a general variable bathymetry, see [`bathymetry_variable`](@ref).
 
 `SvärdKalischEquations1D` is an alias for `SvaerdKalischEquations1D`.
 
