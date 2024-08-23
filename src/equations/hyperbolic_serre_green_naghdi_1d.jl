@@ -433,7 +433,7 @@ end
 
 # The entropy/energy takes the whole `q` for every point in space
 """
-    energy_total_modified!(q_global, equations::HyperbolicSerreGreenNaghdiEquations1D, cache)
+    DispersiveShallowWater.energy_total_modified!(e, q_global, equations::HyperbolicSerreGreenNaghdiEquations1D, cache)
 
 Return the modified total energy of the primitive variables `q_global` for the
 [`HyperbolicSerreGreenNaghdiEquations1D`](@ref).
@@ -449,6 +449,8 @@ the total modified energy is given by
 ```
 
 `q_global` is a vector of the primitive variables at ALL nodes.
+
+See also [`energy_total_modified`](@ref).
 """
 function energy_total_modified!(e, q_global,
                                 equations::HyperbolicSerreGreenNaghdiEquations1D,

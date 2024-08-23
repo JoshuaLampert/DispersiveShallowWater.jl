@@ -270,12 +270,20 @@ contributions.
 `q_global` is a vector of the primitive variables at ALL nodes.
 `cache` needs to hold the SBP operators used by the `solver` if non-hydrostatic
 terms are present.
+
+Internally, this function allocates a vector for the output and
+calls [`DispersiveShallowWater.energy_total_modified!`](@ref).
 """
 function energy_total_modified(q_global, equations::AbstractShallowWaterEquations, cache)
     e = similar(q_global.x[begin])
     return energy_total_modified!(e, q_global, equations, cache)
 end
 
+"""
+    energy_total_modified!(e, q_global, equations::AbstractShallowWaterEquations, cache)
+
+In-place version of [`energy_total_modified`](@ref).
+"""
 function energy_total_modified!(e, q_global, equations::AbstractShallowWaterEquations,
                                 cache)
     # `q_global` is an `ArrayPartition` of the primitive variables at all nodes
@@ -300,6 +308,11 @@ Alias for [`energy_total_modified`](@ref).
     return entropy_modified!(e, q_global, equations, cache)
 end
 
+"""
+    entropy_modified!(e, q_global, equations::AbstractShallowWaterEquations, cache)
+
+In-place version of [`entropy_modified`](@ref).
+"""
 @inline entropy_modified!(e, q_global, equations, cache) = energy_total_modified!(e,
                                                                                   q_global,
                                                                                   equations,

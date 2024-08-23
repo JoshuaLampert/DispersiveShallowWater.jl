@@ -796,7 +796,7 @@ end
 
 # The modified entropy/energy takes the whole `q` for every point in space
 """
-    energy_total_modified(q_global, equations::SerreGreenNaghdiEquations1D, cache)
+    DispersiveShallowWater.energy_total_modified!(q_global, equations::SerreGreenNaghdiEquations1D, cache)
 
 Return the modified total energy of the primitive variables `q_global` for the
 [`SerreGreenNaghdiEquations1D`](@ref).
@@ -820,6 +820,8 @@ For a [`bathymetry_variable`](@ref) the total modified energy has the additional
 
 `q_global` is a vector of the primitive variables at ALL nodes.
 `cache` needs to hold the SBP operators used by the `solver`.
+
+See also [`energy_total_modified`](@ref).
 """
 function energy_total_modified!(e, q_global,
                                 equations::SerreGreenNaghdiEquations1D,
