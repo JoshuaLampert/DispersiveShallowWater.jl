@@ -435,7 +435,7 @@ end
 """
     DispersiveShallowWater.energy_total_modified!(e, q_global, equations::HyperbolicSerreGreenNaghdiEquations1D, cache)
 
-Return the modified total energy of the primitive variables `q_global` for the
+Return the modified total energy `e` of the primitive variables `q_global` for the
 [`HyperbolicSerreGreenNaghdiEquations1D`](@ref).
 It contains additional terms compared to the usual [`energy_total`](@ref)
 modeling non-hydrostatic contributions. The `energy_total_modified`

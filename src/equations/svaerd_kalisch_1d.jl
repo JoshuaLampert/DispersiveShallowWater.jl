@@ -401,9 +401,9 @@ end
 
 # The modified entropy/energy takes the whole `q` for every point in space
 """
-    DispersiveShallowWater.energy_total_modified!(q_global, equations::SvaerdKalischEquations1D, cache)
+    DispersiveShallowWater.energy_total_modified!(e, q_global, equations::SvaerdKalischEquations1D, cache)
 
-Return the modified total energy of the primitive variables `q_global` for the
+Return the modified total energy `e` of the primitive variables `q_global` for the
 [`SvaerdKalischEquations1D`](@ref). It contains an additional term containing a
 derivative compared to the usual [`energy_total`](@ref) modeling
 non-hydrostatic contributions. The `energy_total_modified`
