@@ -144,6 +144,9 @@ function integrate_quantity!(quantity, func, q, semi::Semidiscretization)
     integrate(quantity, semi)
 end
 
+# Obtain the function, which has an additional `!` appended to the name
+inplace_version(f) = getfield(@__MODULE__, Symbol(string(nameof(f)) * "!"))
+
 # The entropy/energy of the Svärd-Kalisch and Serre-Green-Naghdi equations
 # takes the whole `q` for every point in space since it requires
 # the derivative of the velocity `v_x`.
@@ -151,7 +154,7 @@ function integrate_quantity!(quantity,
                              func::Union{typeof(energy_total_modified),
                                          typeof(entropy_modified)}, q,
                              semi::Semidiscretization)
-    energy_total_modified!(quantity, q, semi.equations, semi.cache)
+    inplace_version(func)(quantity, q, semi.equations, semi.cache)
     integrate(quantity, semi)
 end
 
