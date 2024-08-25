@@ -69,15 +69,7 @@ end
 
     function relaxation_functional(q, semi)
         @unpack tmp1 = semi.cache
-        # modified entropy from Svärd-Kalisch equations need to take the whole vector `q` for every point in space
-        if relaxation_callback.invariant isa
-           Union{typeof(energy_total_modified), typeof(entropy_modified)}
-            return integrate_quantity!(tmp1, relaxation_callback.invariant, q, semi)
-        else
-            return integrate_quantity!(tmp1,
-                                       q -> relaxation_callback.invariant(q, semi.equations),
-                                       q, semi)
-        end
+        return integrate_quantity!(tmp1, relaxation_callback.invariant, q, semi)
     end
 
     function convex_combination(gamma, old, new)

@@ -43,7 +43,7 @@ approximation, the Serre-Green-Naghdi equations are
     + \frac{1}{2} g (h^2)_x + g h b_x + \frac{1}{2} h (v^2)_x
     + p_x + \frac{3}{2} \frac{p}{h} b_x + \psi b_x &= 0,\\
   p &= \frac{1}{3} h^3 v_{x}^2 - \frac{1}{3} h^3 v v_{xx}
-    + \frac{1}{2} h^2 v (b_x v)_x,
+    + \frac{1}{2} h^2 v (b_x v)_x,\\
   \psi &= \frac{1}{4} h v (b_x v)_x.
 \end{aligned}
 ```
@@ -57,8 +57,8 @@ References for the Serre-Green-Naghdi system can be found in
   [DOI: 10.1017/S0022112076002425](https://doi.org/10.1017/S0022112076002425)
 
 The semidiscretization implemented here conserves
-- the total water mass (integral of h) as a linear invariant
-- the total momentum (integral of h v) as a nonlinear invariant if the bathymetry is constant
+- the total water mass (integral of ``h``) as a linear invariant
+- the total momentum (integral of ``h v``) as a nonlinear invariant if the bathymetry is constant
 - the total modified energy
 
 for periodic boundary conditions (see Ranocha and Ricchiuto (2024)).
@@ -310,7 +310,7 @@ function create_cache(mesh,
 end
 
 function assemble_system_matrix!(cache, h, D1, D1mat,
-                                 equations::SerreGreenNaghdiEquations1D{BathymetryFlat})
+                                 ::SerreGreenNaghdiEquations1D{BathymetryFlat})
     (; M_h, M_h3_3) = cache
 
     @.. M_h = h
@@ -355,28 +355,6 @@ function assemble_system_matrix!(cache, h, b_x, D1, D1mat,
                      Diagonal(M_h2_bx) * D1mat)
 end
 
-function solve_system_matrix!(dv, system_matrix, rhs,
-                              ::SerreGreenNaghdiEquations1D,
-                              D1, cache)
-    if issparse(system_matrix)
-        (; factorization) = cache
-        cholesky!(factorization, system_matrix; check = false)
-        if issuccess(factorization)
-            scale_by_mass_matrix!(rhs, D1)
-            dv .= factorization \ rhs
-        else
-            # The factorization may fail if the time step is too large
-            # and h becomes negative.
-            fill!(dv, NaN)
-        end
-    else
-        factorization = cholesky!(system_matrix)
-        scale_by_mass_matrix!(rhs, D1)
-        ldiv!(dv, factorization, rhs)
-    end
-    return nothing
-end
-
 # Discretization that conserves
 # - the total water mass (integral of h) as a linear invariant
 # - the total momentum (integral of h v) as a nonlinear invariant for flat bathymetry
@@ -417,7 +395,7 @@ function rhs_sgn_central!(dq, q, equations, source_terms, cache, ::BathymetryFla
     @trixi_timeit timer() "hyperbolic terms" begin
         # Compute all derivatives required below
         (; h, b, h_x, v_x, h2_x, hv_x, v2_x, h2_v_vx_x,
-        h_vx_x, p_x, tmp, M_h, M_h3_3) = cache
+        h_vx_x, p_x, tmp) = cache
 
         @.. b = equations.eta0 - D
         @.. h = eta - b
@@ -499,8 +477,7 @@ function rhs_sgn_upwind!(dq, q, equations, source_terms, cache, ::BathymetryFlat
     @trixi_timeit timer() "hyperbolic terms" begin
         # Compute all derivatives required below
         (; h, b, h_x, v_x, v_x_upwind, h2_x, hv_x, v2_x,
-        h2_v_vx_x, h_vx_x, p_x, tmp,
-        M_h, M_h3_3) = cache
+        h2_v_vx_x, h_vx_x, p_x, tmp) = cache
 
         @.. b = equations.eta0 - D
         @.. h = eta - b
@@ -584,8 +561,7 @@ function rhs_sgn_central!(dq, q, equations, source_terms, cache,
     @trixi_timeit timer() "hyperbolic terms" begin
         # Compute all derivatives required below
         (; h, h_x, v_x, h_hpb_x, b, b_x, hv_x, v2_x,
-        h2_v_vx_x, h_vx_x, p_h, p_x, tmp,
-        M_h_p_h_bx2, M_h3_3, M_h2_bx) = cache
+        h2_v_vx_x, h_vx_x, p_h, p_x, tmp) = cache
         if equations.bathymetry_type isa BathymetryVariable
             (; psi) = cache
         end
@@ -692,8 +668,7 @@ function rhs_sgn_upwind!(dq, q, equations, source_terms, cache,
     @trixi_timeit timer() "hyperbolic terms" begin
         # Compute all derivatives required below
         (; h, h_x, v_x, v_x_upwind, h_hpb_x, b, b_x, hv_x, v2_x,
-        h2_v_vx_x, h_vx_x, p_h, p_0, p_x, tmp,
-        M_h_p_h_bx2, M_h3_3, M_h2_bx) = cache
+        h2_v_vx_x, h_vx_x, p_h, p_0, p_x, tmp) = cache
         if equations.bathymetry_type isa BathymetryVariable
             (; psi) = cache
         end
@@ -806,11 +781,11 @@ end
     return SVector(eta, v, D)
 end
 
-@inline function waterheight_total(q, equations::AbstractSerreGreenNaghdiEquations1D)
+@inline function waterheight_total(q, ::AbstractSerreGreenNaghdiEquations1D)
     return q[1]
 end
 
-@inline function velocity(q, equations::AbstractSerreGreenNaghdiEquations1D)
+@inline function velocity(q, ::AbstractSerreGreenNaghdiEquations1D)
     return q[2]
 end
 
@@ -819,11 +794,11 @@ end
     return equations.eta0 - D
 end
 
-# The entropy/energy takes the whole `q` for every point in space
+# The modified entropy/energy takes the whole `q` for every point in space
 """
-    energy_total_modified(q_global, equations::SerreGreenNaghdiEquations1D, cache)
+    DispersiveShallowWater.energy_total_modified!(e, q_global, equations::SerreGreenNaghdiEquations1D, cache)
 
-Return the modified total energy of the primitive variables `q_global` for the
+Return the modified total energy `e` of the primitive variables `q_global` for the
 [`SerreGreenNaghdiEquations1D`](@ref).
 It contains an additional term containing a
 derivative compared to the usual [`energy_total`](@ref) modeling
@@ -845,24 +820,21 @@ For a [`bathymetry_variable`](@ref) the total modified energy has the additional
 
 `q_global` is a vector of the primitive variables at ALL nodes.
 `cache` needs to hold the SBP operators used by the `solver`.
+
+See also [`energy_total_modified`](@ref).
 """
-function energy_total_modified(q_global,
-                               equations::SerreGreenNaghdiEquations1D,
-                               cache)
+function energy_total_modified!(e, q_global,
+                                equations::SerreGreenNaghdiEquations1D,
+                                cache)
     # unpack physical parameters and SBP operator `D1`
     g = gravity_constant(equations)
     (; D1, h, b, v_x) = cache
 
     # `q_global` is an `ArrayPartition`. It collects the individual arrays for
     # the total water height `eta = h + b` and the velocity `v`.
-    eta, v = q_global.x
-    let D = q_global.x[3]
-        @.. b = equations.eta0 - D
-        @.. h = eta - b
-    end
-
-    N = length(v)
-    e = zeros(eltype(q_global), N)
+    eta, v, D = q_global.x
+    @.. b = equations.eta0 - D
+    @.. h = eta - b
 
     # 1/2 g eta^2 + 1/2 h v^2 + 1/6 h^3 w^2
     # and + 1/8 h (v b_x)^2 for full bathymetry without mild-slope approximation

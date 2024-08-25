@@ -433,9 +433,9 @@ end
 
 # The entropy/energy takes the whole `q` for every point in space
 """
-    energy_total_modified(q_global, equations::HyperbolicSerreGreenNaghdiEquations1D, cache)
+    DispersiveShallowWater.energy_total_modified!(e, q_global, equations::HyperbolicSerreGreenNaghdiEquations1D, cache)
 
-Return the modified total energy of the primitive variables `q_global` for the
+Return the modified total energy `e` of the primitive variables `q_global` for the
 [`HyperbolicSerreGreenNaghdiEquations1D`](@ref).
 It contains additional terms compared to the usual [`energy_total`](@ref)
 modeling non-hydrostatic contributions. The `energy_total_modified`
@@ -449,10 +449,12 @@ the total modified energy is given by
 ```
 
 `q_global` is a vector of the primitive variables at ALL nodes.
+
+See also [`energy_total_modified`](@ref).
 """
-function energy_total_modified(q_global,
-                               equations::HyperbolicSerreGreenNaghdiEquations1D,
-                               cache)
+function energy_total_modified!(e, q_global,
+                                equations::HyperbolicSerreGreenNaghdiEquations1D,
+                                cache)
     # unpack physical parameters and SBP operator `D1`
     g = gravity_constant(equations)
     (; lambda) = equations
@@ -463,8 +465,6 @@ function energy_total_modified(q_global,
     eta, v, D, w, H = q_global.x
     @.. b = equations.eta0 - D
     @.. h = eta - b
-
-    e = zero(h)
 
     # 1/2 g eta^2 + 1/2 h v^2 + 1/6 h^3 w^2 + λ/6 h (1 - H/h)^2
     @.. e = 1 / 2 * g * eta^2 + 1 / 2 * h * v^2 + 1 / 6 * h * w^2 +

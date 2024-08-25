@@ -189,7 +189,7 @@ of the correct length `nvariables(equations)`.
 function bathymetry end
 
 """
-        lake_at_rest_error(q, equations::AbstractShallowWaterEquations)
+    lake_at_rest_error(q, equations::AbstractShallowWaterEquations)
 
 Calculate the error for the "lake-at-rest" test case where the
 [`waterheight_total`](@ref) ``\\eta = h + b`` should
@@ -270,12 +270,25 @@ contributions.
 `q_global` is a vector of the primitive variables at ALL nodes.
 `cache` needs to hold the SBP operators used by the `solver` if non-hydrostatic
 terms are present.
+
+Internally, this function allocates a vector for the output and
+calls [`DispersiveShallowWater.energy_total_modified!`](@ref).
 """
 function energy_total_modified(q_global, equations::AbstractShallowWaterEquations, cache)
+    e = similar(q_global.x[begin])
+    return energy_total_modified!(e, q_global, equations, cache)
+end
+
+"""
+    energy_total_modified!(e, q_global, equations::AbstractShallowWaterEquations, cache)
+
+In-place version of [`energy_total_modified`](@ref).
+"""
+function energy_total_modified!(e, q_global, equations::AbstractShallowWaterEquations,
+                                cache)
     # `q_global` is an `ArrayPartition` of the primitive variables at all nodes
     @assert nvariables(equations) == length(q_global.x)
 
-    e = similar(q_global.x[begin])
     for i in eachindex(q_global.x[begin])
         e[i] = energy_total(get_node_vars(q_global, equations, i), equations)
     end
@@ -291,8 +304,19 @@ varnames(::typeof(energy_total_modified), equations) = ("e_modified",)
 Alias for [`energy_total_modified`](@ref).
 """
 @inline function entropy_modified(q_global, equations::AbstractShallowWaterEquations, cache)
-    energy_total_modified(q_global, equations, cache)
+    e = similar(q_global.x[begin])
+    return entropy_modified!(e, q_global, equations, cache)
 end
+
+"""
+    entropy_modified!(e, q_global, equations::AbstractShallowWaterEquations, cache)
+
+In-place version of [`entropy_modified`](@ref).
+"""
+@inline entropy_modified!(e, q_global, equations, cache) = energy_total_modified!(e,
+                                                                                  q_global,
+                                                                                  equations,
+                                                                                  cache)
 
 varnames(::typeof(entropy_modified), equations) = ("U_modified",)
 
@@ -448,3 +472,27 @@ abstract type AbstractSerreGreenNaghdiEquations{NDIMS, NVARS} <:
 const AbstractSerreGreenNaghdiEquations1D = AbstractSerreGreenNaghdiEquations{1}
 include("serre_green_naghdi_1d.jl")
 include("hyperbolic_serre_green_naghdi_1d.jl")
+
+function solve_system_matrix!(dv, system_matrix, rhs,
+                              ::Union{SvaerdKalischEquations1D,
+                                      SerreGreenNaghdiEquations1D},
+                              D1, cache)
+    if issparse(system_matrix)
+        (; factorization) = cache
+        cholesky!(factorization, system_matrix; check = false)
+        if issuccess(factorization)
+            scale_by_mass_matrix!(rhs, D1)
+            # see https://github.com/JoshuaLampert/DispersiveShallowWater.jl/issues/122
+            dv .= factorization \ rhs
+        else
+            # The factorization may fail if the time step is too large
+            # and h becomes negative.
+            fill!(dv, NaN)
+        end
+    else
+        factorization = cholesky!(system_matrix)
+        scale_by_mass_matrix!(rhs, D1)
+        ldiv!(dv, factorization, rhs)
+    end
+    return nothing
+end

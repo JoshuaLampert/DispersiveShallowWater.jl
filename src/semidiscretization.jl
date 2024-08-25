@@ -139,26 +139,23 @@ end
 
 function integrate_quantity!(quantity, func, q, semi::Semidiscretization)
     for i in eachnode(semi)
-        quantity[i] = func(get_node_vars(q, semi.equations, i))
+        quantity[i] = func(get_node_vars(q, semi.equations, i), semi.equations)
     end
     integrate(quantity, semi)
 end
 
+# Obtain the function, which has an additional `!` appended to the name
+inplace_version(f) = getfield(@__MODULE__, Symbol(string(nameof(f)) * "!"))
+
 # The entropy/energy of the Svärd-Kalisch and Serre-Green-Naghdi equations
 # takes the whole `q` for every point in space since it requires
 # the derivative of the velocity `v_x`.
-function integrate_quantity(func::Union{typeof(energy_total_modified),
-                                        typeof(entropy_modified)}, q,
-                            semi::Semidiscretization)
-    quantity = func(q, semi.equations, semi.cache)
-    integrate(quantity, semi)
-end
-
 function integrate_quantity!(quantity,
                              func::Union{typeof(energy_total_modified),
                                          typeof(entropy_modified)}, q,
                              semi::Semidiscretization)
-    integrate_quantity(func, q, semi)
+    inplace_version(func)(quantity, q, semi.equations, semi.cache)
+    integrate(quantity, semi)
 end
 
 @inline function mesh_equations_solver(semi::Semidiscretization)
