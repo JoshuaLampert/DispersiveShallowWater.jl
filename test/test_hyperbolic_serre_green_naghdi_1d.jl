@@ -35,7 +35,7 @@ EXAMPLES_DIR = joinpath(examples_dir(), "hyperbolic_serre_green_naghdi_1d")
                             ],
                             change_entropy_modified=-2.3374946067633573e-7)
 
-        @test_allocations(semi, sol, 1_000)
+        @test_allocations(semi, sol, allocs=1_000)
     end
     @trixi_testset "hyperbolic_serre_green_naghdi_soliton.jl with bathymetry_mild_slope" begin
         @test_trixi_include(joinpath(EXAMPLES_DIR,
@@ -65,7 +65,7 @@ EXAMPLES_DIR = joinpath(examples_dir(), "hyperbolic_serre_green_naghdi_1d")
                             ],
                             change_entropy_modified=-2.3374946067633573e-7)
 
-        @test_allocations(semi, sol, 1_000)
+        @test_allocations(semi, sol, allocs=1_000)
     end
 
     @trixi_testset "hyperbolic_serre_green_naghdi_soliton_relaxation.jl" begin
@@ -96,7 +96,7 @@ EXAMPLES_DIR = joinpath(examples_dir(), "hyperbolic_serre_green_naghdi_1d")
                             change_entropy_modified=-5.684341886080802e-14,
                             atol=2.0e-10) # to make CI pass
 
-        @test_allocations(semi, sol, 1_000)
+        @test_allocations(semi, sol, allocs=1_000)
     end
 
     @trixi_testset "hyperbolic_serre_green_naghdi_well_balanced.jl" begin

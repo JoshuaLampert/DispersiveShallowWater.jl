@@ -18,7 +18,7 @@ EXAMPLES_DIR = joinpath(examples_dir(), "serre_green_naghdi_1d")
                             change_waterheight=0.0,
                             change_entropy_modified=-3.1093350116861984e-11)
 
-        @test_allocations(semi, sol, 550_000)
+        @test_allocations(semi, sol, allocs=550_000)
     end
 
     @trixi_testset "serre_green_naghdi_soliton.jl with bathymetry_mild_slope" begin
@@ -33,7 +33,7 @@ EXAMPLES_DIR = joinpath(examples_dir(), "serre_green_naghdi_1d")
                             change_waterheight=0.0,
                             change_entropy_modified=-3.1093350116861984e-11)
 
-        @test_allocations(semi, sol, 800_000)
+        @test_allocations(semi, sol, allocs=800_000)
     end
 
     @trixi_testset "serre_green_naghdi_soliton.jl with bathymetry_variable" begin
@@ -48,7 +48,7 @@ EXAMPLES_DIR = joinpath(examples_dir(), "serre_green_naghdi_1d")
                             change_waterheight=0.0,
                             change_entropy_modified=-3.1093350116861984e-11)
 
-        @test_allocations(semi, sol, 800_000)
+        @test_allocations(semi, sol, allocs=800_000)
     end
 
     @trixi_testset "serre_green_naghdi_soliton_fourier.jl" begin

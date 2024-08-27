@@ -191,12 +191,12 @@ macro trixi_testset(name, expr)
 end
 
 """
-    @test_allocations(semi, sol, allocs = 50000)
+    @test_allocations(semi, sol, allocs)
 
 Test that the memory allocations of `DispersiveShallowWater.rhs!` are below `allocs`
 (e.g., from type instabilities).
 """
-macro test_allocations(semi, sol, allocs = 50000)
+macro test_allocations(semi, sol, allocs)
     quote
         t = $sol.t[end]
         q = $sol.u[end]
@@ -229,7 +229,8 @@ macro test_nowarn_mod(expr, additional_ignore_content = String[])
                 # Patterns matching the following ones will be ignored. Additional patterns
                 # passed as arguments can also be regular expressions, so we just use the
                 # type `Any` for `ignore_content`.
-                ignore_content = Any["[ Info: You just called `trixi_include`. Julia may now compile the code, please be patient.\n"]
+                ignore_content = Any["[ Info: You just called `trixi_include`. Julia may now compile the code, please be patient.\n",
+                                     r"┌ Warning: The still-water surface needs to be 0 for the BBM-BBM equations\n└ @ DispersiveShallowWater .*\n"]
                 append!(ignore_content, $additional_ignore_content)
                 for pattern in ignore_content
                     stderr_content = replace(stderr_content, pattern => "")
