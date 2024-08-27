@@ -196,12 +196,12 @@ function compute_coefficients!(q, func, t, semi::Semidiscretization)
                           solver)
 end
 
-check_bathymetry(equations::AbstractEquations, q0) = nothing
-
-function check_bathymetry(equations::AbstractShallowWaterEquations, q0)
+function check_bathymetry(equations, q0)
     if equations.bathymetry_type isa BathymetryFlat
-        _, _, D = q0
-        @assert all(x -> x == first(D), D) "If the bathymetry is flat, the bathymetry should be constant."
+        _, _, D = q0.x
+        if !all(x -> x == first(D), D)
+            throw(ArgumentError("If the bathymetry is flat, the bathymetry should be constant."))
+        end
     end
 end
 

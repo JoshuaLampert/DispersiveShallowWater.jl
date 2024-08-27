@@ -87,6 +87,13 @@ using SparseArrays: sparse, SparseMatrixCSC
         @test mesh == mesh
         @test equations == equations
         @test solver == solver
+
+        equations_flat = BBMBBMEquations1D(bathymetry_flat, gravity_constant = 9.81)
+        initial_condition = initial_condition_dingemans
+        mesh = Mesh1D(-138, 46, 10)
+        solver = Solver(mesh, 4)
+        semi_flat = Semidiscretization(mesh, equations_flat, initial_condition, solver)
+        @test_throws ArgumentError semidiscretize(semi_flat, (0.0, 1.0))
     end
 
     @testset "Boundary conditions" begin
@@ -121,7 +128,7 @@ using SparseArrays: sparse, SparseMatrixCSC
         end
         q = [42.0, 2.0, 2.0]
         @test @inferred(prim2prim(q, equations)) == q
-        @test isapprox(cons2prim(prim2cons(q, equations), equations), q)
+        @test isapprox(@inferred(cons2prim(prim2cons(q, equations), equations)), q)
         @test @inferred(waterheight_total(q, equations)) == 42.0
         @test @inferred(waterheight(q, equations)) == 44.0
         @test @inferred(velocity(q, equations)) == 2.0
