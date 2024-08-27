@@ -215,12 +215,12 @@ EXAMPLES_DIR = joinpath(examples_dir(), "serre_green_naghdi_1d")
         @test_trixi_include(joinpath(EXAMPLES_DIR,
                                      "serre_green_naghdi_dingemans.jl"),
                             tspan=(0.0, 1.0),
-                            l2=[0.24638385233253557, 0.8055038575889898, 0.0],
-                            linf=[0.03627087716483823, 0.11899056073196576, 0.0],
-                            cons_error=[5.684341886080802e-14, 3.57950443142954e-5, 0.0],
-                            change_waterheight=5.684341886080802e-14,
-                            change_entropy=2.4420619411102962e-5,
-                            change_entropy_modified=-1.0404164640931413e-8)
+                            l2=[0.22632930215585131, 0.7400070292134782, 0.0],
+                            linf=[0.036351214376643126, 0.11899056101300992, 0.0],
+                            cons_error=[1.4210854715202004e-13, 3.194346928167053e-5, 0.0],
+                            change_waterheight=-1.4210854715202004e-13,
+                            change_entropy=2.282635693973134e-5,
+                            change_entropy_modified=-9.135646905633621e-9)
 
         @test_allocations(semi, sol, allocs=750_000)
     end
@@ -230,12 +230,12 @@ EXAMPLES_DIR = joinpath(examples_dir(), "serre_green_naghdi_1d")
                                      "serre_green_naghdi_dingemans.jl"),
                             tspan=(0.0, 1.0),
                             bathymetry_type=bathymetry_mild_slope,
-                            l2=[0.24638385233253557, 0.8055038575889898, 0.0],
-                            linf=[0.03627087716483823, 0.11899056073196576, 0.0],
-                            cons_error=[5.684341886080802e-14, 3.579504431429478e-5, 0.0],
-                            change_waterheight=5.684341886080802e-14,
-                            change_entropy=2.4420619411102962e-5,
-                            change_entropy_modified=-1.0404164640931413e-8)
+                            l2=[0.22632930215585131, 0.7400070292134782, 0.0],
+                            linf=[0.036351214376643126, 0.11899056101300992, 0.0],
+                            cons_error=[1.4210854715202004e-13, 3.194346928167053e-5, 0.0],
+                            change_waterheight=-1.4210854715202004e-13,
+                            change_entropy=2.282635693973134e-5,
+                            change_entropy_modified=-9.135646905633621e-9)
 
         @test_allocations(semi, sol, allocs=750_000)
     end
