@@ -246,12 +246,6 @@ function source_terms_manufactured(q, x, t,
     return SVector(dh, dv, dD, dw, dH)
 end
 
-function initial_condition_dingemans(x, t, equations::HyperbolicSerreGreenNaghdiEquations1D,
-                                     mesh)
-    equations_original = hyperbolic_approximation_limit(equations)
-    return initial_condition_dingemans(x, t, equations_original, mesh)
-end
-
 function create_cache(mesh, equations::HyperbolicSerreGreenNaghdiEquations1D,
                       solver, initial_condition,
                       ::BoundaryConditionPeriodic,
