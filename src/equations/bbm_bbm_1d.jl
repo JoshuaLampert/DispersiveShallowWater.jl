@@ -204,7 +204,8 @@ function source_terms_manufactured_reflecting(q, x, t, equations::BBMBBMEquation
     return SVector(dq1, dq2, zero(dq1))
 end
 
-function source_terms_manufactured_reflecting(q, x, t, equations::BBMBBMEquations1D{BathymetryFlat})
+function source_terms_manufactured_reflecting(q, x, t,
+                                              equations::BBMBBMEquations1D{BathymetryFlat})
     g = gravity_constant(equations)
     D = still_waterdepth(q, equations)
     a1 = cospi(2 * x)
@@ -298,7 +299,7 @@ function create_cache(mesh, equations::BBMBBMEquations1D,
     end
     K = Diagonal(D .^ 2)
     if solver.D1 isa PeriodicDerivativeOperator ||
-    solver.D1 isa UniformPeriodicCoupledOperator
+       solver.D1 isa UniformPeriodicCoupledOperator
         sparse_D1 = sparse(solver.D1)
         invImDKD = lu(I - 1 / 6 * sparse_D1 * K * sparse_D1)
     elseif solver.D1 isa PeriodicUpwindOperators
@@ -379,7 +380,7 @@ function create_cache(mesh, equations::BBMBBMEquations1D,
 
     # homogeneous Neumann boundary conditions
     if solver.D1 isa DerivativeOperator ||
-        solver.D1 isa UniformCoupledOperator
+       solver.D1 isa UniformCoupledOperator
         D1_b = BandedMatrix(solver.D1)
         invImD2n = lu(I + 1 / 6 * inv(M) * D1_b' * PdM * K * D1_b)
     elseif solver.D1 isa UpwindOperators
@@ -411,7 +412,6 @@ end
 #   [DOI: 10.48550/arXiv.2402.16669](https://doi.org/10.48550/arXiv.2402.16669)
 function rhs!(dq, q, t, mesh, equations::BBMBBMEquations1D, initial_condition,
               ::BoundaryConditionPeriodic, source_terms, solver, cache)
-
     (; etav, Dv, v2, tmp1, tmp2) = cache
     if equations.bathymetry_type isa BathymetryFlat
         (; invImD2) = cache
@@ -482,8 +482,6 @@ end
 #   [DOI: 10.48550/arXiv.2402.16669](https://doi.org/10.48550/arXiv.2402.16669)
 function rhs!(dq, q, t, mesh, equations::BBMBBMEquations1D, initial_condition,
               ::BoundaryConditionReflecting, source_terms, solver, cache)
-
-
     (; etav, Dv, v2, tmp1, tmp2) = cache
     (; invImD2d, invImD2n) = cache
 

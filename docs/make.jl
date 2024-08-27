@@ -79,8 +79,7 @@ makedocs(;
                                   assets = String[],
                                   size_threshold = 1200 * 1024, # the generated .gif files can be too large
                                   size_threshold_warn = 1000 * 1024),
-         pages = [
-             "Home" => "index.md",
+         pages = ["Home" => "index.md",
              "Overview" => "overview.md",
              "Development" => "development.md",
              "Reference" => [
@@ -90,8 +89,7 @@ makedocs(;
              "Changelog" => "changelog.md",
              "Contributing" => "contributing.md",
              "Code of Conduct" => "code_of_conduct.md",
-             "License" => "license.md",
-         ])
+             "License" => "license.md"])
 
 deploydocs(;
            repo = "github.com/JoshuaLampert/DispersiveShallowWater.jl",

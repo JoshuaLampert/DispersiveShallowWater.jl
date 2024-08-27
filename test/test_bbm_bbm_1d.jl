@@ -18,7 +18,7 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_1d")
                             change_velocity=-1.4210854715202004e-13,
                             change_entropy=0.00023829378642403753)
 
-        @test_allocations(semi, sol, allocs = 10_000)
+        @test_allocations(semi, sol, allocs=10_000)
 
         # test upwind operators
         using SummationByPartsOperators: upwind_operators, periodic_derivative_operator
@@ -49,7 +49,7 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_1d")
             @test isapprox(linf_expected, linf_actual, atol = atol, rtol = rtol)
         end
 
-        @test_allocations(semi, sol, allocs = 10_000)
+        @test_allocations(semi, sol, allocs=10_000)
     end
 
     @trixi_testset "bbm_bbm_1d_basic with bathymetry_variable" begin
@@ -63,7 +63,7 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_1d")
                             change_velocity=-3.410605131648481e-13,
                             change_entropy=0.0006197172569955001)
 
-        @test_allocations(semi, sol, allocs = 10_000)
+        @test_allocations(semi, sol, allocs=10_000)
     end
 
     @trixi_testset "bbm_bbm_1d_dg" begin
@@ -86,7 +86,7 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_1d")
                             l2=[0.009197531778215928 0.0015521194273725176 0.0],
                             linf=[0.012034113656467671 0.0033862062614615773 0.0],
                             cons_error=[3.364296388121304e-14 9.947598300641403e-14 0.0],
-                            change_waterheight= 3.364296388121304e-14,
+                            change_waterheight=3.364296388121304e-14,
                             change_velocity=-9.947598300641403e-14,
                             change_entropy=-0.000791230828923517)
 
@@ -101,9 +101,9 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_1d")
                             cons_error=[2.47001411123548e-14 2.842170943040401e-14 0.0],
                             change_waterheight=-2.47001411123548e-14,
                             change_velocity=2.842170943040401e-14,
-                            change_entropy= -2.9558577807620168e-12)
+                            change_entropy=-2.9558577807620168e-12)
 
-        @test_allocations(semi, sol, allocs = 10_000)
+        @test_allocations(semi, sol, allocs=10_000)
     end
 
     @trixi_testset "bbm_bbm_1d_relaxation with bathymetry_variable" begin
@@ -117,7 +117,7 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_1d")
                             change_velocity=-5.684341886080802e-14,
                             change_entropy=-2.2737367544323206e-13)
 
-        @test_allocations(semi, sol, allocs = 10_000)
+        @test_allocations(semi, sol, allocs=10_000)
     end
 
     @trixi_testset "bbm_bbm_1d_upwind_relaxation" begin
@@ -130,7 +130,7 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_1d")
                             change_velocity=3.979039320256561e-13,
                             change_entropy=6.821210263296962e-13)
 
-        @test_allocations(semi, sol, allocs = 10_000)
+        @test_allocations(semi, sol, allocs=10_000)
     end
 
     @trixi_testset "bbm_bbm_1d_upwind_relaxation with bathymetry_variable" begin
@@ -144,7 +144,7 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_1d")
                             change_velocity=4.547473508864641e-13,
                             change_entropy=-2.2737367544323206e-12)
 
-        @test_allocations(semi, sol, allocs = 10_000)
+        @test_allocations(semi, sol, allocs=10_000)
     end
 
     @trixi_testset "bbm_bbm_1d_manufactured" begin
@@ -157,7 +157,7 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_1d")
                             change_velocity=-8.243777181889383e-12,
                             change_entropy=17.817012269328853)
 
-        @test_allocations(semi, sol, allocs = 10_000)
+        @test_allocations(semi, sol, allocs=10_000)
     end
 
     @trixi_testset "bbm_bbm_1d_manufactured with bathymetry_flat" begin
@@ -171,7 +171,7 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_1d")
                             change_velocity=4.184121331471304e-12,
                             change_entropy=17.38744182699684)
 
-        @test_allocations(semi, sol, allocs = 10_000)
+        @test_allocations(semi, sol, allocs=10_000)
     end
 
     @trixi_testset "bbm_bbm_1d_basic_reflecting" begin
@@ -184,7 +184,7 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_1d")
                             change_velocity=0.5469460962472683,
                             change_entropy=132.10935771957952)
 
-        @test_allocations(semi, sol, allocs = 1_500)
+        @test_allocations(semi, sol, allocs=1_500)
 
         # test upwind operators
         using SummationByPartsOperators: upwind_operators, Mattsson2017
@@ -216,7 +216,7 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_1d")
             @test isapprox(linf_expected, linf_actual, atol = atol, rtol = rtol)
         end
 
-        @test_allocations(semi, sol, allocs = 1_500)
+        @test_allocations(semi, sol, allocs=1_500)
     end
 
     @trixi_testset "bbm_bbm_1d_basic_reflecting with bathymetry_flat" begin
@@ -230,7 +230,7 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_1d")
                             change_velocity=0.5469460971120386,
                             change_entropy=132.04866881559724)
 
-        @test_allocations(semi, sol, allocs = 1_500)
+        @test_allocations(semi, sol, allocs=1_500)
 
         # test upwind operators
         using SummationByPartsOperators: upwind_operators, Mattsson2017
@@ -262,7 +262,7 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_1d")
             @test isapprox(linf_expected, linf_actual, atol = atol, rtol = rtol)
         end
 
-        @test_allocations(semi, sol, allocs = 1_500)
+        @test_allocations(semi, sol, allocs=1_500)
     end
 
     @trixi_testset "bbm_bbm_1d_dingemans" begin
@@ -275,7 +275,7 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_1d")
                             change_velocity=2.1141942363467336e-16,
                             change_entropy=3.4175334942543323e-7)
 
-        @test_allocations(semi, sol, allocs = 10_000)
+        @test_allocations(semi, sol, allocs=10_000)
     end
 
     @trixi_testset "bbm_bbm_1d_well_balanced" begin
@@ -288,7 +288,7 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_bbm_1d")
                             change_velocity=-1.6076981933671723e-15,
                             change_entropy=-3.1086244689504383e-15)
 
-        @test_allocations(semi, sol, allocs = 10_000)
+        @test_allocations(semi, sol, allocs=10_000)
     end
 end
 
