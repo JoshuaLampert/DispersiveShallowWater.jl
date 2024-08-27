@@ -20,28 +20,6 @@ for the variables in `equations`. In particular, not the variables themselves ar
 """
 @inline eachvariable(equations::AbstractEquations) = Base.OneTo(nvariables(equations))
 
-"""
-    get_name(equations::AbstractEquations)
-
-Return the canonical, human-readable name for the given system of equations.
-# Examples
-```jldoctest
-julia> DispersiveShallowWater.get_name(BBMBBMEquations1D(gravity_constant=1.0))
-"BBMBBMEquations1D"
-```
-"""
-get_name(equations::AbstractEquations) = equations |> typeof |> nameof |> string
-
-"""
-    varnames(conversion_function, equations)
-
-Return the list of variable names when applying `conversion_function` to the
-conserved variables associated to `equations`.
-Common choices of the `conversion_function` are [`prim2prim`](@ref),
-[`prim2cons`](@ref), and [`prim2phys`](@ref).
-"""
-function varnames end
-
 @doc raw"""
     AbstractShallowWaterEquations{NDIMS, NVARS}
 
@@ -63,12 +41,46 @@ where ``h`` is the [`waterheight`](@ref),
 abstract type AbstractShallowWaterEquations{NDIMS, NVARS} <: AbstractEquations{NDIMS, NVARS} end
 
 """
+    get_name(equations::AbstractEquations)
+
+Return the canonical, human-readable name for the given system of equations.
+# Examples
+```jldoctest
+julia> DispersiveShallowWater.get_name(BBMBBMEquations1D(gravity_constant=1.0))
+"BBMBBMEquations1D-BathymetryVariable"
+```
+"""
+get_name(equations::AbstractEquations) = equations |> typeof |> nameof |> string
+
+function get_name(equations::AbstractShallowWaterEquations)
+    name = equations |> typeof |> nameof |> string
+    bathymetry_type = equations.bathymetry_type
+    if bathymetry_type isa BathymetryFlat
+        return name
+    else # variable bathymetry_type
+        return name * "-" * string(nameof(typeof(bathymetry_type)))
+    end
+end
+
+"""
+    varnames(conversion_function, equations)
+
+Return the list of variable names when applying `conversion_function` to the
+primitive variables associated to `equations`.
+Common choices of the `conversion_function` are [`prim2prim`](@ref),
+[`prim2cons`](@ref), and [`prim2phys`](@ref).
+"""
+function varnames end
+
+"""
     prim2prim(q, equations)
 
 Return the primitive variables `q`. While this function is as trivial as `identity`,
 it is also as useful.
 """
 @inline prim2prim(q, ::AbstractEquations) = q
+
+varnames(::typeof(prim2prim), ::AbstractShallowWaterEquations) = ("η", "v", "D")
 
 """
     prim2cons(q, equations)
@@ -79,7 +91,16 @@ Notice the function doesn't include any error checks for the purpose of efficien
 so please make sure your input is correct.
 The inverse conversion is performed by [`cons2prim`](@ref).
 """
-function prim2cons end
+@inline function prim2cons(q, equations::AbstractShallowWaterEquations)
+    h = waterheight(q, equations)
+    v = velocity(q, equations)
+    b = bathymetry(q, equations)
+
+    hv = h * v
+    return SVector(h, hv, b)
+end
+
+varnames(::typeof(prim2cons), ::AbstractShallowWaterEquations) = ("h", "hv", "hv")
 
 """
     cons2prim(u, equations)
@@ -90,7 +111,15 @@ Notice the function doesn't include any error checks for the purpose of efficien
 so please make sure your input is correct.
 The inverse conversion is performed by [`prim2cons`](@ref).
 """
-function cons2prim end
+@inline function cons2prim(u, equations::AbstractShallowWaterEquations)
+    h, hv, b = u
+
+    eta = h + b
+    v = hv / h
+    eta0 = equations.eta0
+    D = eta0 - b
+    return SVector(eta, v, D)
+end
 
 """
     waterheight_total(q, equations)
@@ -102,7 +131,9 @@ Return the total waterheight of the primitive variables `q` for a given set of
 `q` is a vector of the primitive variables at a single node, i.e., a vector
 of the correct length `nvariables(equations)`.
 """
-function waterheight_total end
+@inline function waterheight_total(q, ::AbstractShallowWaterEquations)
+    return q[1]
+end
 
 varnames(::typeof(waterheight_total), equations) = ("η",)
 
@@ -132,7 +163,9 @@ Return the velocity of the primitive variables `q` for a given set of
 `q` is a vector of the primitive variables at a single node, i.e., a vector
 of the correct length `nvariables(equations)`.
 """
-function velocity end
+@inline function velocity(q, ::AbstractShallowWaterEquations)
+    return q[2]
+end
 
 varnames(::typeof(velocity), equations) = ("v",)
 
@@ -170,11 +203,8 @@ for a given set of `equations`.
     return equations.eta0
 end
 
-@inline function still_waterdepth(q, equations::AbstractShallowWaterEquations)
-    b = bathymetry(q, equations)
-    eta0 = still_water_surface(q, equations)
-    D = eta0 - b
-    return D
+@inline function still_waterdepth(q, ::AbstractShallowWaterEquations)
+    return q[3]
 end
 
 """
@@ -186,7 +216,11 @@ Return the bathymetry of the primitive variables `q` for a given set of
 `q` is a vector of the primitive variables at a single node, i.e., a vector
 of the correct length `nvariables(equations)`.
 """
-function bathymetry end
+@inline function bathymetry(q, equations::AbstractShallowWaterEquations)
+    D = q[3]
+    eta0 = still_water_surface(q, equations)
+    return eta0 - D
+end
 
 """
     lake_at_rest_error(q, equations::AbstractShallowWaterEquations)
@@ -198,26 +232,9 @@ be a constant value over time (given by the value ``\\eta_0`` passed to the
 """
 @inline function lake_at_rest_error(q, equations::AbstractShallowWaterEquations)
     eta = waterheight_total(q, equations)
-    return abs(equations.eta0 - eta)
+    eta0 = still_water_surface(q, equations)
+    return abs(eta0 - eta)
 end
-
-"""
-    entropy(q, equations)
-
-Return the entropy of the primitive variables `q` for a given set of
-`equations`. For all [`AbstractShallowWaterEquations`](@ref), the `entropy`
-is just the [`energy_total`](@ref).
-
-`q` is a vector of the primitive variables at a single node, i.e., a vector
-of the correct length `nvariables(equations)`.
-"""
-function entropy end
-
-function entropy(q, equations::AbstractShallowWaterEquations)
-    return energy_total(q, equations)
-end
-
-varnames(::typeof(entropy), equations) = ("U",)
 
 """
     gravity_constant(equations::AbstractShallowWaterEquations)
@@ -254,6 +271,22 @@ of the correct length `nvariables(equations)`.
 end
 
 varnames(::typeof(energy_total), equations) = ("e_total",)
+
+"""
+    entropy(q, equations)
+
+Return the entropy of the primitive variables `q` for a given set of
+`equations`. For all [`AbstractShallowWaterEquations`](@ref), the `entropy`
+is just the [`energy_total`](@ref).
+
+`q` is a vector of the primitive variables at a single node, i.e., a vector
+of the correct length `nvariables(equations)`.
+"""
+function entropy(q, equations::AbstractShallowWaterEquations)
+    return energy_total(q, equations)
+end
+
+varnames(::typeof(entropy), equations) = ("U",)
 
 # The modified entropy/total energy takes the whole `q_global` for every point in space
 """
@@ -459,7 +492,6 @@ const bathymetry_variable = BathymetryVariable()
 abstract type AbstractBBMBBMEquations{NDIMS, NVARS} <:
               AbstractShallowWaterEquations{NDIMS, NVARS} end
 include("bbm_bbm_1d.jl")
-include("bbm_bbm_variable_bathymetry_1d.jl")
 
 # Svärd-Kalisch equations
 abstract type AbstractSvaerdKalischEquations{NDIMS, NVARS} <:
@@ -495,4 +527,71 @@ function solve_system_matrix!(dv, system_matrix, rhs,
         ldiv!(dv, factorization, rhs)
     end
     return nothing
+end
+
+"""
+    initial_condition_dingemans(x, t, equations::AbstractShallowWaterEquations, mesh)
+
+The initial condition that uses the dispersion relation of the Euler equations
+to approximate waves generated by a wave maker as it is done by experiments of
+Dingemans. The topography is a trapezoidal. It is assumed that `equations.eta0 = 0.8`.
+
+References:
+- Magnus Svärd, Henrik Kalisch (2023)
+  A novel energy-bounded Boussinesq model and a well-balanced and stable numerical discretization
+  [arXiv: 2302.09924](https://arxiv.org/abs/2302.09924)
+- Maarten W. Dingemans (1994)
+  Comparison of computations with Boussinesq-like models and laboratory measurements
+  [link](https://repository.tudelft.nl/islandora/object/uuid:c2091d53-f455-48af-a84b-ac86680455e9/datastream/OBJ/download)
+"""
+function initial_condition_dingemans(x, t, equations::AbstractShallowWaterEquations, mesh)
+    g = gravity_constant(equations)
+    h0 = 0.8
+    A = 0.02
+    # omega = 2*pi/(2.02*sqrt(2))
+    k = 0.8406220896381442 # precomputed result of find_zero(k -> omega^2 - g * k * tanh(k * h0), 1.0) using Roots.jl
+    if x < -30.5 * pi / k || x > -8.5 * pi / k
+        h = 0.0
+    else
+        h = A * cos(k * x)
+    end
+    v = sqrt(g / k * tanh(k * h0)) * h / h0
+    if 11.01 <= x && x < 23.04
+        b = 0.6 * (x - 11.01) / (23.04 - 11.01)
+    elseif 23.04 <= x && x < 27.04
+        b = 0.6
+    elseif 27.04 <= x && x < 33.07
+        b = 0.6 * (33.07 - x) / (33.07 - 27.04)
+    else
+        b = 0.0
+    end
+    eta0 = equations.eta0
+    eta = h + h0
+    D = eta0 - b
+    return SVector(eta, v, D)
+end
+
+"""
+    initial_condition_discontinuous_well_balancedness(x, t, equations::AbstractShallowWaterEquations, mesh)
+
+Setup a truly discontinuous bottom topography function for this academic
+lake-at-rest test case of well-balancedness, i.e. `eta` is constant and `v` is
+zero everywhere. The error for this lake-at-rest test case
+`∫|η-η₀|` should be around machine roundoff.
+"""
+function initial_condition_discontinuous_well_balancedness(x, t,
+                                                           equations::AbstractShallowWaterEquations,
+                                                           mesh)
+    eta0 = equations.eta0
+    # Set the background values
+    eta = eta0
+    v = 0.0
+    D = eta0 - 1.0
+
+    # Setup a discontinuous bottom topography
+    if x >= 0.5 && x <= 0.75
+        D = eta0 - 1.5 - 0.5 * sinpi(2.0 * x)
+    end
+
+    return SVector(eta, v, D)
 end

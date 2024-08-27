@@ -8,7 +8,8 @@ using DispersiveShallowWater
 ###############################################################################
 # Semidiscretization of the BBM-BBM equations
 
-equations = BBMBBMEquations1D(gravity_constant = 1.0, D = 1.0)
+bathymetry_type = bathymetry_flat # bathymetry_variable
+equations = BBMBBMEquations1D(bathymetry_type, gravity_constant = 1.0)
 
 # initial_condition_convergence_test needs periodic boundary conditions
 initial_condition = initial_condition_convergence_test

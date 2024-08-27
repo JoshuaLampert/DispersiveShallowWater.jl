@@ -73,7 +73,7 @@ end
     end
 
     function convex_combination(gamma, old, new)
-        @. old + gamma * (new - old)
+        @.. old + gamma * (new - old)
     end
     energy_old = relaxation_functional(qold, semi)
 
