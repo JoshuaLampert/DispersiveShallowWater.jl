@@ -71,7 +71,7 @@ using SparseArrays: sparse, SparseMatrixCSC
     end
 
     @testset "Semidiscretization" begin
-        equations = BBMBBMEquations1D(gravity_constant = 9.81, D = 2.0)
+        equations = BBMBBMEquations1D(gravity_constant = 9.81)
         initial_condition = initial_condition_convergence_test
         boundary_conditions = boundary_condition_periodic
         mesh = Mesh1D(-1, 1, 10)
@@ -99,8 +99,7 @@ using SparseArrays: sparse, SparseMatrixCSC
     end
 
     @testset "BBMBBMEquations1D" begin
-        equations = @test_nowarn @inferred BBMBBMEquations1D(gravity_constant = 9.81,
-                                                             D = 2.0)
+        equations = @test_nowarn @inferred BBMBBMEquations1D(gravity_constant = 9.81)
         @test_nowarn print(equations)
         @test_nowarn display(equations)
         conversion_functions = [
@@ -120,7 +119,7 @@ using SparseArrays: sparse, SparseMatrixCSC
         for conversion in conversion_functions
             @test DispersiveShallowWater.varnames(conversion, equations) isa Tuple
         end
-        q = [42.0, 2.0]
+        q = [42.0, 2.0, 2.0]
         @test @inferred(prim2prim(q, equations)) == q
         @test isapprox(cons2prim(prim2cons(q, equations), equations), q)
         @test @inferred(waterheight_total(q, equations)) == 42.0
