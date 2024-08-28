@@ -1,5 +1,5 @@
 @doc raw"""
-    BBMBBMEquations1D(bathymetry_type = bathymetry_variable;
+    BBMBBMEquations1D(; bathymetry_type = bathymetry_variable,
                       gravity_constant, eta0 = 0.0)
 
 BBM-BBM (Benjamin–Bona–Mahony) system in one spatial dimension. The equations for flat bathymetry are given by
@@ -57,7 +57,7 @@ struct BBMBBMEquations1D{Bathymetry <: AbstractBathymetry, RealT <: Real} <:
     eta0::RealT    # constant still-water surface
 end
 
-function BBMBBMEquations1D(bathymetry_type = bathymetry_variable;
+function BBMBBMEquations1D(; bathymetry_type = bathymetry_variable,
                            gravity_constant, eta0 = 0.0)
     eta0 == 0.0 || @warn "The still-water surface needs to be 0 for the BBM-BBM equations"
     BBMBBMEquations1D(bathymetry_type, gravity_constant, eta0)

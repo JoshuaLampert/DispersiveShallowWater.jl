@@ -5,8 +5,8 @@ using SummationByPartsOperators: upwind_operators, periodic_derivative_operator
 ###############################################################################
 # Semidiscretization of the Serre-Green-Naghdi equations
 
-bathymetry_type = bathymetry_variable # or bathymetry_mild_slope
-equations = SerreGreenNaghdiEquations1D(bathymetry_type;
+# or bathymetry_mild_slope instead of bathymetry_variable
+equations = SerreGreenNaghdiEquations1D(bathymetry_type = bathymetry_variable,
                                         gravity_constant = 1.0, eta0 = 2.0)
 
 initial_condition = initial_condition_discontinuous_well_balancedness

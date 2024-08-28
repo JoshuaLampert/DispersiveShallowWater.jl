@@ -4,8 +4,7 @@ using DispersiveShallowWater
 ###############################################################################
 # Semidiscretization of the hyperbolic Serre-Green-Naghdi equations
 
-bathymetry_type = bathymetry_flat
-equations = HyperbolicSerreGreenNaghdiEquations1D(bathymetry_type;
+equations = HyperbolicSerreGreenNaghdiEquations1D(bathymetry_type = bathymetry_flat,
                                                   lambda = 500.0,
                                                   gravity_constant = 9.81)
 

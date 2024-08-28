@@ -1,5 +1,5 @@
 @doc raw"""
-    HyperbolicSerreGreenNaghdiEquations1D(bathymetry_type = bathymetry_mild_slope;
+    HyperbolicSerreGreenNaghdiEquations1D(; bathymetry_type = bathymetry_mild_slope,
                                           gravity_constant,
                                           eta0 = 0.0,
                                           lambda)
@@ -93,7 +93,7 @@ struct HyperbolicSerreGreenNaghdiEquations1D{Bathymetry <:
     lambda::RealT # hyperbolic relaxation parameter (→ ∞ for Serre-Green-Naghdi)
 end
 
-function HyperbolicSerreGreenNaghdiEquations1D(bathymetry_type = bathymetry_mild_slope;
+function HyperbolicSerreGreenNaghdiEquations1D(; bathymetry_type = bathymetry_mild_slope,
                                                gravity_constant,
                                                eta0 = 0.0,
                                                lambda)

@@ -4,8 +4,7 @@ using DispersiveShallowWater
 ###############################################################################
 # Semidiscretization of the Serre-Green-Naghdi equations
 
-bathymetry_type = bathymetry_flat
-equations = SerreGreenNaghdiEquations1D(bathymetry_type;
+equations = SerreGreenNaghdiEquations1D(bathymetry_type = bathymetry_flat,
                                         gravity_constant = 9.81)
 
 # initial_condition_convergence_test needs periodic boundary conditions

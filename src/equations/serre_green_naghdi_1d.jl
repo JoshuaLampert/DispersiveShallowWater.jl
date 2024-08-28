@@ -1,5 +1,5 @@
 @doc raw"""
-    SerreGreenNaghdiEquations1D(bathymetry_type = bathymetry_variable;
+    SerreGreenNaghdiEquations1D(; bathymetry_type = bathymetry_variable,
                                 gravity_constant, eta0 = 0.0)
 
 Serre-Green-Naghdi system in one spatial dimension.
@@ -75,7 +75,7 @@ struct SerreGreenNaghdiEquations1D{Bathymetry <: AbstractBathymetry, RealT <: Re
     eta0::RealT # constant still-water surface
 end
 
-function SerreGreenNaghdiEquations1D(bathymetry_type = bathymetry_variable;
+function SerreGreenNaghdiEquations1D(; bathymetry_type = bathymetry_variable,
                                      gravity_constant, eta0 = 0.0)
     SerreGreenNaghdiEquations1D(bathymetry_type, gravity_constant, eta0)
 end

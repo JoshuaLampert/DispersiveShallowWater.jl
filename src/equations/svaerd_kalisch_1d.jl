@@ -1,5 +1,5 @@
 @doc raw"""
-    SvaerdKalischEquations1D(bathymetry_type = bathymetry_variable;
+    SvaerdKalischEquations1D(; bathymetry_type = bathymetry_variable,
                              gravity_constant, eta0 = 0.0, alpha = 0.0,
                              beta = 0.2308939393939394, gamma = 0.04034343434343434)
 
@@ -58,7 +58,7 @@ end
 
 const SvärdKalischEquations1D = SvaerdKalischEquations1D
 
-function SvaerdKalischEquations1D(bathymetry_type = bathymetry_variable;
+function SvaerdKalischEquations1D(; bathymetry_type = bathymetry_variable,
                                   gravity_constant, eta0 = 0.0, alpha = 0.0,
                                   beta = 0.2308939393939394, gamma = 0.04034343434343434)
     SvaerdKalischEquations1D(bathymetry_type, gravity_constant, eta0, alpha, beta, gamma)
