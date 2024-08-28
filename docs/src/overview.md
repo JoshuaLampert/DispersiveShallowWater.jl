@@ -37,9 +37,9 @@ including physical parameters, initial and boundary conditions as well as the do
 describes a traveling wave that moves towards a beach, which is modeled by a linearly increasing bathymetry.
 
 ```@example overview
-equations = BBMBBMVariableEquations1D(gravity_constant = 9.81)
+equations = BBMBBMEquations1D(bathymetry_type = bathymetry_variable, gravity_constant = 9.81)
 
-function initial_condition_shoaling(x, t, equations::BBMBBMVariableEquations1D, mesh)
+function initial_condition_shoaling(x, t, equations::BBMBBMEquations1D, mesh)
     A = 0.07 # amplitude of wave
     x0 = -30 # initial center
     eta = A * exp(-0.1*(x - x0)^2)
@@ -64,8 +64,8 @@ an analytical solution to be compared with the numerical solution. Otherwise, yo
 in DispersiveShallowWater.jl is supposed to return an `SVector` holding the values for each of the unknown variables. Since the bathymetry is
 treated as a variable (with time derivative 0) for convenience, we need to provide the value for the primitive variables `eta` and `v` as well as for `D`.
 
-Next, we choose periodic boundary conditions. DispersiveShallowWater.jl also supports reflecting boundary conditions for the [`BBMBBMEquations1D`](@ref)
-and [`BBMBBMVariableEquations1D`](@ref), see [`boundary_condition_reflecting`](@ref). Lastly, we define the physical domain as the interval from -130 to
+Next, we choose periodic boundary conditions. DispersiveShallowWater.jl also supports reflecting boundary conditions for the [`BBMBBMEquations1D`](@ref),
+see [`boundary_condition_reflecting`](@ref). Lastly, we define the physical domain as the interval from -130 to
 20 and we choose 512 intermediate nodes. The mesh is homogeneous, i.e. the distance between each two nodes is constant. We choose the left boundary very
 far to the left in order to avoid an interaction of the left- and right-traveling waves.
 

@@ -12,10 +12,10 @@ for human readability.
 - The `BBMBBMVariableEquations1D` were removed and `BBMBBMEquations1D` now supports a `bathymetry_type` to
   choose between a flat and a variable bathymetry ([#147]).
 - The default of `bathymetry_type` for the `SerreGreenNaghdiEquations1D` changed from `bathymetry_flat` to
-  `bathymetry_variable` ([#147])
-- `bathymetry_type` is now a keyword argument for all equations instead of a positional argument ([#147])
+  `bathymetry_variable` ([#147]).
+- `bathymetry_type` is now a keyword argument for all equations instead of a positional argument ([#147]).
 - The `initial_condition_dingemans` for the `SerreGreenNaghdiEquations1D` and `HyperbolicSerreGreenNaghdiEquations1D`
-  was changed a bit to be more consistent with the other equations ([#147])
+  was changed a bit to be more consistent with the other equations ([#147]).
 
 ## Changes in the v0.4 lifecycle
 
