@@ -88,7 +88,8 @@ using SparseArrays: sparse, SparseMatrixCSC
         @test equations == equations
         @test solver == solver
 
-        equations_flat = BBMBBMEquations1D(bathymetry_type = bathymetry_flat, gravity_constant = 9.81)
+        equations_flat = BBMBBMEquations1D(bathymetry_type = bathymetry_flat,
+                                           gravity_constant = 9.81)
         initial_condition = initial_condition_dingemans
         mesh = Mesh1D(-138, 46, 10)
         solver = Solver(mesh, 4)
