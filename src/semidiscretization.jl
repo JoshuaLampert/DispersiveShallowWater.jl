@@ -199,7 +199,8 @@ end
 function check_bathymetry(equations, q0)
     if equations.bathymetry_type isa BathymetryFlat
         _, _, D = q0.x
-        if !all(x -> x == first(D), D)
+        value = first(D)
+        if !all(==(value), D)
             throw(ArgumentError("If the bathymetry is flat, the bathymetry should be constant."))
         end
     end
