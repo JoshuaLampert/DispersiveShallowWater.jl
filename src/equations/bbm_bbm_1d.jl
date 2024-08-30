@@ -99,7 +99,7 @@ function initial_condition_manufactured(x, t,
     eta = exp(t) * cospi(2 * (x - 2 * t))
     v = exp(t / 2) * sinpi(2 * (x - t / 2))
     if equations.bathymetry_type isa BathymetryFlat
-        D = 4
+        D = 4.0
     else # equations.bathymetry_type isa BathymetryVariable
         D = 5 + 2 * cospi(2 * x)
     end
@@ -171,7 +171,7 @@ function initial_condition_manufactured_reflecting(x, t,
     eta = exp(2 * t) * cospi(x)
     v = exp(t) * x * sinpi(x)
     if equations.bathymetry_type isa BathymetryFlat
-        D = 4
+        D = 4.0
     else # equations.bathymetry_type isa BathymetryVariable
         D = 5 + 2 * cospi(2 * x)
     end
