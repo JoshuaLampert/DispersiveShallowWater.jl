@@ -4,34 +4,10 @@ using DispersiveShallowWater
 ###############################################################################
 # Semidiscretization of the hyperbolic Serre-Green-Naghdi equations
 
-bathymetry_type = bathymetry_mild_slope
-equations = HyperbolicSerreGreenNaghdiEquations1D(bathymetry_type;
+equations = HyperbolicSerreGreenNaghdiEquations1D(bathymetry_type = bathymetry_mild_slope,
                                                   lambda = 500.0,
                                                   gravity_constant = 1.0,
                                                   eta0 = 2.0)
-
-# Setup a truly discontinuous bottom topography function for this academic
-# testcase of well-balancedness. The errors from the analysis callback are
-# not important but the error for this lake-at-rest test case
-# `∫|η-η₀|` should be around machine roundoff.
-function initial_condition_discontinuous_well_balancedness(x, t,
-                                                           equations::HyperbolicSerreGreenNaghdiEquations1D,
-                                                           mesh)
-    # Set the background values
-    eta = equations.eta0
-    v = 0.0
-    D = equations.eta0 - 1.0
-
-    # Setup a discontinuous bottom topography
-    if x >= 0.5 && x <= 0.75
-        D = equations.eta0 - 1.5 - 0.5 * sinpi(2.0 * x)
-    end
-
-    w = 0.0 # -h v_x
-    H = eta + D - equations.eta0
-
-    return SVector(eta, v, D, w, H)
-end
 
 initial_condition = initial_condition_discontinuous_well_balancedness
 boundary_conditions = boundary_condition_periodic

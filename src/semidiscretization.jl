@@ -196,6 +196,16 @@ function compute_coefficients!(q, func, t, semi::Semidiscretization)
                           solver)
 end
 
+function check_bathymetry(equations, q0)
+    if equations.bathymetry_type isa BathymetryFlat
+        _, _, D = q0.x
+        value = first(D)
+        if !all(==(value), D)
+            throw(ArgumentError("If the bathymetry is flat, the bathymetry should be constant."))
+        end
+    end
+end
+
 """
     semidiscretize(semi::Semidiscretization, tspan)
 
@@ -204,6 +214,7 @@ that can be passed to `solve` from the [SciML ecosystem](https://diffeq.sciml.ai
 """
 function semidiscretize(semi::Semidiscretization, tspan)
     q0 = compute_coefficients(semi.initial_condition, first(tspan), semi)
+    check_bathymetry(semi.equations, q0)
     iip = true # is-inplace, i.e., we modify a vector when calling rhs!
     return ODEProblem{iip}(rhs!, q0, tspan, semi)
 end

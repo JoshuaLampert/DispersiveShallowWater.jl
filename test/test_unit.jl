@@ -71,7 +71,7 @@ using SparseArrays: sparse, SparseMatrixCSC
     end
 
     @testset "Semidiscretization" begin
-        equations = BBMBBMEquations1D(gravity_constant = 9.81, D = 2.0)
+        equations = BBMBBMEquations1D(gravity_constant = 9.81)
         initial_condition = initial_condition_convergence_test
         boundary_conditions = boundary_condition_periodic
         mesh = Mesh1D(-1, 1, 10)
@@ -87,6 +87,14 @@ using SparseArrays: sparse, SparseMatrixCSC
         @test mesh == mesh
         @test equations == equations
         @test solver == solver
+
+        equations_flat = BBMBBMEquations1D(bathymetry_type = bathymetry_flat,
+                                           gravity_constant = 9.81)
+        initial_condition = initial_condition_dingemans
+        mesh = Mesh1D(-138, 46, 10)
+        solver = Solver(mesh, 4)
+        semi_flat = Semidiscretization(mesh, equations_flat, initial_condition, solver)
+        @test_throws ArgumentError semidiscretize(semi_flat, (0.0, 1.0))
     end
 
     @testset "Boundary conditions" begin
@@ -99,63 +107,7 @@ using SparseArrays: sparse, SparseMatrixCSC
     end
 
     @testset "BBMBBMEquations1D" begin
-        equations = @test_nowarn @inferred BBMBBMEquations1D(gravity_constant = 9.81,
-                                                             D = 2.0)
-        @test_nowarn print(equations)
-        @test_nowarn display(equations)
-        conversion_functions = [
-            waterheight_total,
-            waterheight,
-            velocity,
-            momentum,
-            discharge,
-            entropy,
-            energy_total,
-            prim2cons,
-            prim2prim,
-            prim2phys,
-            energy_total_modified,
-            entropy_modified,
-        ]
-        for conversion in conversion_functions
-            @test DispersiveShallowWater.varnames(conversion, equations) isa Tuple
-        end
-        q = [42.0, 2.0]
-        @test @inferred(prim2prim(q, equations)) == q
-        @test isapprox(cons2prim(prim2cons(q, equations), equations), q)
-        @test @inferred(waterheight_total(q, equations)) == 42.0
-        @test @inferred(waterheight(q, equations)) == 44.0
-        @test @inferred(velocity(q, equations)) == 2.0
-        @test @inferred(momentum(q, equations)) == 88.0
-        @test @inferred(discharge(q, equations)) == 88.0
-        @test @inferred(still_water_surface(q, equations)) == 0.0
-        @test isapprox(@inferred(energy_total(q, equations)), 8740.42)
-        @test @inferred(energy_total(q, equations)) == @inferred(entropy(q, equations))
-        @test @inferred(prim2phys(q, equations)) == @inferred(prim2prim(q, equations))
-
-        @testset "default implementation of energy_total_modified" begin
-            initial_condition = initial_condition_convergence_test
-            boundary_conditions = boundary_condition_periodic
-            mesh = @inferred Mesh1D(-1.0, 1.0, 10)
-            solver = Solver(mesh, 4)
-            semi = @inferred Semidiscretization(mesh, equations, initial_condition,
-                                                solver; boundary_conditions)
-            q = @inferred DispersiveShallowWater.compute_coefficients(initial_condition,
-                                                                      0.0, semi)
-            _, _, _, cache = @inferred DispersiveShallowWater.mesh_equations_solver_cache(semi)
-            e_modified = @inferred energy_total_modified(q, equations, cache)
-            e_modified_total = @inferred DispersiveShallowWater.integrate(e_modified, semi)
-            e_total = @inferred DispersiveShallowWater.integrate_quantity(energy_total,
-                                                                          q, semi)
-            @test isapprox(e_modified_total, e_total)
-            U_modified = @inferred entropy_modified(q, equations, cache)
-            U_modified_total = @inferred DispersiveShallowWater.integrate(U_modified, semi)
-            @test isapprox(U_modified_total, e_modified_total)
-        end
-    end
-
-    @testset "BBMBBMVariableEquations1D" begin
-        equations = @test_nowarn BBMBBMVariableEquations1D(gravity_constant = 9.81)
+        equations = @test_nowarn @inferred BBMBBMEquations1D(gravity_constant = 9.81)
         @test_nowarn print(equations)
         @test_nowarn display(equations)
         conversion_functions = [

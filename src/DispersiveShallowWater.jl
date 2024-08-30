@@ -61,7 +61,7 @@ include("util.jl")
 export examples_dir, get_examples, default_example, convergence_test
 
 export AbstractShallowWaterEquations,
-       BBMBBMEquations1D, BBMBBMVariableEquations1D,
+       BBMBBMEquations1D,
        SvärdKalischEquations1D, SvaerdKalischEquations1D,
        SerreGreenNaghdiEquations1D, HyperbolicSerreGreenNaghdiEquations1D
 
@@ -87,7 +87,8 @@ export initial_condition_convergence_test,
        initial_condition_soliton,
        initial_condition_manufactured, source_terms_manufactured,
        initial_condition_manufactured_reflecting, source_terms_manufactured_reflecting,
-       initial_condition_dingemans
+       initial_condition_dingemans,
+       initial_condition_discontinuous_well_balancedness
 
 export AnalysisCallback, RelaxationCallback, SummaryCallback
 export tstops, errors, integrals

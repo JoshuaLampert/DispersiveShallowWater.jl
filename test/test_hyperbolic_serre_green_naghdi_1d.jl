@@ -35,7 +35,7 @@ EXAMPLES_DIR = joinpath(examples_dir(), "hyperbolic_serre_green_naghdi_1d")
                             ],
                             change_entropy_modified=-2.3374946067633573e-7)
 
-        @test_allocations(semi, sol, 1_000)
+        @test_allocations(semi, sol, allocs=1_000)
     end
     @trixi_testset "hyperbolic_serre_green_naghdi_soliton.jl with bathymetry_mild_slope" begin
         @test_trixi_include(joinpath(EXAMPLES_DIR,
@@ -65,7 +65,7 @@ EXAMPLES_DIR = joinpath(examples_dir(), "hyperbolic_serre_green_naghdi_1d")
                             ],
                             change_entropy_modified=-2.3374946067633573e-7)
 
-        @test_allocations(semi, sol, 1_000)
+        @test_allocations(semi, sol, allocs=1_000)
     end
 
     @trixi_testset "hyperbolic_serre_green_naghdi_soliton_relaxation.jl" begin
@@ -96,7 +96,7 @@ EXAMPLES_DIR = joinpath(examples_dir(), "hyperbolic_serre_green_naghdi_1d")
                             change_entropy_modified=-5.684341886080802e-14,
                             atol=2.0e-10) # to make CI pass
 
-        @test_allocations(semi, sol, 1_000)
+        @test_allocations(semi, sol, allocs=1_000)
     end
 
     @trixi_testset "hyperbolic_serre_green_naghdi_well_balanced.jl" begin
@@ -163,26 +163,26 @@ EXAMPLES_DIR = joinpath(examples_dir(), "hyperbolic_serre_green_naghdi_1d")
                                      "hyperbolic_serre_green_naghdi_dingemans.jl"),
                             tspan=(0.0, 1.0),
                             l2=[
-                                0.2462244051802164,
-                                0.8029763168465812,
-                                2.7915052205763788e-15,
-                                0.5551546220119555,
-                                0.24713044468457937,
+                                0.22618134328164993,
+                                0.7376950780256356,
+                                3.389954422650516e-15,
+                                0.5105085009518094,
+                                0.2270170397315174,
                             ],
                             linf=[
-                                0.036247749895408465,
-                                0.11854596450185799,
-                                1.7763568394002505e-15,
-                                0.08108267786804652,
-                                0.03638811200117753,
+                                0.03631632774349847,
+                                0.11854594481576813,
+                                3.497202527569243e-15,
+                                0.08108200376359903,
+                                0.03645317804157178,
                             ],
                             cons_error=[2.3874235921539366e-12,
-                                0.0008126525572541851,
+                                0.0006849904339648783,
                                 1.0658141036401503e-14,
-                                0.042057974454022734,
-                                0.00020913260897259534],
-                            change_entropy=-0.0016060760596019463,
-                            change_entropy_modified=-3.1413295573656796e-6)
+                                0.0356135949814768,
+                                0.00017701343821840965],
+                            change_entropy=-0.0013486980525385661,
+                            change_entropy_modified=-2.7995769187327824e-6)
 
         @test_allocations(semi, sol, allocs=1_000)
     end
