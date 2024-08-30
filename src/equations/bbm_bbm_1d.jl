@@ -476,7 +476,7 @@ end
 # Discretization that conserves
 # - the total water (integral of ``h``) as a linear invariant
 # - the total energy
-# for periodic boundary conditions, see
+# for reflecting boundary conditions, see
 # - Joshua Lampert and Hendrik Ranocha (2024)
 #   Structure-Preserving Numerical Methods for Two Nonlinear Systems of Dispersive Wave Equations
 #   [DOI: 10.48550/arXiv.2402.16669](https://doi.org/10.48550/arXiv.2402.16669)
