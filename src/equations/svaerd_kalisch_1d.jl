@@ -225,8 +225,8 @@ function assemble_system_matrix!(cache, h, D1, D1mat,
 end
 
 # Discretization that conserves
-# - the total water (integral of `h`) as a linear invariant
-# - the total momentum (integral of `h v`) as a nonlinear invariant for flat bathymetry
+# - the total water (integral of ``h``) as a linear invariant
+# - the total momentum (integral of ``h v``) as a nonlinear invariant for flat bathymetry
 # - the total modified energy
 # for periodic boundary conditions, see
 # - Joshua Lampert and Hendrik Ranocha (2024)

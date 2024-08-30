@@ -73,7 +73,7 @@ References for the hyperbolized Serre-Green-Naghdi system can be found in
   [DOI: 10.1007/s10915-021-01429-8](https://doi.org/10.1007/s10915-021-01429-8)
 
 The semidiscretization implemented here conserves
-- the total water mass (integral of `h`) as a linear invariant
+- the total water mass (integral of ``h``) as a linear invariant
 - the total modified energy
 
 for periodic boundary conditions (see Ranocha and Ricchiuto (2024)).
@@ -271,7 +271,7 @@ function create_cache(mesh, equations::HyperbolicSerreGreenNaghdiEquations1D,
 end
 
 # Discretization that conserves
-# - the total water mass (integral of `h`) as a linear invariant
+# - the total water mass (integral of ``h``) as a linear invariant
 # - the total modified energy
 # for periodic boundary conditions, see
 # - Hendrik Ranocha and Mario Ricchiuto (2024)

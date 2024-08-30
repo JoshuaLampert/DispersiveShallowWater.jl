@@ -403,8 +403,8 @@ function solve_system_matrix!(dv, system_matrix, ::BBMBBMEquations1D)
 end
 
 # Discretization that conserves
-# - the total water (integral of `h`) as a linear invariant
-# - the total momentum (integral of `v`) as a linear invariant for flat bathymetry
+# - the total water (integral of ``h``) as a linear invariant
+# - the total momentum (integral of ``v``) as a linear invariant for flat bathymetry
 # - the total energy
 # for periodic boundary conditions, see
 # - Joshua Lampert and Hendrik Ranocha (2024)
@@ -474,7 +474,7 @@ function rhs!(dq, q, t, mesh, equations::BBMBBMEquations1D, initial_condition,
 end
 
 # Discretization that conserves
-# - the total water (integral of `h`) as a linear invariant
+# - the total water (integral of ``h``) as a linear invariant
 # - the total energy
 # for periodic boundary conditions, see
 # - Joshua Lampert and Hendrik Ranocha (2024)
