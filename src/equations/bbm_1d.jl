@@ -20,6 +20,8 @@ It conserves
 - the total water mass (integral of ``h``) as a linear invariant
 - the total modified energy
 
+for periodic boundary conditions.
+
 - Thomas B. Benjamin, Jerry L. Bona and John J. Mahony (1972)
   Model equations for long waves in nonlinear dispersive systems
   [DOI: 10.1098/rsta.1972.0032](https://doi.org/10.1098/rsta.1972.0032)

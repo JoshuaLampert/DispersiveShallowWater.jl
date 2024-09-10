@@ -36,7 +36,7 @@ Lampert and Ranocha (2024). It conserves
 for periodic boundary conditions (see Lampert, Ranocha). For reflecting boundary conditions,
 the semidiscretization conserves
 - the total water (integral of ``h``) as a linear invariant
-- the total energy
+- the total energy.
 
 Additionally, it is well-balanced for the lake-at-rest stationary solution, see Lampert and Ranocha (2024).
 
