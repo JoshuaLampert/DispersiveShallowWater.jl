@@ -160,18 +160,8 @@ end
     PlotDataOverTime(semi => sol, x_value, conversion)
 end
 
-function pretty(name)
-    if name == :waterheight_total
-        return "∫η"
-    elseif name == :velocity
-        return "∫v"
-    elseif name in [:discharge, :momentum]
-        return "∫P"
-    elseif name == :entropy
-        return "∫U"
-    elseif name == :entropy_modified
-        return "∫U_mod"
-    elseif name == :l2_error
+function pretty_form_utf(name)
+    if name == :l2_error
         return "L² error"
     elseif name == :linf_error
         return "L∞ error"
@@ -196,9 +186,10 @@ end
 
         for (i, (name, integral)) in enumerate(pairs(ints))
             name in exclude && continue
+            name_function = getfield(@__MODULE__, name)
             @series begin
                 subplot --> subplot
-                label := pretty(name) * " " * label_extension
+                label := pretty_form_utf(name_function) * " " * label_extension
                 title --> "change of invariants"
                 xguide --> "t"
                 yguide --> "change of invariants"
@@ -213,7 +204,7 @@ end
             name in exclude && continue
             @series begin
                 subplot --> subplot
-                label --> pretty(name) * " " * label_extension
+                label --> pretty_form_utf(name) * " " * label_extension
                 title --> "errors"
                 xguide --> "t"
                 yguide --> "sum of errors"
