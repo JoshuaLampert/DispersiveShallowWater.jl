@@ -101,7 +101,7 @@ The inverse conversion is performed by [`cons2prim`](@ref).
     return SVector(h, hv, b)
 end
 
-function prim2cons(q, ::AbstractEquations{1, 1})
+function prim2cons(q, equations::AbstractEquations{1, 1})
     h = waterheight(q, equations)
     return SVector(h)
 end
