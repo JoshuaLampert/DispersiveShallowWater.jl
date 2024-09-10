@@ -7,7 +7,7 @@ include("test_util.jl")
 
 EXAMPLES_DIR = joinpath(examples_dir(), "svaerd_kalisch_1d")
 
-@testset "SvaerdKalisch1D" begin
+@testset "SvaerdKalischEquations1D" begin
     @trixi_testset "svaerd_kalisch_1d_manufactured" begin
         @test_trixi_include(joinpath(EXAMPLES_DIR,
                                      "svaerd_kalisch_1d_manufactured.jl"),

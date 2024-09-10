@@ -7,7 +7,7 @@ include("test_util.jl")
 
 EXAMPLES_DIR = joinpath(examples_dir(), "bbm_1d")
 
-@testset "BBM1D" begin
+@testset "BBMEquation1D" begin
     @trixi_testset "bbm_1d_basic" begin
         @test_trixi_include(joinpath(EXAMPLES_DIR, "bbm_1d_basic.jl"),
                             tspan=(0.0, 100.0),
