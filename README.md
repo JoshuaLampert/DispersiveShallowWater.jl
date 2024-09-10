@@ -12,7 +12,7 @@
 **DispersiveShallowWater.jl** is a [Julia](https://julialang.org/) package that implements structure-preserving numerical methods for dispersive shallow water models.
 To date, it provides provably conservative, entropy-conserving and well-balanced numerical schemes for some dispersive shallow water models:
 
-* the [BBM equation](https://doi.org/10.4208/cicp.OA-2020-0119)
+* the [BBM equation](https://doi.org/10.4208/cicp.OA-2020-0119),
 * the [BBM-BBM equations with varying bottom topography](https://iopscience.iop.org/article/10.1088/1361-6544/ac3c29),
 * the [dispersive shallow water model proposed by Magnus Svärd and Henrik Kalisch](https://arxiv.org/abs/2302.09924),
 * the [Serre-Green-Naghdi equations](https://arxiv.org/abs/2408.02665).
