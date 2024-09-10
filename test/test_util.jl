@@ -43,7 +43,8 @@ macro test_trixi_include(example, args...)
         if (arg.head == :(=) &&
             !(arg.args[1] in (:l2, :linf, :cons_error, :change_waterheight,
                               :change_velocity, :change_momentum, :change_entropy,
-                              :change_entropy_modified, :change_invariant_cubic, :lake_at_rest,
+                              :change_entropy_modified, :change_invariant_cubic,
+                              :lake_at_rest,
                               :atol, :rtol, :atol_ints, :rtol_ints)))
             push!(kwargs, Pair(arg.args...))
         end
@@ -130,7 +131,7 @@ macro test_trixi_include(example, args...)
 
             if !isnothing($change_invariant_cubic)
                 invariant_cubic_change_measured = ints.invariant_cubic[end] -
-                                                   ints.invariant_cubic[1]
+                                                  ints.invariant_cubic[1]
                 @test isapprox($change_invariant_cubic, invariant_cubic_change_measured,
                                atol = $atol_ints,
                                rtol = $rtol_ints)

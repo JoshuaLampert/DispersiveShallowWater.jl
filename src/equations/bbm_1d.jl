@@ -27,7 +27,8 @@ It conserves
   A Broad Class of Conservative Numerical Methods for Dispersive Wave Equations
   [DOI: 10.4208/cicp.OA-2020-0119](https://doi.org/10.4208/cicp.OA-2020-0119)
 """
-struct BBMEquation1D{Bathymetry <: AbstractBathymetry, RealT <: Real} <: AbstractBBMEquation{1, 1}
+struct BBMEquation1D{Bathymetry <: AbstractBathymetry, RealT <: Real} <:
+       AbstractBBMEquation{1, 1}
     bathymetry_type::Bathymetry # type of bathymetry
     eta0::RealT # constant still-water surface
 end
@@ -49,7 +50,7 @@ See section 4.1.3 in (there is an error in paper: it should be sech^2 instead of
 function initial_condition_convergence_test(x, t, equations::BBMEquation1D, mesh)
     c = 1.2
     A = 3 * (c - 1)
-    K = 0.5 * sqrt(1 - 1/c)
+    K = 0.5 * sqrt(1 - 1 / c)
     x_t = mod(x - c * t - xmin(mesh), xmax(mesh) - xmin(mesh)) + xmin(mesh)
     eta = A * sech(K * x_t)^2
     return SVector(eta)
@@ -77,7 +78,8 @@ function source_terms_manufactured(q, x, t, equations::BBMEquation1D)
     a4 = sinpi(t - 2 * x)
     a5 = sinpi(2 * t - 4 * x)
     a14 = exp(t / 2)
-    dq1 = -2*pi^2*(a4 + 2*pi*a3)*a14 - a14*a4/2 + pi*a14*a3 - pi*exp(t)*a5
+    dq1 = -2 * pi^2 * (a4 + 2 * pi * a3) * a14 - a14 * a4 / 2 + pi * a14 * a3 -
+          pi * exp(t) * a5
 
     return SVector(dq1)
 end
@@ -90,7 +92,7 @@ function create_cache(mesh, equations::BBMEquation1D,
     eta2 = zeros(RealT, nnodes(mesh))
     eta2_x = zero(eta2)
     eta_x = zero(eta2)
-    etaeta_x  = zero(eta2)
+    etaeta_x = zero(eta2)
     eta_xx = zero(eta2)
     cache = (; invImD2, eta2, eta2_x, eta_x, etaeta_x, eta_xx, solver.D1, solver.D2)
     if solver.D1 isa PeriodicUpwindOperators
@@ -118,7 +120,7 @@ function rhs!(dq, q, t, mesh, equations::BBMEquation1D, initial_condition,
         @.. eta2 = eta^2
         if solver.D1 isa PeriodicDerivativeOperator ||
            solver.D1 isa UniformPeriodicCoupledOperator ||
-            solver.D1 isa FourierDerivativeOperator
+           solver.D1 isa FourierDerivativeOperator
             mul!(eta2_x, solver.D1, eta2)
             mul!(eta_x, solver.D1, eta)
             @.. etaeta_x = eta * eta_x
@@ -134,7 +136,6 @@ function rhs!(dq, q, t, mesh, equations::BBMEquation1D, initial_condition,
         else
             @error "unknown type of first-derivative operator: $(typeof(solver.D1))"
         end
-
     end
 
     @trixi_timeit timer() "source terms" calc_sources!(dq, q, t, source_terms, equations,
