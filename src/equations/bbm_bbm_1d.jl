@@ -13,7 +13,7 @@ The unknown quantities of the BBM-BBM equations are the total water height ``\et
 The gravitational constant is denoted by `g` and the constant bottom topography (bathymetry) ``b = \eta_0 - D``. The water height above the bathymetry is therefore given by
 ``h = \eta - \eta_0 + D``. The BBM-BBM equations are only implemented for ``\eta_0 = 0``.
 
-Two types of variable `bathymetry_type` are supported:
+Two types of `bathymetry_type` are supported:
 - [`bathymetry_flat`](@ref): flat bathymetry (typically ``b = 0`` everywhere)
 - [`bathymetry_variable`](@ref): general variable bathymetry
 
@@ -29,7 +29,7 @@ One reference for the BBM-BBM system can be found in Bona et al. (1998).
 The semidiscretization implemented here was developed for flat bathymetry in
 Ranocha et al. (2020) and generalized for a variable bathymetry in
 Lampert and Ranocha (2024). It conserves
-- the total water (integral of ``h``) as a linear invariant
+- the total water mass (integral of ``h``) as a linear invariant
 - the total velocity (integral of ``v``) as a linear invariant for flat bathymetry
 - the total energy
 
@@ -396,10 +396,6 @@ function create_cache(mesh, equations::BBMBBMEquations1D,
     v2 = zero(etav)
     tmp2 = zero(etav)
     return (; invImD2d, invImD2n, etav, Dv, v2, tmp2)
-end
-
-function solve_system_matrix!(dv, system_matrix, ::BBMBBMEquations1D)
-    ldiv!(system_matrix, dv)
 end
 
 # Discretization that conserves

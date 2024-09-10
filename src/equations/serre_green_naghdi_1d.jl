@@ -18,7 +18,7 @@ The gravitational constant is denoted by `g` and the bottom topography
 is therefore given by ``h = \eta - \eta_0 + D``.
 The total water height is therefore given by ``\eta = h + b``.
 
-Three types of variable `bathymetry_type` are supported:
+Three types of `bathymetry_type` are supported:
 - [`bathymetry_flat`](@ref): flat bathymetry (typically ``b = 0`` everywhere)
 - [`bathymetry_mild_slope`](@ref): variable bathymetry with mild-slope approximation
 - [`bathymetry_variable`](@ref): general variable bathymetry

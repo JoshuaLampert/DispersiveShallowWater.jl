@@ -196,7 +196,9 @@ function compute_coefficients!(q, func, t, semi::Semidiscretization)
                           solver)
 end
 
-function check_bathymetry(equations, q0)
+check_bathymetry(equations, q0) = nothing
+
+function check_bathymetry(equations::AbstractShallowWaterEquations, q0)
     if equations.bathymetry_type isa BathymetryFlat
         _, _, D = q0.x
         value = first(D)

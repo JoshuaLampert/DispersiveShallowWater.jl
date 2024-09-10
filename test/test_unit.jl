@@ -106,6 +106,35 @@ using SparseArrays: sparse, SparseMatrixCSC
         @test_nowarn display(boundary_conditions)
     end
 
+    @testset "BBMEquation1D" begin
+        equations = @test_nowarn @inferred BBMEquation1D()
+        @test_nowarn print(equations)
+        @test_nowarn display(equations)
+        conversion_functions = [
+            waterheight_total,
+            waterheight,
+            entropy,
+            energy_total,
+            prim2cons,
+            prim2prim,
+            prim2phys,
+            energy_total_modified,
+            entropy_modified,
+            invariant_cubic,
+        ]
+        for conversion in conversion_functions
+            @test DispersiveShallowWater.varnames(conversion, equations) isa Tuple
+        end
+        q = [42.0]
+        @test @inferred(prim2prim(q, equations)) == q
+        @test isapprox(@inferred(cons2prim(prim2cons(q, equations), equations)), q)
+        @test @inferred(waterheight_total(q, equations)) == 42.0
+        @test @inferred(waterheight(q, equations)) == 42.0
+        @test @inferred(still_water_surface(q, equations)) == 0.0
+        @test @inferred(prim2phys(q, equations)) == @inferred(prim2prim(q, equations))
+        @test @inferred(invariant_cubic(q, equations)) == 43.0^3
+    end
+
     @testset "BBMBBMEquations1D" begin
         equations = @test_nowarn @inferred BBMBBMEquations1D(gravity_constant = 9.81)
         @test_nowarn print(equations)
