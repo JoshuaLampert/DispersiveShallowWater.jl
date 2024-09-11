@@ -317,7 +317,7 @@ depending on the derivative of the velocity ``v_x`` modeling non-hydrostatic
 contributions. For equations, which are not `AbstractShallowWaterEquations`,
 the modified total energy does not have to be an extension of the usual
 [`energy_total`](@ref) and does not have to be related to a physical energy.
-However, it is still a conserved quantity and contains derivatives of the
+However, it is still a conserved quantity and may contain derivatives of the
 solution.
 
 `q_global` is a vector of the primitive variables at ALL nodes.
