@@ -15,7 +15,7 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_1d")
                             linf=[9.756568022900591e-5],
                             cons_error=[7.105427357601002e-15],
                             change_waterheight=-7.105427357601002e-15,
-                            change_entropy_modified=6.355536918301041e-6,
+                            change_entropy_modified=-4.4198182447274803e-7,
                             change_invariant_cubic=-3.198066679033218e-6)
 
         @test_allocations(semi, sol, allocs=5_000)
@@ -55,12 +55,12 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_1d")
     @trixi_testset "bbm_1d_relaxation" begin
         @test_trixi_include(joinpath(EXAMPLES_DIR, "bbm_1d_relaxation.jl"),
                             tspan=(0.0, 100.0),
-                            l2=[0.00026259713456399205],
-                            linf=[0.00010095858421543813],
-                            cons_error=[6.217248937900877e-15],
-                            change_waterheight=6.217248937900877e-15,
-                            change_entropy_modified=1.5543122344752192e-15,
-                            change_invariant_cubic=-5.139088546002313e-5)
+                            l2=[0.00025104961489025117],
+                            linf=[9.745906869124132e-5],
+                            cons_error=[5.329070518200751e-15],
+                            change_waterheight=-5.329070518200751e-15,
+                            change_entropy_modified=-2.220446049250313e-16,
+                            change_invariant_cubic=-1.5787975371495122e-8)
 
         @test_allocations(semi, sol, allocs=5_000)
     end
@@ -72,7 +72,7 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_1d")
                             linf=[2.3226949846799627e-7],
                             cons_error=[1.1546319456101628e-14],
                             change_waterheight=-1.1546319456101628e-14,
-                            change_entropy_modified=-4.4573640600731324e-7,
+                            change_entropy_modified=-4.4266038123907947e-7,
                             change_invariant_cubic=-3.1871549026618595e-6)
 
         @test_allocations(semi, sol, allocs=5_000)
