@@ -18,7 +18,8 @@ The BBM equation is first described in Benjamin, Bona, and Mahony (1972).
 The semidiscretization implemented here is developed in Ranocha, Mitsotakis, and Ketcheson (2020).
 It conserves
 - the total water mass (integral of ``h``) as a linear invariant
-- the total modified energy
+- a quadratic invariant (integral of ``\eta^2 + \eta_x^2``), which is called here [`energy_total_modified`](@ref)
+  (and [`entropy_modified`](@ref)) because it contains derivatives of the solution
 
 for periodic boundary conditions.
 
