@@ -150,7 +150,7 @@ function rhs!(dq, q, t, mesh, equations::BBMEquation1D, initial_condition,
 end
 
 """
-    energy_total_modified!(e, q, equations::BBMEquation1D, cache)
+    energy_total_modified!(e, q_global, equations::BBMEquation1D, cache)
 
 Return the modified total energy `e` of the primitive variables `q_global` for the
 [`BBMEquation1D`](@ref). The `energy_total_modified`
