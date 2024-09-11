@@ -186,10 +186,10 @@ end
 
         for (i, (name, integral)) in enumerate(pairs(ints))
             name in exclude && continue
-            name_function = getfield(@__MODULE__, name)
+            quantity = cb.affect!.analysis_integrals[i]
             @series begin
                 subplot --> subplot
-                label := pretty_form_utf(name_function) * " " * label_extension
+                label := pretty_form_utf(quantity) * " " * label_extension
                 title --> "change of invariants"
                 xguide --> "t"
                 yguide --> "change of invariants"
