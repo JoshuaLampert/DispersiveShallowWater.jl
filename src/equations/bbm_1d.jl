@@ -96,7 +96,8 @@ function create_cache(mesh, equations::BBMEquation1D,
     eta2_x = zero(eta2)
     eta_x = zero(eta2)
     etaeta_x = zero(eta2)
-    cache = (; invImD2, eta2, eta2_x, eta_x, etaeta_x, solver.D1)
+    eta_xx = zero(eta2)
+    cache = (; invImD2, eta2, eta2_x, eta_x, etaeta_x, eta_xx, solver.D1, solver.D2)
     if solver.D1 isa PeriodicUpwindOperators
         eta_x_upwind = zero(eta2)
         cache = (; cache..., eta_x_upwind)
@@ -158,7 +159,7 @@ is a conserved quantity (for periodic boundary conditions).
 
 It is given by
 ```math
-\\frac{1}{2} \\eta^2 + \\frac{1}{2} \\eta_x^2.
+\\frac{1}{2} \\eta(\\eta - \\eta_{xx}).
 ```
 
 `q_global` is a vector of the primitive variables at ALL nodes.
@@ -169,14 +170,15 @@ See also [`energy_total_modified`](@ref).
 function energy_total_modified!(e, q_global, equations::BBMEquation1D, cache)
     eta, = q_global.x
 
-    (; D1, eta_x) = cache
+    (; D1, D2, eta_xx, tmp1) = cache
     if D1 isa PeriodicUpwindOperators
-        mul!(eta_x, D1.central, eta)
+        mul!(tmp1, D1.minus, eta)
+        mul!(eta_xx, D1.plus, tmp1)
     else
-        mul!(eta_x, D1, eta)
+        mul!(eta_xx, D2, eta)
     end
 
-    @.. e = 0.5 * (eta^2 + eta_x^2)
+    @.. e = 0.5 * eta * (eta - eta_xx)
     return nothing
 end
 

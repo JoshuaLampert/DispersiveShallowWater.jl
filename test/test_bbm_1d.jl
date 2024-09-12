@@ -15,7 +15,7 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_1d")
                             linf=[9.756568022900591e-5],
                             cons_error=[7.105427357601002e-15],
                             change_waterheight=-7.105427357601002e-15,
-                            change_entropy_modified=-4.4198182447274803e-7,
+                            change_entropy_modified=-4.4274395039067826e-7,
                             change_invariant_cubic=-3.198066679033218e-6)
 
         @test_allocations(semi, sol, allocs=5_000)
@@ -55,12 +55,12 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_1d")
     @trixi_testset "bbm_1d_relaxation" begin
         @test_trixi_include(joinpath(EXAMPLES_DIR, "bbm_1d_relaxation.jl"),
                             tspan=(0.0, 100.0),
-                            l2=[0.00025104961489025117],
-                            linf=[9.745906869124132e-5],
+                            l2=[0.0002510482044505331],
+                            linf=[9.745861147153478e-5],
                             cons_error=[5.329070518200751e-15],
-                            change_waterheight=-5.329070518200751e-15,
-                            change_entropy_modified=-2.220446049250313e-16,
-                            change_invariant_cubic=-1.5787975371495122e-8)
+                            change_waterheight=5.329070518200751e-15,
+                            change_entropy_modified=0.0,
+                            change_invariant_cubic=-1.0308752962373546e-8)
 
         @test_allocations(semi, sol, allocs=5_000)
     end
