@@ -132,7 +132,7 @@ using SparseArrays: sparse, SparseMatrixCSC
         @test @inferred(waterheight(q, equations)) == 42.0
         @test @inferred(still_water_surface(q, equations)) == 0.0
         @test @inferred(prim2phys(q, equations)) == @inferred(prim2prim(q, equations))
-        @test @inferred(invariant_cubic(q, equations)) == 43.0^3
+        @test @inferred(hamiltonian(q, equations)) == 13230.0
     end
 
     @testset "BBMBBMEquations1D" begin
