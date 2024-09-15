@@ -120,7 +120,7 @@ using SparseArrays: sparse, SparseMatrixCSC
             prim2phys,
             energy_total_modified,
             entropy_modified,
-            invariant_cubic,
+            hamiltonian,
         ]
         for conversion in conversion_functions
             @test DispersiveShallowWater.varnames(conversion, equations) isa Tuple
@@ -132,7 +132,26 @@ using SparseArrays: sparse, SparseMatrixCSC
         @test @inferred(waterheight(q, equations)) == 42.0
         @test @inferred(still_water_surface(q, equations)) == 0.0
         @test @inferred(prim2phys(q, equations)) == @inferred(prim2prim(q, equations))
-        @test @inferred(hamiltonian(q, equations)) == 13230.0
+        @testset "energy_total_modified and hamiltonian" begin
+            initial_condition = initial_condition_manufactured
+            boundary_conditions = boundary_condition_periodic
+            mesh = @inferred Mesh1D(-1.0, 1.0, 10)
+            solver = Solver(mesh, 4)
+            semi = @inferred Semidiscretization(mesh, equations, initial_condition,
+                                                solver; boundary_conditions)
+            q = @inferred DispersiveShallowWater.compute_coefficients(initial_condition,
+                                                                      0.0, semi)
+            _, _, _, cache = @inferred DispersiveShallowWater.mesh_equations_solver_cache(semi)
+            e_modified = @inferred energy_total_modified(q, equations, cache)
+            e_modified_total = @inferred DispersiveShallowWater.integrate(e_modified, semi)
+            @test isapprox(e_modified_total, 19.76398144922061)
+            U_modified = @inferred entropy_modified(q, equations, cache)
+            U_modified_total = @inferred DispersiveShallowWater.integrate(U_modified, semi)
+            @test isapprox(U_modified_total, e_modified_total)
+            h = @inferred hamiltonian(q, equations, cache)
+            h_total = @inferred DispersiveShallowWater.integrate(h, semi)
+            @test isapprox(h_total, 0.5)
+        end
     end
 
     @testset "BBMBBMEquations1D" begin
