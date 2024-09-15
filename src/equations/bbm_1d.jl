@@ -15,7 +15,8 @@ is given by ``h = \eta - \eta_0``, where ``\eta_0`` is the constant still-water 
 Currently, the equations only support a flat bathymetry ``b = 0``, see [`bathymetry_flat`](@ref).
 
 The BBM equation is first described in Benjamin, Bona, and Mahony (1972).
-The semidiscretization implemented here is developed in Ranocha, Mitsotakis, and Ketcheson (2020).
+The semidiscretization implemented here is developed in Ranocha, Mitsotakis, and Ketcheson (2020)
+for `split_form = true` and in Linders, Ranocha, and Birken (2023) for `split_form = false`.
 If `split_form` is `true` a split form in the semidiscretization is used, which conserves
 - the total water mass (integral of ``h``) as a linear invariant
 - a quadratic invariant (integral of ``\eta^2 + \eta_x^2``), which is called here [`energy_total_modified`](@ref)
@@ -33,6 +34,9 @@ for periodic boundary conditions.
 - Hendrik Ranocha, Dimitrios Mitsotakis and David I. Ketcheson (2020)
   A Broad Class of Conservative Numerical Methods for Dispersive Wave Equations
   [DOI: 10.4208/cicp.OA-2020-0119](https://doi.org/10.4208/cicp.OA-2020-0119)
+- Viktor Linders, Hendrik Ranocha and Philipp Birken (2023)
+  Resolving entropy growth from iterative methods
+  [DOI: 10.1007/s10543-023-00992-w](https://doi.org/10.1007/s10543-023-00992-w)
 """
 struct BBMEquation1D{Bathymetry <: AbstractBathymetry, RealT <: Real} <:
        AbstractBBMEquation{1, 1}
