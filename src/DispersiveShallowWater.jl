@@ -72,7 +72,7 @@ export prim2prim, prim2cons, cons2prim, prim2phys,
        bathymetry, still_water_surface,
        energy_total, entropy, lake_at_rest_error,
        energy_total_modified, entropy_modified,
-       invariant_cubic
+       hamiltonian
 
 export Mesh1D, xmin, xmax, nnodes
 

@@ -1,6 +1,6 @@
 # TODO: Use this nondimensionalized version or use dimensional version including gravity and depth?
 @doc raw"""
-    BBMEquation1D(; bathymetry_type = bathymetry_flat, eta0 = 0.0)
+    BBMEquation1D(; bathymetry_type = bathymetry_flat, eta0 = 0.0, split_form = true)
 
 BBM (Benjamin–Bona–Mahony) equation in one spatial dimension. The equations are given by
 ```math
@@ -16,10 +16,14 @@ Currently, the equations only support a flat bathymetry ``b = 0``, see [`bathyme
 
 The BBM equation is first described in Benjamin, Bona, and Mahony (1972).
 The semidiscretization implemented here is developed in Ranocha, Mitsotakis, and Ketcheson (2020).
-It conserves
+If `split_form` is `true` a split form in the semidiscretization is used, which conserves
 - the total water mass (integral of ``h``) as a linear invariant
 - a quadratic invariant (integral of ``\eta^2 + \eta_x^2``), which is called here [`energy_total_modified`](@ref)
   (and [`entropy_modified`](@ref)) because it contains derivatives of the solution
+
+for periodic boundary conditions. If `split_form` is `false` the semidiscretization conserves
+- the total water mass (integral of ``h``) as a linear invariant
+- the Hamiltonian (integral of ``1/6 \eta^3 + 1/2 \eta^2``) (see [`hamiltonian`](@ref))
 
 for periodic boundary conditions.
 
@@ -34,10 +38,11 @@ struct BBMEquation1D{Bathymetry <: AbstractBathymetry, RealT <: Real} <:
        AbstractBBMEquation{1, 1}
     bathymetry_type::Bathymetry # type of bathymetry
     eta0::RealT # constant still-water surface
+    split_form::Bool # whether to use a split-form or not
 end
 
-function BBMEquation1D(; bathymetry_type = bathymetry_flat, eta0 = 0.0)
-    BBMEquation1D(bathymetry_type, eta0)
+function BBMEquation1D(; bathymetry_type = bathymetry_flat, eta0 = 0.0, split_form = true)
+    BBMEquation1D(bathymetry_type, eta0, split_form)
 end
 
 """
@@ -126,16 +131,22 @@ function rhs!(dq, q, t, mesh, equations::BBMEquation1D, initial_condition,
            solver.D1 isa FourierDerivativeOperator
             mul!(eta2_x, solver.D1, eta2)
             mul!(eta_x, solver.D1, eta)
-            @.. etaeta_x = eta * eta_x
-            # split form
-            @.. deta = -(1 / 3 * (eta2_x + etaeta_x) + eta_x)
+            if equations.split_form
+                @.. etaeta_x = eta * eta_x
+                @.. deta = -(1 / 3 * (eta2_x + etaeta_x) + eta_x)
+            else
+                @.. deta = -(0.5 * eta2_x + eta_x)
+            end
         elseif solver.D1 isa PeriodicUpwindOperators
             mul!(eta2_x, solver.D1.central, eta2)
             mul!(eta_x_upwind, solver.D1.minus, eta)
             mul!(eta_x, solver.D1.central, eta)
-            @.. etaeta_x = eta * eta_x
-            # split form
-            @.. deta = -(1 / 3 * (eta2_x + etaeta_x) + eta_x_upwind)
+            if equations.split_form
+                @.. etaeta_x = eta * eta_x
+                @.. deta = -(1 / 3 * (eta2_x + etaeta_x) + eta_x_upwind)
+            else
+                @.. deta = -(0.5 * eta2_x + eta_x_upwind)
+            end
         else
             @error "unknown type of first-derivative operator: $(typeof(solver.D1))"
         end
@@ -179,21 +190,27 @@ function energy_total_modified!(e, q_global, equations::BBMEquation1D, cache)
     end
 
     @.. e = 0.5 * eta * (eta - eta_xx)
-    return nothing
+    return e
 end
 
 """
-    invariant_cubic(q, equations::BBMEquation1D)
+    hamiltonian!(H, q_global, equations::BBMEquation1D, cache)
 
-Return the cubic invariant of the primitive variables `q` for the
-[`BBMEquation1D`](@ref). The cubic invariant is given by
+Return the Hamiltonian `H` of the primitive variables `q_global` for the
+[`BBMEquation1D`](@ref). The Hamiltonian is given by
 ```math
-(\\eta + 1)^3.
+1/6\\eta^3 + 1/2\\eta^2.
 ```
-"""
-function invariant_cubic(q, equations::BBMEquation1D)
-    eta = waterheight_total(q, equations)
-    return (eta + 1)^3
-end
 
-varnames(::typeof(invariant_cubic), equations) = ("(η + 1)³",)
+`q_global` is a vector of the primitive variables at ALL nodes.
+
+See also [`hamiltonian`](@ref).
+"""
+function hamiltonian!(H, q_global, equations::BBMEquation1D, cache)
+    eta, = q_global.x
+    (; eta2, tmp1) = cache
+    @.. eta2 = eta^2
+    @.. tmp1 = eta^3
+    @.. H = 1/6 * tmp1 + 1/2 * eta2
+    return H
+end

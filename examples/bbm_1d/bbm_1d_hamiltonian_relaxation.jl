@@ -4,7 +4,7 @@ using DispersiveShallowWater
 ###############################################################################
 # Semidiscretization of the BBM equation (conserves the quadratic invariant)
 
-equations = BBMEquation1D(split_form = true)
+equations = BBMEquation1D(split_form = false)
 
 initial_condition = initial_condition_convergence_test
 boundary_conditions = boundary_condition_periodic
@@ -33,7 +33,10 @@ analysis_callback = AnalysisCallback(semi; interval = 10,
                                      extra_analysis_integrals = (waterheight_total,
                                                                  entropy_modified,
                                                                  hamiltonian))
-callbacks = CallbackSet(analysis_callback, summary_callback)
+
+relaxation_callback = RelaxationCallback(invariant = hamiltonian)
+# Always put relaxation_callback before analysis_callback to guarantee conservation of the invariant
+callbacks = CallbackSet(relaxation_callback, analysis_callback, summary_callback)
 
 saveat = range(tspan..., length = 100)
 sol = solve(ode, Tsit5(), abstol = 1e-7, reltol = 1e-7,

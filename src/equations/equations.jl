@@ -373,6 +373,28 @@ In-place version of [`entropy_modified`](@ref).
 
 varnames(::typeof(entropy_modified), equations) = ("U_modified",)
 
+# The Hamiltonian takes the whole `q_global` for every point in space
+"""
+    hamiltonian(q_global, equations, cache)
+
+Return the Hamiltonian of the primitive variables `q_global` for the
+`equations`. The Hamiltonian is a conserved quantity and may contain
+derivatives of the solution.
+
+`q_global` is a vector of the primitive variables at ALL nodes.
+`cache` needs to hold the SBP operators used by the `solver` if non-hydrostatic
+terms are present.
+
+Internally, this function allocates a vector for the output and
+calls [`DispersiveShallowWater.hamiltonian!`](@ref).
+"""
+function hamiltonian(q_global, equations::AbstractEquations, cache)
+    H = similar(q_global.x[begin])
+    return hamiltonian!(H, q_global, equations, cache)
+end
+
+varnames(::typeof(hamiltonian), equations) = ("H",)
+
 # Add methods to show some information on systems of equations.
 function Base.show(io::IO, equations::AbstractEquations)
     # Since this is not performance-critical, we can use `@nospecialize` to reduce latency.

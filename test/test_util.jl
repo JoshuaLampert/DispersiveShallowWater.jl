@@ -8,7 +8,7 @@ using Test: @test
                                 change_velocity=nothing,
                                 change_entropy=nothing,
                                 change_entropy_modified=nothing,
-                                change_invariant_cubic=nothing,
+                                change_hamiltonian=nothing,
                                 lake_at_rest=nothing,
                                 atol=1e-12, rtol=sqrt(eps()),
                                 atol_ints=1e-11, rtol_ints=sqrt(eps()))
@@ -31,7 +31,7 @@ macro test_trixi_include(example, args...)
     local change_momentum = get_kwarg(args, :change_momentum, nothing)
     local change_entropy = get_kwarg(args, :change_entropy, nothing)
     local change_entropy_modified = get_kwarg(args, :change_entropy_modified, nothing)
-    local change_invariant_cubic = get_kwarg(args, :change_invariant_cubic, nothing)
+    local change_hamiltonian = get_kwarg(args, :change_hamiltonian, nothing)
     local lake_at_rest = get_kwarg(args, :lake_at_rest, nothing)
     local atol = get_kwarg(args, :atol, 1e-12)
     local rtol = get_kwarg(args, :rtol, sqrt(eps()))
@@ -43,7 +43,7 @@ macro test_trixi_include(example, args...)
         if (arg.head == :(=) &&
             !(arg.args[1] in (:l2, :linf, :cons_error, :change_waterheight,
                               :change_velocity, :change_momentum, :change_entropy,
-                              :change_entropy_modified, :change_invariant_cubic,
+                              :change_entropy_modified, :change_hamiltonian,
                               :lake_at_rest,
                               :atol, :rtol, :atol_ints, :rtol_ints)))
             push!(kwargs, Pair(arg.args...))
@@ -91,7 +91,7 @@ macro test_trixi_include(example, args...)
         if !isnothing($change_waterheight) || !isnothing($change_velocity) ||
            !isnothing($change_momentum) ||
            !isnothing($change_entropy) || !isnothing($change_entropy_modified) ||
-           !isnothing($change_invariant_cubic) || !isnothing($lake_at_rest)
+           !isnothing($change_hamiltonian) || !isnothing($lake_at_rest)
             ints = integrals(analysis_callback)
 
             if !isnothing($change_waterheight)
@@ -129,10 +129,10 @@ macro test_trixi_include(example, args...)
                                rtol = $rtol_ints)
             end
 
-            if !isnothing($change_invariant_cubic)
-                invariant_cubic_change_measured = ints.invariant_cubic[end] -
-                                                  ints.invariant_cubic[1]
-                @test isapprox($change_invariant_cubic, invariant_cubic_change_measured,
+            if !isnothing($change_hamiltonian)
+                change_hamiltonian_change_measured = ints.hamiltonian[end] -
+                                                  ints.hamiltonian[1]
+                @test isapprox($change_hamiltonian, change_hamiltonian_change_measured,
                                atol = $atol_ints,
                                rtol = $rtol_ints)
             end

@@ -32,7 +32,7 @@ analysis_callback = AnalysisCallback(semi; interval = 10,
                                      extra_analysis_errors = (:conservation_error,),
                                      extra_analysis_integrals = (waterheight_total,
                                                                  entropy_modified,
-                                                                 invariant_cubic))
+                                                                 hamiltonian))
 
 relaxation_callback = RelaxationCallback(invariant = entropy_modified)
 # Always put relaxation_callback before analysis_callback to guarantee conservation of the invariant

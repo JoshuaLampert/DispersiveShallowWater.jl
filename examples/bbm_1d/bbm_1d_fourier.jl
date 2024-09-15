@@ -34,7 +34,7 @@ analysis_callback = AnalysisCallback(semi; interval = 10,
                                      extra_analysis_errors = (:conservation_error,),
                                      extra_analysis_integrals = (waterheight_total,
                                                                  entropy_modified,
-                                                                 invariant_cubic))
+                                                                 hamiltonian))
 callbacks = CallbackSet(analysis_callback, summary_callback)
 
 saveat = range(tspan..., length = 100)
