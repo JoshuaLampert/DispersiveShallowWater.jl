@@ -211,6 +211,6 @@ function hamiltonian!(H, q_global, equations::BBMEquation1D, cache)
     (; eta2, tmp1) = cache
     @.. eta2 = eta^2
     @.. tmp1 = eta^3
-    @.. H = 1/6 * tmp1 + 1/2 * eta2
+    @.. H = 1 / 6 * tmp1 + 1 / 2 * eta2
     return H
 end
