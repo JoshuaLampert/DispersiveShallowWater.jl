@@ -19,7 +19,7 @@ If `l2`, `linf` or `cons_error` are specified, in addition the resulting L2/Linf
 errors are compared approximately against these reference values, using `atol, rtol`
 as absolute/relative tolerance.
 If `change_waterheight`, `change_velocity`, `change_momemtum`, `change_entropy`, `change_entropy_modified`,
-`invariant_cubic`, or `lake_at_rest` are specified, in addition the resulting changes of the different errors are
+`change_hamiltonian`, or `lake_at_rest` are specified, in addition the resulting changes of the different errors are
 compared approximately against these reference values, using `atol_ints`, `rtol_ints` as absolute/relative tolerance.
 """
 macro test_trixi_include(example, args...)
