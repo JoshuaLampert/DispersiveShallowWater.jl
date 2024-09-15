@@ -131,7 +131,7 @@ macro test_trixi_include(example, args...)
 
             if !isnothing($change_hamiltonian)
                 change_hamiltonian_change_measured = ints.hamiltonian[end] -
-                                                  ints.hamiltonian[1]
+                                                     ints.hamiltonian[1]
                 @test isapprox($change_hamiltonian, change_hamiltonian_change_measured,
                                atol = $atol_ints,
                                rtol = $rtol_ints)
