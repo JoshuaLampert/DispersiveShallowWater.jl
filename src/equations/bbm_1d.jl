@@ -54,7 +54,7 @@ end
 
 A travelling-wave solution used for convergence tests in a periodic domain.
 
-See section 4.1.3 in (there is an error in paper: it should be sech^2 instead of cosh):
+See section 4.1.3 in (there is an error in paper: it should be `sech^2` instead of `cosh`):
 - Hendrik Ranocha, Dimitrios Mitsotakis and David I. Ketcheson (2020)
   A Broad Class of Conservative Numerical Methods for Dispersive Wave Equations
   [DOI: 10.4208/cicp.OA-2020-0119](https://doi.org/10.4208/cicp.OA-2020-0119)
@@ -203,7 +203,7 @@ end
 Return the Hamiltonian `H` of the primitive variables `q_global` for the
 [`BBMEquation1D`](@ref). The Hamiltonian is given by
 ```math
-1/6\\eta^3 + 1/2\\eta^2.
+\\frac{1}{6}\\eta^3 + \\frac{1}{2}\\eta^2.
 ```
 
 `q_global` is a vector of the primitive variables at ALL nodes.
