@@ -2,7 +2,7 @@ using OrdinaryDiffEq
 using DispersiveShallowWater
 
 ###############################################################################
-# Semidiscretization of the BBM equation (conserves the quadratic invariant)
+# Semidiscretization of the BBM equation (conserves the cubic Hamiltonian)
 
 equations = BBMEquation1D(split_form = false)
 
