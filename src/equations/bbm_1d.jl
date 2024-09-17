@@ -223,7 +223,7 @@ end
 Return the Hamiltonian `H` of the primitive variables `q_global` for the
 [`BBMEquation1D`](@ref). The Hamiltonian is given by
 ```math
-\\frac{1}{4}\\sqrt{\frac{g}{D}}\\eta^3 + \\frac{1}{2}\\sqrt{gD}\\eta^2.
+\\frac{1}{4}\\sqrt{\\frac{g}{D}}\\eta^3 + \\frac{1}{2}\\sqrt{gD}\\eta^2.
 ```
 
 `q_global` is a vector of the primitive variables at ALL nodes.
