@@ -4,7 +4,7 @@ using DispersiveShallowWater
 ###############################################################################
 # Semidiscretization of the BBM equation
 
-equations = BBMEquation1D()
+equations = BBMEquation1D(gravity_constant = 9.81, D = 2.0)
 
 initial_condition = initial_condition_manufactured
 source_terms = source_terms_manufactured

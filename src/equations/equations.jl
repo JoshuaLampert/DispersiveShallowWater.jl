@@ -128,9 +128,11 @@ The inverse conversion is performed by [`prim2cons`](@ref).
     return SVector(eta, v, D)
 end
 
-function cons2prim(u, ::AbstractEquations{1, 1})
+function cons2prim(u, equations::AbstractEquations{1, 1})
     h, = u
-    b = 0.0
+    eta0 = equations.eta0
+    D = equations.D
+    b = eta0 - D
     eta = h + b
     return SVector(eta)
 end
@@ -221,7 +223,7 @@ end
     return q[3]
 end
 
-still_waterdepth(q, equations::AbstractEquations{1, 1}) = still_water_surface(q, equations)
+still_waterdepth(q, equations::AbstractEquations{1, 1}) = equations.D
 
 """
     bathymetry(q, equations)
@@ -256,9 +258,8 @@ end
     gravity_constant(equations)
 
 Return the gravity constant ``g`` for a given set of `equations`.
-See also [`AbstractShallowWaterEquations`](@ref).
 """
-@inline function gravity_constant(equations::AbstractShallowWaterEquations)
+@inline function gravity_constant(equations::AbstractEquations)
     return equations.gravity
 end
 

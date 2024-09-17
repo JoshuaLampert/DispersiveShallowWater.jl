@@ -4,7 +4,7 @@ using DispersiveShallowWater
 ###############################################################################
 # Semidiscretization of the BBM equation (conserves the cubic Hamiltonian)
 
-equations = BBMEquation1D(split_form = false)
+equations = BBMEquation1D(gravity_constant = 9.81, split_form = false)
 
 initial_condition = initial_condition_convergence_test
 boundary_conditions = boundary_condition_periodic

@@ -1,18 +1,20 @@
-# TODO: Use this nondimensionalized version or use dimensional version including gravity and depth?
 @doc raw"""
-    BBMEquation1D(; bathymetry_type = bathymetry_flat, eta0 = 0.0, split_form = true)
+    BBMEquation1D(; bathymetry_type = bathymetry_flat,
+                  gravity_constant, D = 1.0, eta0 = 0.0, split_form = true)
 
 BBM (Benjamin–Bona–Mahony) equation in one spatial dimension. The equations are given by
 ```math
 \begin{aligned}
-  \eta_t + \eta\eta_x + \eta_x - \eta_{xxt} &= 0.
+  \eta_t + \sqrt{gD}\eta_x + \frac{3}{2}\sqrt{\frac{g}{D}}\eta\eta_x - \frac{1}{6}D^2\eta_{xxt} &= 0.
 \end{aligned}
 ```
 
-The unknown quantity of the BBM equation is the total water height ``\eta``. The water height
-is given by ``h = \eta - \eta_0``, where ``\eta_0`` is the constant still-water surface.
+The unknown quantity of the BBM equation is the total water height ``\eta``.
+The gravitational constant is denoted by `g` and the constant bottom topography (bathymetry) ``b = \eta_0 - D``,
+where ``\eta_0`` is the constant still-water surface and ``D`` the still-water depth. The water height above
+the bathymetry is therefore given by ``h = \eta - \eta_0 + D``. The BBM equation is only implemented for ``\eta_0 = 0``.
 
-Currently, the equations only support a flat bathymetry ``b = 0``, see [`bathymetry_flat`](@ref).
+Currently, the equations only support a flat bathymetry, see [`bathymetry_flat`](@ref).
 
 The BBM equation is first described in Benjamin, Bona, and Mahony (1972).
 The semidiscretization implemented here is developed in Ranocha, Mitsotakis, and Ketcheson (2020)
@@ -41,18 +43,22 @@ for periodic boundary conditions.
 struct BBMEquation1D{Bathymetry <: AbstractBathymetry, RealT <: Real} <:
        AbstractBBMEquation{1, 1}
     bathymetry_type::Bathymetry # type of bathymetry
+    gravity::RealT # gravitational constant
+    D::RealT # still-water depth
     eta0::RealT # constant still-water surface
     split_form::Bool # whether to use a split-form or not
 end
 
-function BBMEquation1D(; bathymetry_type = bathymetry_flat, eta0 = 0.0, split_form = true)
-    BBMEquation1D(bathymetry_type, eta0, split_form)
+function BBMEquation1D(; bathymetry_type = bathymetry_flat,
+                       gravity_constant, D = 1.0, eta0 = 0.0, split_form = true)
+    BBMEquation1D(bathymetry_type, gravity_constant, D, eta0, split_form)
 end
 
 """
     initial_condition_convergence_test(x, t, equations::BBMEquation1D, mesh)
 
-A travelling-wave solution used for convergence tests in a periodic domain.
+A travelling-wave solution used for convergence tests in a periodic domain, here generalized
+for dimensional variables.
 
 See section 4.1.3 in (there is an error in paper: it should be `sech^2` instead of `cosh`):
 - Hendrik Ranocha, Dimitrios Mitsotakis and David I. Ketcheson (2020)
@@ -60,9 +66,14 @@ See section 4.1.3 in (there is an error in paper: it should be `sech^2` instead 
   [DOI: 10.4208/cicp.OA-2020-0119](https://doi.org/10.4208/cicp.OA-2020-0119)
 """
 function initial_condition_convergence_test(x, t, equations::BBMEquation1D, mesh)
-    c = 1.2
-    A = 3 * (c - 1)
-    K = 0.5 * sqrt(1 - 1 / c)
+    g = gravity_constant(equations)
+    D = equations.D
+    alpha = sqrt(g * D)
+    beta = 3 / 2 * sqrt(g / D)
+    gamma = 1 / 6 * D^2
+    c = 1.2 * alpha
+    A = 3 * (c - alpha) / beta
+    K = 0.5 * sqrt(1 / gamma * (1 - alpha / c))
     x_t = mod(x - c * t - xmin(mesh), xmax(mesh) - xmin(mesh)) + xmin(mesh)
     eta = A * sech(K * x_t)^2
     return SVector(eta)
@@ -86,12 +97,16 @@ end
 A smooth manufactured solution in combination with [`initial_condition_manufactured`](@ref).
 """
 function source_terms_manufactured(q, x, t, equations::BBMEquation1D)
+    g = gravity_constant(equations)
+    D = still_waterdepth(q, equations)
+    a1 = sqrt(g * D)
+    a2 = sqrt(g / D)
     a3 = cospi(t - 2 * x)
     a4 = sinpi(t - 2 * x)
     a5 = sinpi(2 * t - 4 * x)
-    a14 = exp(t / 2)
-    dq1 = -2 * pi^2 * (a4 + 2 * pi * a3) * a14 - a14 * a4 / 2 + pi * a14 * a3 -
-          pi * exp(t) * a5
+    a6 = exp(t / 2)
+    dq1 = -pi^2 * D^2 * (a4 + 2 * pi * a3) * a6 / 3 - 3 * pi * a2 * exp(t) * a5 / 2 +
+          2 * pi * a1 * a6 * a3 - a6 * a4 / 2 - pi * a6 * a3
 
     return SVector(dq1)
 end
@@ -100,13 +115,18 @@ function create_cache(mesh, equations::BBMEquation1D,
                       solver, initial_condition,
                       ::BoundaryConditionPeriodic,
                       RealT, uEltype)
-    invImD2 = lu(I - sparse(solver.D2))
+    D = equations.D
+    invImD2 = lu(I - 1 / 6 * D^2 * sparse(solver.D2))
     eta2 = zeros(RealT, nnodes(mesh))
     eta2_x = zero(eta2)
     eta_x = zero(eta2)
     etaeta_x = zero(eta2)
     eta_xx = zero(eta2)
-    cache = (; invImD2, eta2, eta2_x, eta_x, etaeta_x, eta_xx, solver.D1, solver.D2)
+    g = gravity_constant(equations)
+    c_0 = sqrt(g * D)
+    c_1 = sqrt(g / D)
+    cache = (; invImD2, eta2, eta2_x, eta_x, etaeta_x, eta_xx, c_0, c_1,
+             solver.D1, solver.D2)
     if solver.D1 isa PeriodicUpwindOperators
         eta_x_upwind = zero(eta2)
         cache = (; cache..., eta_x_upwind)
@@ -120,14 +140,14 @@ end
 #   [DOI: 10.4208/cicp.OA-2020-0119](https://doi.org/10.4208/cicp.OA-2020-0119)
 function rhs!(dq, q, t, mesh, equations::BBMEquation1D, initial_condition,
               ::BoundaryConditionPeriodic, source_terms, solver, cache)
-    (; invImD2, eta2, eta2_x, eta_x, etaeta_x) = cache
+    (; invImD2, eta2, eta2_x, eta_x, etaeta_x, c_0, c_1) = cache
     if solver.D1 isa PeriodicUpwindOperators
         (; eta_x_upwind) = cache
     end
 
     eta, = q.x
     deta, = dq.x
-    # energy and mass conservative semidiscretization
+
     @trixi_timeit timer() "hyperbolic" begin
         @.. eta2 = eta^2
         if solver.D1 isa PeriodicDerivativeOperator ||
@@ -137,9 +157,9 @@ function rhs!(dq, q, t, mesh, equations::BBMEquation1D, initial_condition,
             mul!(eta_x, solver.D1, eta)
             if equations.split_form
                 @.. etaeta_x = eta * eta_x
-                @.. deta = -(1 / 3 * (eta2_x + etaeta_x) + eta_x)
+                @.. deta = -(0.5 * c_1 * (eta2_x + etaeta_x) + c_0 * eta_x)
             else
-                @.. deta = -(0.5 * eta2_x + eta_x)
+                @.. deta = -(0.75 * c_1 * eta2_x + c_0 * eta_x)
             end
         elseif solver.D1 isa PeriodicUpwindOperators
             mul!(eta2_x, solver.D1.central, eta2)
@@ -147,9 +167,9 @@ function rhs!(dq, q, t, mesh, equations::BBMEquation1D, initial_condition,
             mul!(eta_x, solver.D1.central, eta)
             if equations.split_form
                 @.. etaeta_x = eta * eta_x
-                @.. deta = -(1 / 3 * (eta2_x + etaeta_x) + eta_x_upwind)
+                @.. deta = -(0.5 * c_1 * (eta2_x + etaeta_x) + c_0 * eta_x_upwind)
             else
-                @.. deta = -(0.5 * eta2_x + eta_x_upwind)
+                @.. deta = -(0.75 * c_1 * eta2_x + c_0 * eta_x_upwind)
             end
         else
             @error "unknown type of first-derivative operator: $(typeof(solver.D1))"
@@ -203,7 +223,7 @@ end
 Return the Hamiltonian `H` of the primitive variables `q_global` for the
 [`BBMEquation1D`](@ref). The Hamiltonian is given by
 ```math
-\\frac{1}{6}\\eta^3 + \\frac{1}{2}\\eta^2.
+\\frac{1}{4}\\sqrt{\frac{g}{D}}\\eta^3 + \\frac{1}{2}\\sqrt{gD}\\eta^2.
 ```
 
 `q_global` is a vector of the primitive variables at ALL nodes.
@@ -212,9 +232,9 @@ See also [`hamiltonian`](@ref).
 """
 function hamiltonian!(H, q_global, equations::BBMEquation1D, cache)
     eta, = q_global.x
-    (; eta2, tmp1) = cache
-    @.. eta2 = eta^2
-    @.. tmp1 = eta^3
-    @.. H = 1 / 6 * tmp1 + 1 / 2 * eta2
+    (; c_0, c_1, eta2, tmp1) = cache
+    @.. eta2 = c_0 * eta^2
+    @.. tmp1 = c_1 * eta^3
+    @.. H = 1 / 4 * tmp1 + 1 / 2 * eta2
     return H
 end
