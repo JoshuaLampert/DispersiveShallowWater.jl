@@ -22,7 +22,7 @@ for `split_form = true` and in Linders, Ranocha, and Birken (2023) for `split_fo
 If `split_form` is `true`, a split form in the semidiscretization is used, which conserves
 - the total water mass (integral of ``h``) as a linear invariant
 - a quadratic invariant (integral of ``1/2\eta(\eta - 1/6D^2\eta_{xx})`` or for periodic boundary conditions
-  equivalently ``\eta^2 + 1/6D^2\eta_x^2``), which is called here [`energy_total_modified`](@ref)
+  equivalently ``1/2(\eta^2 + 1/6D^2\eta_x^2)``), which is called here [`energy_total_modified`](@ref)
   (and [`entropy_modified`](@ref)) because it contains derivatives of the solution
 
 for periodic boundary conditions. If `split_form` is `false` the semidiscretization conserves
