@@ -21,7 +21,8 @@ The semidiscretization implemented here is developed in Ranocha, Mitsotakis, and
 for `split_form = true` and in Linders, Ranocha, and Birken (2023) for `split_form = false`.
 If `split_form` is `true`, a split form in the semidiscretization is used, which conserves
 - the total water mass (integral of ``h``) as a linear invariant
-- a quadratic invariant (integral of ``1/2\eta(\eta - 1/6D^2\eta_{xx})``), which is called here [`energy_total_modified`](@ref)
+- a quadratic invariant (integral of ``1/2\eta(\eta - 1/6D^2\eta_{xx})`` or for periodic boundary conditions
+  equivalently ``\eta^2 + 1/6D^2\eta_x^2``), which is called here [`energy_total_modified`](@ref)
   (and [`entropy_modified`](@ref)) because it contains derivatives of the solution
 
 for periodic boundary conditions. If `split_form` is `false` the semidiscretization conserves
@@ -131,10 +132,16 @@ function create_cache(mesh, equations::BBMEquation1D,
     return cache
 end
 
-# Discretization that conserves the mass for eta and the modified energy for periodic boundary conditions, see
+# For `equations.split_form == true`, the discretization conserves the mass for eta and the
+# modified energy for periodic boundary conditions, see
 # - Hendrik Ranocha, Dimitrios Mitsotakis and David I. Ketcheson (2020)
 #   A Broad Class of Conservative Numerical Methods for Dispersive Wave Equations
 #   [DOI: 10.4208/cicp.OA-2020-0119](https://doi.org/10.4208/cicp.OA-2020-0119)
+# For `equations.split_form == false`, the discretization conserves the mass for eta and the
+# Hamiltonian for periodic boundary conditions, see
+# - Viktor Linders, Hendrik Ranocha and Philipp Birken (2023)
+#   Resolving entropy growth from iterative methods
+#   [DOI: 10.1007/s10543-023-00992-w](https://doi.org/10.1007/s10543-023-00992-w)
 function rhs!(dq, q, t, mesh, equations::BBMEquation1D, initial_condition,
               ::BoundaryConditionPeriodic, source_terms, solver, cache)
     (; invImD2, eta2, eta2_x, eta_x, etaeta_x, c_0, c_1) = cache
