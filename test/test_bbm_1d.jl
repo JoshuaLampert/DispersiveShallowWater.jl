@@ -15,7 +15,7 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_1d")
                             linf=[0.011361008348288737],
                             cons_error=[1.3322676295501878e-15],
                             change_waterheight=1.3322676295501878e-15,
-                            change_entropy_modified=-0.0002008080784857147,
+                            change_entropy_modified=-8.852448858398532e-7,
                             change_hamiltonian=-4.366246803000351e-6)
 
         @test_allocations(semi, sol, allocs=5_000)
@@ -60,7 +60,7 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_1d")
                             linf=[0.0102691348638429],
                             cons_error=[4.218847493575595e-15],
                             change_waterheight=4.218847493575595e-15,
-                            change_entropy_modified=-0.00020652422308070628,
+                            change_entropy_modified=-5.764463673341158e-7,
                             change_hamiltonian=-3.3263833076890847e-6)
 
         @test_allocations(semi, sol, allocs=5_000)
@@ -100,12 +100,12 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_1d")
     @trixi_testset "bbm_1d_relaxation" begin
         @test_trixi_include(joinpath(EXAMPLES_DIR, "bbm_1d_relaxation.jl"),
                             tspan=(0.0, 100.0),
-                            l2=[0.012549194908196365],
-                            linf=[0.007023520502370539],
-                            cons_error=[2.886579864025407e-15],
-                            change_waterheight=2.886579864025407e-15,
-                            change_entropy_modified=-2.7755575615628914e-16,
-                            change_hamiltonian=-1.7181174261082788e-9)
+                            l2=[0.020884321819757214],
+                            linf=[0.011350059432479132],
+                            cons_error=[2.220446049250313e-15],
+                            change_waterheight=2.220446049250313e-15,
+                            change_entropy_modified=2.7755575615628914e-17,
+                            change_hamiltonian=-1.039007974656947e-6)
 
         @test_allocations(semi, sol, allocs=5_000)
     end
@@ -117,7 +117,7 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_1d")
                             linf=[0.010258179709480952],
                             cons_error=[3.552713678800501e-15],
                             change_waterheight=3.552713678800501e-15,
-                            change_entropy_modified=-0.00020541916801042337,
+                            change_entropy_modified=3.085709884831367e-7,
                             change_hamiltonian=4.440892098500626e-16)
 
         @test_allocations(semi, sol, allocs=5_000)
@@ -130,7 +130,7 @@ EXAMPLES_DIR = joinpath(examples_dir(), "bbm_1d")
                             linf=[1.0044426771715909e-5],
                             cons_error=[6.439293542825908e-15],
                             change_waterheight=-6.439293542825908e-15,
-                            change_entropy_modified=-1.0284566085427826e-6,
+                            change_entropy_modified=-8.734545181576792e-7,
                             change_hamiltonian=-3.282887288680314e-6)
 
         @test_allocations(semi, sol, allocs=5_000)

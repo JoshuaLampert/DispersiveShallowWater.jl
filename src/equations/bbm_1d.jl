@@ -21,7 +21,7 @@ The semidiscretization implemented here is developed in Ranocha, Mitsotakis, and
 for `split_form = true` and in Linders, Ranocha, and Birken (2023) for `split_form = false`.
 If `split_form` is `true` a split form in the semidiscretization is used, which conserves
 - the total water mass (integral of ``h``) as a linear invariant
-- a quadratic invariant (integral of ``\eta^2 + \eta_x^2``), which is called here [`energy_total_modified`](@ref)
+- a quadratic invariant (integral of ``1/2\eta(\eta - 1/6D^2\eta_{xx})``), which is called here [`energy_total_modified`](@ref)
   (and [`entropy_modified`](@ref)) because it contains derivatives of the solution
 
 for periodic boundary conditions. If `split_form` is `false` the semidiscretization conserves
@@ -194,7 +194,7 @@ is a conserved quantity (for periodic boundary conditions).
 
 It is given by
 ```math
-\\frac{1}{2} \\eta(\\eta - \\eta_{xx}).
+\\frac{1}{2} \\eta(\\eta - \\frac{1}{6}D^2\\eta_{xx}).
 ```
 
 `q_global` is a vector of the primitive variables at ALL nodes.
@@ -204,6 +204,7 @@ See also [`energy_total_modified`](@ref).
 """
 function energy_total_modified!(e, q_global, equations::BBMEquation1D, cache)
     eta, = q_global.x
+    D = equations.D
 
     (; D1, D2, eta_xx, tmp1) = cache
     if D1 isa PeriodicUpwindOperators
@@ -213,7 +214,7 @@ function energy_total_modified!(e, q_global, equations::BBMEquation1D, cache)
         mul!(eta_xx, D2, eta)
     end
 
-    @.. e = 0.5 * eta * (eta - eta_xx)
+    @.. e = 0.5 * eta * (eta - 1 / 6 * D^2 * eta_xx)
     return e
 end
 
