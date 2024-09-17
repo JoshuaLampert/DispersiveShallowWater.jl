@@ -1,4 +1,4 @@
-module TestBBMBBM1D
+module TestBBM1D
 
 using Test
 using DispersiveShallowWater
