@@ -1,6 +1,5 @@
 @doc raw"""
-    BBMEquation1D(; bathymetry_type = bathymetry_flat,
-                  gravity_constant, D = 1.0, eta0 = 0.0, split_form = true)
+    BBMEquation1D(; gravity_constant, D = 1.0, eta0 = 0.0, split_form = true)
 
 BBM (Benjamin–Bona–Mahony) equation in one spatial dimension.
 The equation is given by
@@ -15,7 +14,7 @@ The gravitational constant is denoted by `g` and the constant bottom topography 
 where ``\eta_0`` is the constant still-water surface and ``D`` the still-water depth. The water height above
 the bathymetry is therefore given by ``h = \eta - \eta_0 + D``. The BBM equation is only implemented for ``\eta_0 = 0``.
 
-Currently, the equations only support a flat bathymetry, see [`bathymetry_flat`](@ref).
+The equations only support a flat bathymetry.
 
 The BBM equation is first described in Benjamin, Bona, and Mahony (1972).
 The semidiscretization implemented here is developed in Ranocha, Mitsotakis, and Ketcheson (2020)
@@ -41,18 +40,15 @@ for periodic boundary conditions.
   Resolving entropy growth from iterative methods
   [DOI: 10.1007/s10543-023-00992-w](https://doi.org/10.1007/s10543-023-00992-w)
 """
-struct BBMEquation1D{Bathymetry <: AbstractBathymetry, RealT <: Real} <:
-       AbstractBBMEquation{1, 1}
-    bathymetry_type::Bathymetry # type of bathymetry
+struct BBMEquation1D{RealT <: Real} <: AbstractBBMEquation{1, 1}
     gravity::RealT # gravitational constant
     D::RealT # still-water depth
     eta0::RealT # constant still-water surface
     split_form::Bool # whether to use a split-form or not
 end
 
-function BBMEquation1D(; bathymetry_type = bathymetry_flat,
-                       gravity_constant, D = 1.0, eta0 = 0.0, split_form = true)
-    BBMEquation1D(bathymetry_type, gravity_constant, D, eta0, split_form)
+function BBMEquation1D(; gravity_constant, D = 1.0, eta0 = 0.0, split_form = true)
+    BBMEquation1D(gravity_constant, D, eta0, split_form)
 end
 
 """
