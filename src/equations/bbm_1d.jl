@@ -2,7 +2,8 @@
     BBMEquation1D(; bathymetry_type = bathymetry_flat,
                   gravity_constant, D = 1.0, eta0 = 0.0, split_form = true)
 
-BBM (Benjamin–Bona–Mahony) equation in one spatial dimension. The equations are given by
+BBM (Benjamin–Bona–Mahony) equation in one spatial dimension.
+The equation is given by
 ```math
 \begin{aligned}
   \eta_t + \sqrt{gD}\eta_x + \frac{3}{2}\sqrt{\frac{g}{D}}\eta\eta_x - \frac{1}{6}D^2\eta_{xxt} &= 0.
@@ -19,7 +20,7 @@ Currently, the equations only support a flat bathymetry, see [`bathymetry_flat`]
 The BBM equation is first described in Benjamin, Bona, and Mahony (1972).
 The semidiscretization implemented here is developed in Ranocha, Mitsotakis, and Ketcheson (2020)
 for `split_form = true` and in Linders, Ranocha, and Birken (2023) for `split_form = false`.
-If `split_form` is `true` a split form in the semidiscretization is used, which conserves
+If `split_form` is `true`, a split form in the semidiscretization is used, which conserves
 - the total water mass (integral of ``h``) as a linear invariant
 - a quadratic invariant (integral of ``1/2\eta(\eta - 1/6D^2\eta_{xx})``), which is called here [`energy_total_modified`](@ref)
   (and [`entropy_modified`](@ref)) because it contains derivatives of the solution
