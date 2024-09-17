@@ -26,7 +26,7 @@ If `split_form` is `true` a split form in the semidiscretization is used, which 
 
 for periodic boundary conditions. If `split_form` is `false` the semidiscretization conserves
 - the total water mass (integral of ``h``) as a linear invariant
-- the Hamiltonian (integral of ``1/4\sqrt{g/D}}\eta^3 + 1/2\\sqrt{gD}\eta^2``) (see [`hamiltonian`](@ref))
+- the Hamiltonian (integral of ``1/4\sqrt{g/D}\eta^3 + 1/2\sqrt{gD}\eta^2``) (see [`hamiltonian`](@ref))
 
 for periodic boundary conditions.
 
