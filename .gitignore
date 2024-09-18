@@ -9,3 +9,4 @@ out*/
 run
 run/*
 **/*.code-workspace
+.vscode/

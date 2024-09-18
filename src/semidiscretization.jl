@@ -147,12 +147,13 @@ end
 # Obtain the function, which has an additional `!` appended to the name
 inplace_version(f) = getfield(@__MODULE__, Symbol(string(nameof(f)) * "!"))
 
-# The entropy/energy of the Svärd-Kalisch and Serre-Green-Naghdi equations
-# takes the whole `q` for every point in space since it requires
+# The modified entropy/energy and the Hamiltonian
+# take the whole `q` for every point in space since it requires
 # the derivative of the velocity `v_x`.
 function integrate_quantity!(quantity,
                              func::Union{typeof(energy_total_modified),
-                                         typeof(entropy_modified)}, q,
+                                         typeof(entropy_modified),
+                                         typeof(hamiltonian)}, q,
                              semi::Semidiscretization)
     inplace_version(func)(quantity, q, semi.equations, semi.cache)
     integrate(quantity, semi)
@@ -196,7 +197,9 @@ function compute_coefficients!(q, func, t, semi::Semidiscretization)
                           solver)
 end
 
-function check_bathymetry(equations, q0)
+check_bathymetry(equations, q0) = nothing
+
+function check_bathymetry(equations::AbstractShallowWaterEquations, q0)
     if equations.bathymetry_type isa BathymetryFlat
         _, _, D = q0.x
         value = first(D)

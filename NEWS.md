@@ -6,6 +6,11 @@ used in the Julia ecosystem. Notable changes will be documented in this file
 for human readability.
 
 
+## Changes in the v0.4 lifecycle
+
+#### Added
+- Add `BBMEquation1D` ([#150]).
+
 ## Changes when updating to v0.5 from v0.4.x
 
 #### Changed

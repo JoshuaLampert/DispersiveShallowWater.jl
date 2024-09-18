@@ -46,7 +46,7 @@ to the original [`SerreGreenNaghdiEquations1D`](@ref). However, the
 wave speeds of the hyperbolic system increase with increasing ``\lambda``,
 so that explicit time integration methods become more expensive.
 
-Two types of variable `bathymetry_type` are supported:
+Two types of `bathymetry_type` are supported:
 - [`bathymetry_flat`](@ref): flat bathymetry (typically ``b = 0`` everywhere)
 - [`bathymetry_mild_slope`](@ref): variable bathymetry with mild-slope approximation
 
@@ -146,7 +146,7 @@ function set_approximation_variables!(q, mesh,
     return nothing
 end
 
-# TODO: There is name clash. For the SerreGreenNaghdiEquations1D,
+# TODO: There is a name clash. For the SerreGreenNaghdiEquations1D,
 #       the corresponding function is called initial_condition_convergence_test
 #       However, we cannot use that name since it's not an analytical solution.
 #       How shall we handle this?

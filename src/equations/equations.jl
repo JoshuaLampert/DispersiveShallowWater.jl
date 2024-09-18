@@ -81,6 +81,7 @@ it is also as useful.
 @inline prim2prim(q, ::AbstractEquations) = q
 
 varnames(::typeof(prim2prim), ::AbstractShallowWaterEquations) = ("η", "v", "D")
+varnames(::typeof(prim2prim), ::AbstractEquations{1, 1}) = ("η",)
 
 """
     prim2cons(q, equations)
@@ -100,7 +101,13 @@ The inverse conversion is performed by [`cons2prim`](@ref).
     return SVector(h, hv, b)
 end
 
-varnames(::typeof(prim2cons), ::AbstractShallowWaterEquations) = ("h", "hv", "hv")
+function prim2cons(q, equations::AbstractEquations{1, 1})
+    h = waterheight(q, equations)
+    return SVector(h)
+end
+
+varnames(::typeof(prim2cons), ::AbstractShallowWaterEquations) = ("h", "hv", "b")
+varnames(::typeof(prim2cons), ::AbstractEquations{1, 1}) = ("h",)
 
 """
     cons2prim(u, equations)
@@ -121,6 +128,15 @@ The inverse conversion is performed by [`prim2cons`](@ref).
     return SVector(eta, v, D)
 end
 
+function cons2prim(u, equations::AbstractEquations{1, 1})
+    h, = u
+    eta0 = equations.eta0
+    D = equations.D
+    b = eta0 - D
+    eta = h + b
+    return SVector(eta)
+end
+
 """
     waterheight_total(q, equations)
 
@@ -131,14 +147,14 @@ Return the total waterheight of the primitive variables `q` for a given set of
 `q` is a vector of the primitive variables at a single node, i.e., a vector
 of the correct length `nvariables(equations)`.
 """
-@inline function waterheight_total(q, ::AbstractShallowWaterEquations)
+@inline function waterheight_total(q, ::AbstractEquations)
     return q[1]
 end
 
 varnames(::typeof(waterheight_total), equations) = ("η",)
 
 """
-    waterheight(q, equations::AbstractShallowWaterEquations)
+    waterheight(q, equations)
 
 Return the waterheight of the primitive variables `q` for a given set of
 `equations`, i.e., the waterheight ``h`` above the bathymetry ``b``.
@@ -148,7 +164,7 @@ of the correct length `nvariables(equations)`.
 
 See also [`waterheight_total`](@ref), [`bathymetry`](@ref).
 """
-@inline function waterheight(q, equations::AbstractShallowWaterEquations)
+@inline function waterheight(q, equations::AbstractEquations)
     return waterheight_total(q, equations) - bathymetry(q, equations)
 end
 
@@ -194,18 +210,20 @@ See [`momentum`](@ref).
 varnames(::typeof(discharge), equations) = ("P",)
 
 """
-    still_water_surface(q, equations::AbstractShallowWaterEquations)
+    still_water_surface(q, equations)
 
 Return the still water surface ``\\eta_0`` (lake at rest)
 for a given set of `equations`.
 """
-@inline function still_water_surface(q, equations::AbstractShallowWaterEquations)
+@inline function still_water_surface(q, equations::AbstractEquations)
     return equations.eta0
 end
 
 @inline function still_waterdepth(q, ::AbstractShallowWaterEquations)
     return q[3]
 end
+
+still_waterdepth(q, equations::AbstractEquations{1, 1}) = equations.D
 
 """
     bathymetry(q, equations)
@@ -216,33 +234,32 @@ Return the bathymetry of the primitive variables `q` for a given set of
 `q` is a vector of the primitive variables at a single node, i.e., a vector
 of the correct length `nvariables(equations)`.
 """
-@inline function bathymetry(q, equations::AbstractShallowWaterEquations)
-    D = q[3]
+@inline function bathymetry(q, equations::AbstractEquations)
+    D = still_waterdepth(q, equations)
     eta0 = still_water_surface(q, equations)
     return eta0 - D
 end
 
 """
-    lake_at_rest_error(q, equations::AbstractShallowWaterEquations)
+    lake_at_rest_error(q, equations)
 
 Calculate the error for the "lake-at-rest" test case where the
 [`waterheight_total`](@ref) ``\\eta = h + b`` should
 be a constant value over time (given by the value ``\\eta_0`` passed to the
 `equations` when constructing them).
 """
-@inline function lake_at_rest_error(q, equations::AbstractShallowWaterEquations)
+@inline function lake_at_rest_error(q, equations::AbstractEquations)
     eta = waterheight_total(q, equations)
     eta0 = still_water_surface(q, equations)
     return abs(eta0 - eta)
 end
 
 """
-    gravity_constant(equations::AbstractShallowWaterEquations)
+    gravity_constant(equations)
 
 Return the gravity constant ``g`` for a given set of `equations`.
-See also [`AbstractShallowWaterEquations`](@ref).
 """
-@inline function gravity_constant(equations::AbstractShallowWaterEquations)
+@inline function gravity_constant(equations::AbstractEquations)
     return equations.gravity
 end
 
@@ -290,7 +307,7 @@ varnames(::typeof(entropy), equations) = ("U",)
 
 # The modified entropy/total energy takes the whole `q_global` for every point in space
 """
-    energy_total_modified(q_global, equations::AbstractShallowWaterEquations, cache)
+    energy_total_modified(q_global, equations, cache)
 
 Return the modified total energy of the primitive variables `q_global` for the
 `equations`. This modified total energy is a conserved quantity and can
@@ -298,7 +315,11 @@ contain additional terms compared to the usual [`energy_total`](@ref).
 For example, for the [`SvaerdKalischEquations1D`](@ref) and the
 [`SerreGreenNaghdiEquations1D`](@ref), it contains additional terms
 depending on the derivative of the velocity ``v_x`` modeling non-hydrostatic
-contributions.
+contributions. For equations which are not `AbstractShallowWaterEquations`,
+the modified total energy does not have to be an extension of the usual
+[`energy_total`](@ref) and does not have to be related to a physical energy.
+However, it is still a conserved quantity for appropriate boundary conditions
+and may contain derivatives of the solution.
 
 `q_global` is a vector of the primitive variables at ALL nodes.
 `cache` needs to hold the SBP operators used by the `solver` if non-hydrostatic
@@ -307,17 +328,17 @@ terms are present.
 Internally, this function allocates a vector for the output and
 calls [`DispersiveShallowWater.energy_total_modified!`](@ref).
 """
-function energy_total_modified(q_global, equations::AbstractShallowWaterEquations, cache)
+function energy_total_modified(q_global, equations::AbstractEquations, cache)
     e = similar(q_global.x[begin])
     return energy_total_modified!(e, q_global, equations, cache)
 end
 
 """
-    energy_total_modified!(e, q_global, equations::AbstractShallowWaterEquations, cache)
+    energy_total_modified!(e, q_global, equations, cache)
 
 In-place version of [`energy_total_modified`](@ref).
 """
-function energy_total_modified!(e, q_global, equations::AbstractShallowWaterEquations,
+function energy_total_modified!(e, q_global, equations::AbstractEquations,
                                 cache)
     # `q_global` is an `ArrayPartition` of the primitive variables at all nodes
     @assert nvariables(equations) == length(q_global.x)
@@ -332,17 +353,17 @@ end
 varnames(::typeof(energy_total_modified), equations) = ("e_modified",)
 
 """
-    entropy_modified(q_global, equations::AbstractShallowWaterEquations, cache)
+    entropy_modified(q_global, equations, cache)
 
 Alias for [`energy_total_modified`](@ref).
 """
-@inline function entropy_modified(q_global, equations::AbstractShallowWaterEquations, cache)
+@inline function entropy_modified(q_global, equations::AbstractEquations, cache)
     e = similar(q_global.x[begin])
     return entropy_modified!(e, q_global, equations, cache)
 end
 
 """
-    entropy_modified!(e, q_global, equations::AbstractShallowWaterEquations, cache)
+    entropy_modified!(e, q_global, equations, cache)
 
 In-place version of [`entropy_modified`](@ref).
 """
@@ -352,6 +373,33 @@ In-place version of [`entropy_modified`](@ref).
                                                                                   cache)
 
 varnames(::typeof(entropy_modified), equations) = ("U_modified",)
+
+# The Hamiltonian takes the whole `q_global` for every point in space
+"""
+    hamiltonian(q_global, equations, cache)
+
+Return the Hamiltonian of the primitive variables `q_global` for the
+`equations`. The Hamiltonian is a conserved quantity and may contain
+derivatives of the solution.
+
+`q_global` is a vector of the primitive variables at ALL nodes.
+`cache` needs to hold the SBP operators used by the `solver` if non-hydrostatic
+terms are present.
+
+Internally, this function allocates a vector for the output and
+calls [`DispersiveShallowWater.hamiltonian!`](@ref).
+
+!!! note
+    This function is not necessarily implemented for all equations.
+    See [`DispersiveShallowWater.hamiltonian!`](@ref) for further details
+    of equations supporting it.
+"""
+function hamiltonian(q_global, equations::AbstractEquations, cache)
+    H = similar(q_global.x[begin])
+    return hamiltonian!(H, q_global, equations, cache)
+end
+
+varnames(::typeof(hamiltonian), equations) = ("H",)
 
 # Add methods to show some information on systems of equations.
 function Base.show(io::IO, equations::AbstractEquations)
@@ -488,6 +536,11 @@ See also [`bathymetry_flat`](@ref) and [`bathymetry_mild_slope`](@ref).
 """
 const bathymetry_variable = BathymetryVariable()
 
+# BBM equation
+abstract type AbstractBBMEquation{NDIMS, NVARS} <:
+              AbstractEquations{NDIMS, NVARS} end
+include("bbm_1d.jl")
+
 # BBM-BBM equations
 abstract type AbstractBBMBBMEquations{NDIMS, NVARS} <:
               AbstractShallowWaterEquations{NDIMS, NVARS} end
@@ -501,7 +554,6 @@ include("svaerd_kalisch_1d.jl")
 # Serre-Green-Naghdi equations
 abstract type AbstractSerreGreenNaghdiEquations{NDIMS, NVARS} <:
               AbstractShallowWaterEquations{NDIMS, NVARS} end
-const AbstractSerreGreenNaghdiEquations1D = AbstractSerreGreenNaghdiEquations{1}
 include("serre_green_naghdi_1d.jl")
 include("hyperbolic_serre_green_naghdi_1d.jl")
 
@@ -527,6 +579,10 @@ function solve_system_matrix!(dv, system_matrix, rhs,
         ldiv!(dv, factorization, rhs)
     end
     return nothing
+end
+
+function solve_system_matrix!(dv, system_matrix, ::Union{BBMEquation1D, BBMBBMEquations1D})
+    ldiv!(system_matrix, dv)
 end
 
 """

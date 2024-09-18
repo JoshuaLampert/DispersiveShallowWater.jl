@@ -61,7 +61,7 @@ include("util.jl")
 export examples_dir, get_examples, default_example, convergence_test
 
 export AbstractShallowWaterEquations,
-       BBMBBMEquations1D,
+       BBMEquation1D, BBMBBMEquations1D,
        SvärdKalischEquations1D, SvaerdKalischEquations1D,
        SerreGreenNaghdiEquations1D, HyperbolicSerreGreenNaghdiEquations1D
 
@@ -71,7 +71,8 @@ export prim2prim, prim2cons, cons2prim, prim2phys,
        gravity_constant,
        bathymetry, still_water_surface,
        energy_total, entropy, lake_at_rest_error,
-       energy_total_modified, entropy_modified
+       energy_total_modified, entropy_modified,
+       hamiltonian
 
 export Mesh1D, xmin, xmax, nnodes
 
