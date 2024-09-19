@@ -1,10 +1,5 @@
-module TestVisualization
-
-using Test
-using DispersiveShallowWater
-using Plots
-
-@testset "Visualization" begin
+@testitem "Visualization" setup=[Setup] begin
+    using Plots
     custom_integral(q, equations) = q[1]^2
     DispersiveShallowWater.pretty_form_utf(::typeof(custom_integral)) = "∫η²"
     trixi_include(@__MODULE__, default_example(), tspan = (0.0, 1.0),
@@ -18,5 +13,3 @@ using Plots
     @test_nowarn plot(analysis_callback, what = (:errors,))
     @test_nowarn plot(analysis_callback, what = (:integrals, :errors))
 end
-
-end # module

@@ -1,12 +1,25 @@
-using Test
+using TestItems
+using TestItemRunner
 
-@testset "DispersiveShallowWater.jl" begin
-    include("test_aqua.jl")
-    include("test_unit.jl")
-    include("test_visualization.jl")
-    include("test_bbm_1d.jl")
-    include("test_bbm_bbm_1d.jl")
-    include("test_svaerd_kalisch_1d.jl")
-    include("test_serre_green_naghdi_1d.jl")
-    include("test_hyperbolic_serre_green_naghdi_1d.jl")
+@run_package_tests
+
+@testsnippet Setup begin
+    using DispersiveShallowWater
+    using Test
+    include("test_util.jl")
+end
+
+@testsnippet AdditionalImports begin
+    using SummationByPartsOperators: PeriodicDerivativeOperator,
+                                     UniformPeriodicCoupledOperator,
+                                     PeriodicUpwindOperators
+    using SummationByPartsOperators: derivative_order, periodic_derivative_operator,
+                                     legendre_derivative_operator,
+                                     UniformPeriodicMesh1D, couple_discontinuously,
+                                     upwind_operators, couple_continuously,
+                                     legendre_second_derivative_operator,
+                                     Mattsson2017
+
+    using SparseArrays: sparse, SparseMatrixCSC
+    using OrdinaryDiffEq: solve
 end

@@ -161,47 +161,6 @@ function get_kwarg(args, keyword, default_value)
 end
 
 """
-    @trixi_testset "name of the testset" #= code to test #=
-
-Similar to `@testset`, but wraps the code inside a temporary module to avoid
-namespace pollution.
-"""
-macro trixi_testset(name, expr)
-    @assert name isa String
-    # TODO: `@eval` is evil
-    # We would like to use
-    #   mod = gensym(name)
-    #   ...
-    #   module $mod
-    # to create new module names for every test set. However, this is not
-    # compatible with the dirty hack using `@eval` to get the mapping when
-    # loading structured, curvilinear meshes. Thus, we need to use a plain
-    # module name here.
-    quote
-        local time_start = time_ns()
-        @eval module TrixiTestModule
-        using Test
-        using DispersiveShallowWater
-        include(@__FILE__)
-        # We define `EXAMPLES_DIR` in (nearly) all test modules and use it to
-        # get the path to the examples to be tested. However, that's not required
-        # and we want to fail gracefully if it's not defined.
-        try
-            import ..EXAMPLES_DIR
-        catch
-            nothing
-        end
-        @testset $name $expr
-        end
-        local time_stop = time_ns()
-        flush(stdout)
-        @info("Testset "*$name*" finished in "
-              *string(1.0e-9 * (time_stop - time_start))*" seconds.\n")
-        nothing
-    end
-end
-
-"""
     @test_allocations(semi, sol, allocs)
 
 Test that the memory allocations of `DispersiveShallowWater.rhs!` are below `allocs`
