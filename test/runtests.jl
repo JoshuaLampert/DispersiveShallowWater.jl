@@ -4,8 +4,6 @@ using TestItemRunner
 @run_package_tests
 
 @testsnippet Setup begin
-    using DispersiveShallowWater
-    using Test
     include("test_util.jl")
 end
 
