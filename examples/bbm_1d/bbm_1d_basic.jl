@@ -28,7 +28,7 @@ semi = Semidiscretization(mesh, equations, initial_condition, solver,
 tspan = (0.0, 1000.0)
 ode = semidiscretize(semi, tspan)
 summary_callback = SummaryCallback()
-analysis_callback = AnalysisCallback(semi; interval = 10,
+analysis_callback = AnalysisCallback(semi; interval = 100,
                                      extra_analysis_errors = (:conservation_error,),
                                      extra_analysis_integrals = (waterheight_total,
                                                                  entropy_modified,
