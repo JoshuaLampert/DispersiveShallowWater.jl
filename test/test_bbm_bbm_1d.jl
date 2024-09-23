@@ -50,12 +50,13 @@ end
     solver = Solver(D1, D2)
     @test_trixi_include(joinpath(EXAMPLES_DIR, "bbm_bbm_1d_basic.jl"),
                         tspan=(0.0, 1.0),
-                        l2=[0.0032743987817220985 0.0072467501302357915 0.0],
-                        linf=[0.0027330553477815656 0.0037734958705577526 0.0],
-                        cons_error=[3.0811898959897406e-14 0.0 0.0],
-                        change_waterheight=-3.0811898959897406e-14,
+                        solver=solver,
+                        l2=[0.0016951648276611925 0.0034269307395771303 0.0],
+                        linf=[0.001453478820216958 0.001805665634286413 0.0],
+                        cons_error=[2.055466838899258e-14 0.0 0.0],
+                        change_waterheight=2.055466838899258e-14,
                         change_velocity=0.0,
-                        change_entropy=0.0002382937875609059,
+                        change_entropy=0.00023833941781958856,
                         atol_ints=1e-10) # to make CI pass
 
     @test_allocations(semi, sol, allocs=10_000)
