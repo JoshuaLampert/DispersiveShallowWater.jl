@@ -44,7 +44,8 @@ end
     @test_allocations(semi, sol, allocs=10_000)
 
     # test PeriodicRationalDerivativeOperator
-    D1 = periodic_derivative_operator(1, accuracy_order, xmin(mesh), xmax(mesh), nnodes(mesh))
+    D1 = periodic_derivative_operator(1, accuracy_order, xmin(mesh), xmax(mesh),
+                                      nnodes(mesh))
     D2 = D1^2
     solver = Solver(D1, D2)
     @test_trixi_include(joinpath(EXAMPLES_DIR, "bbm_bbm_1d_basic.jl"),
@@ -170,7 +171,7 @@ end
 
 @testitem "bbm_bbm_1d_upwind_relaxation with bathymetry_variable" setup=[
     Setup,
-    BBMBBMEquation1D
+    BBMBBMEquation1D,
 ] begin
     @test_trixi_include(joinpath(EXAMPLES_DIR, "bbm_bbm_1d_upwind_relaxation.jl"),
                         bathymetry_type=bathymetry_variable,
@@ -263,7 +264,7 @@ end
 @testitem "bbm_bbm_1d_basic_reflecting with bathymetry_flat" setup=[
     Setup,
     BBMBBMEquation1D,
-    AdditionalImports
+    AdditionalImports,
 ] begin
     @test_trixi_include(joinpath(EXAMPLES_DIR, "bbm_bbm_1d_basic_reflecting.jl"),
                         bathymetry_type=bathymetry_flat,

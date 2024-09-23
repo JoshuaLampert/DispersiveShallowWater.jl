@@ -17,7 +17,11 @@ end
     @test_allocations(semi, sol, allocs=90_000)
 end
 
-@testitem "svaerd_kalisch_1d_dingemans" setup=[Setup, SvaerdKalischEquations1D, AdditionalImports] begin
+@testitem "svaerd_kalisch_1d_dingemans" setup=[
+    Setup,
+    SvaerdKalischEquations1D,
+    AdditionalImports,
+] begin
     @test_trixi_include(joinpath(EXAMPLES_DIR,
                                  "svaerd_kalisch_1d_dingemans.jl"),
                         tspan=(0.0, 1.0),
@@ -32,7 +36,8 @@ end
     @test_allocations(semi, sol, allocs=350_000)
 
     # test PeriodicRationalDerivativeOperator
-    D1 = periodic_derivative_operator(1, accuracy_order, xmin(mesh), xmax(mesh), nnodes(mesh))
+    D1 = periodic_derivative_operator(1, accuracy_order, xmin(mesh), xmax(mesh),
+                                      nnodes(mesh))
     D2 = D1^2
     solver = Solver(D1, D2)
     @test_trixi_include(joinpath(EXAMPLES_DIR,
