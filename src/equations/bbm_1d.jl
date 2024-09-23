@@ -176,7 +176,7 @@ function rhs!(dq, q, t, mesh, equations::BBMEquation1D, initial_condition,
                 @.. deta = -(0.75 * c_1 * eta2_x + c_0 * eta_x_upwind)
             end
         else
-            @error "unknown type of first-derivative operator: $(typeof(solver.D1))"
+            throw(ArgumentError("unknown type of first-derivative operator: $(typeof(solver.D1))"))
         end
     end
 

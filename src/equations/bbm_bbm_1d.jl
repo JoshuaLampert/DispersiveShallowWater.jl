@@ -299,13 +299,14 @@ function create_cache(mesh, equations::BBMBBMEquations1D,
     end
     K = Diagonal(D .^ 2)
     if solver.D1 isa PeriodicDerivativeOperator ||
-       solver.D1 isa UniformPeriodicCoupledOperator
+       solver.D1 isa UniformPeriodicCoupledOperator ||
+       solver.D1 isa FourierDerivativeOperator
         sparse_D1 = sparse(solver.D1)
         invImDKD = lu(I - 1 / 6 * sparse_D1 * K * sparse_D1)
     elseif solver.D1 isa PeriodicUpwindOperators
         invImDKD = lu(I - 1 / 6 * sparse(solver.D1.minus) * K * sparse(solver.D1.plus))
     else
-        @error "unknown type of first-derivative operator: $(typeof(solver.D1))"
+        throw(ArgumentError("unknown type of first-derivative operator: $(typeof(solver.D1))"))
     end
     invImD2K = lu(I - 1 / 6 * sparse(solver.D2) * K)
 
@@ -337,14 +338,15 @@ function create_cache(mesh, equations::BBMBBMEquations1D{BathymetryFlat},
 
     # homogeneous Neumann boundary conditions
     if solver.D1 isa DerivativeOperator ||
-       solver.D1 isa UniformCoupledOperator
+       solver.D1 isa UniformCoupledOperator ||
+       solver.D1 isa FourierDerivativeOperator
         D1_b = BandedMatrix(solver.D1)
         invImD2n = lu(I + 1 / 6 * D^2 * inv(M) * D1_b' * PdM * D1_b)
     elseif solver.D1 isa UpwindOperators
         D1plus_b = BandedMatrix(solver.D1.plus)
         invImD2n = lu(I + 1 / 6 * D^2 * inv(M) * D1plus_b' * PdM * D1plus_b)
     else
-        @error "unknown type of first-derivative operator: $(typeof(solver.D1))"
+        throw(ArgumentError("unknown type of first-derivative operator: $(typeof(solver.D1))"))
     end
 
     # create temporary storage
@@ -380,14 +382,15 @@ function create_cache(mesh, equations::BBMBBMEquations1D,
 
     # homogeneous Neumann boundary conditions
     if solver.D1 isa DerivativeOperator ||
-       solver.D1 isa UniformCoupledOperator
+       solver.D1 isa UniformCoupledOperator ||
+       solver.D1 isa FourierDerivativeOperator
         D1_b = BandedMatrix(solver.D1)
         invImD2n = lu(I + 1 / 6 * inv(M) * D1_b' * PdM * K * D1_b)
     elseif solver.D1 isa UpwindOperators
         D1plus_b = BandedMatrix(solver.D1.plus)
         invImD2n = lu(I + 1 / 6 * inv(M) * D1plus_b' * PdM * K * D1plus_b)
     else
-        @error "unknown type of first-derivative operator: $(typeof(solver.D1))"
+        throw(ArgumentError("unknown type of first-derivative operator: $(typeof(solver.D1))"))
     end
 
     # create temporary storage
@@ -431,7 +434,8 @@ function rhs!(dq, q, t, mesh, equations::BBMBBMEquations1D, initial_condition,
     end
     # energy and mass conservative semidiscretization
     if solver.D1 isa PeriodicDerivativeOperator ||
-       solver.D1 isa UniformPeriodicCoupledOperator
+       solver.D1 isa UniformPeriodicCoupledOperator ||
+       solver.D1 isa FourierDerivativeOperator
         @trixi_timeit timer() "deta hyperbolic" begin
             mul!(deta, solver.D1, tmp1)
         end
@@ -446,7 +450,7 @@ function rhs!(dq, q, t, mesh, equations::BBMBBMEquations1D, initial_condition,
             mul!(dv, solver.D1.plus, tmp2)
         end
     else
-        @error "unknown type of first-derivative operator: $(typeof(solver.D1))"
+        throw(ArgumentError("unknown type of first-derivative operator: $(typeof(solver.D1))"))
     end
 
     @trixi_timeit timer() "source terms" calc_sources!(dq, q, t, source_terms, equations,
@@ -497,7 +501,8 @@ function rhs!(dq, q, t, mesh, equations::BBMBBMEquations1D, initial_condition,
     end
     # energy and mass conservative semidiscretization
     if solver.D1 isa DerivativeOperator ||
-       solver.D1 isa UniformCoupledOperator
+       solver.D1 isa UniformCoupledOperator ||
+       solver.D1 isa FourierDerivativeOperator
         @trixi_timeit timer() "deta hyperbolic" begin
             mul!(deta, solver.D1, tmp1)
         end
@@ -512,7 +517,7 @@ function rhs!(dq, q, t, mesh, equations::BBMBBMEquations1D, initial_condition,
             mul!(dv, solver.D1.plus, tmp2)
         end
     else
-        @error "unknown type of first-derivative operator: $(typeof(solver.D1))"
+        throw(ArgumentError("unknown type of first-derivative operator: $(typeof(solver.D1))"))
     end
 
     @trixi_timeit timer() "source terms" calc_sources!(dq, q, t, source_terms, equations,
