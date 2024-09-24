@@ -21,24 +21,15 @@ end
                           N = mesh.N)
     D2 = sparse(D1.minus) * sparse(D1.plus)
     solver = Solver(D1, D2)
-    semi = Semidiscretization(mesh, equations, initial_condition, solver,
-                              boundary_conditions = boundary_conditions)
-    ode = semidiscretize(semi, (0.0, 100.0))
-    sol = solve(ode, Tsit5(), abstol = 1e-7, reltol = 1e-7,
-                save_everystep = false, callback = callbacks, saveat = saveat)
-    atol = 1e-12
-    rtol = 1e-12
-    errs = errors(analysis_callback)
-    l2 = [0.11730278305145693]
-    l2_measured = errs.l2_error[:, end]
-    for (l2_expected, l2_actual) in zip(l2, l2_measured)
-        @test isapprox(l2_expected, l2_actual, atol = atol, rtol = rtol)
-    end
-    linf = [0.06433115916307008]
-    linf_measured = errs.linf_error[:, end]
-    for (linf_expected, linf_actual) in zip(linf, linf_measured)
-        @test isapprox(linf_expected, linf_actual, atol = atol, rtol = rtol)
-    end
+    @test_trixi_include(joinpath(EXAMPLES_DIR, "bbm_1d_basic.jl"),
+                        tspan=(0.0, 100.0),
+                        solver=solver,
+                        l2=[0.11730278305145693],
+                        linf=[0.06433115916307008],
+                        cons_error=[6.306066779870889e-14],
+                        change_waterheight=-6.306066779870889e-14,
+                        change_entropy_modified=-0.005460856586602614,
+                        change_hamiltonian=-0.0204980283782078)
 
     @test_allocations(semi, sol, allocs=5_000)
 
@@ -84,24 +75,16 @@ end
                           N = mesh.N)
     D2 = sparse(D1.minus) * sparse(D1.plus)
     solver = Solver(D1, D2)
-    semi = Semidiscretization(mesh, equations, initial_condition, solver,
-                              boundary_conditions = boundary_conditions)
-    ode = semidiscretize(semi, (0.0, 100.0))
-    sol = solve(ode, Tsit5(), abstol = 1e-7, reltol = 1e-7,
-                save_everystep = false, callback = callbacks, saveat = saveat)
-    atol = 1e-12
-    rtol = 1e-12
-    errs = errors(analysis_callback)
-    l2 = [0.11994249550267427]
-    l2_measured = errs.l2_error[:, end]
-    for (l2_expected, l2_actual) in zip(l2, l2_measured)
-        @test isapprox(l2_expected, l2_actual, atol = atol, rtol = rtol)
-    end
-    linf = [0.06576332657307044]
-    linf_measured = errs.linf_error[:, end]
-    for (linf_expected, linf_actual) in zip(linf, linf_measured)
-        @test isapprox(linf_expected, linf_actual, atol = atol, rtol = rtol)
-    end
+    @test_trixi_include(joinpath(EXAMPLES_DIR, "bbm_1d_basic.jl"),
+                        tspan=(0.0, 100.0),
+                        solver=solver,
+                        split_form=false,
+                        l2=[0.11994249550267427],
+                        linf=[0.06576332657307044],
+                        cons_error=[5.773159728050814e-14],
+                        change_waterheight=-5.773159728050814e-14,
+                        change_entropy_modified=-0.00545433375143814,
+                        change_hamiltonian=-0.020473704519129887)
 
     @test_allocations(semi, sol, allocs=5_000)
 end
@@ -163,25 +146,14 @@ end
                           N = mesh.N)
     D2 = sparse(D1.minus) * sparse(D1.plus)
     solver = Solver(D1, D2)
-    semi = Semidiscretization(mesh, equations, initial_condition, solver,
-                              boundary_conditions = boundary_conditions,
-                              source_terms = source_terms)
-    ode = semidiscretize(semi, (0.0, 1.0))
-    sol = solve(ode, Tsit5(), abstol = 1e-7, reltol = 1e-7,
-                save_everystep = false, callback = callbacks, saveat = saveat)
-    atol = 1e-11 # to make CI pass
-    rtol = 1e-12
-    errs = errors(analysis_callback)
-    l2 = [9.94432411102018e-8]
-    l2_measured = errs.l2_error[:, end]
-    for (l2_expected, l2_actual) in zip(l2, l2_measured)
-        @test isapprox(l2_expected, l2_actual, atol = atol, rtol = rtol)
-    end
-    linf = [1.026056097863659e-7]
-    linf_measured = errs.linf_error[:, end]
-    for (linf_expected, linf_actual) in zip(linf, linf_measured)
-        @test isapprox(linf_expected, linf_actual, atol = atol, rtol = rtol)
-    end
+    @test_trixi_include(joinpath(EXAMPLES_DIR, "bbm_1d_manufactured.jl"),
+                        tspan=(0.0, 1.0),
+                        solver=solver,
+                        l2=[9.94432411102018e-8],
+                        linf=[1.026056097863659e-7],
+                        cons_error=[3.745851908818973e-12],
+                        change_waterheight=-3.745851908818973e-12,
+                        atol=1e-11) # to make CI pass
 
     @test_allocations(semi, sol, allocs=5_000)
 end
