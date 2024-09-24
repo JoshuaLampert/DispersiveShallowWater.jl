@@ -63,7 +63,7 @@ end
 @testitem "bbm_1d_basic with split_form = false" setup=[
     Setup,
     BBMEquation1D,
-    AdditionalImports,
+    AdditionalImports
 ] begin
     @test_trixi_include(joinpath(EXAMPLES_DIR, "bbm_1d_basic.jl"),
                         tspan=(0.0, 100.0),

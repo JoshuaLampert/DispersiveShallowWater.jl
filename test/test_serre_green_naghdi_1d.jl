@@ -17,7 +17,7 @@ end
 
 @testitem "serre_green_naghdi_soliton.jl with bathymetry_mild_slope" setup=[
     Setup,
-    SerreGreenNaghdiEquations1D,
+    SerreGreenNaghdiEquations1D
 ] begin
     # same values as serre_green_naghdi_soliton.jl but with more allocations
     @test_trixi_include(joinpath(EXAMPLES_DIR,
@@ -35,7 +35,7 @@ end
 
 @testitem "serre_green_naghdi_soliton.jl with bathymetry_variable" setup=[
     Setup,
-    SerreGreenNaghdiEquations1D,
+    SerreGreenNaghdiEquations1D
 ] begin
     # same values as serre_green_naghdi_soliton.jl but with more allocations
     @test_trixi_include(joinpath(EXAMPLES_DIR,
@@ -66,7 +66,7 @@ end
 
 @testitem "serre_green_naghdi_soliton_fourier.jl with bathymetry_mild_slope" setup=[
     Setup,
-    SerreGreenNaghdiEquations1D,
+    SerreGreenNaghdiEquations1D
 ] begin
     # same values as serre_green_naghdi_soliton_fourier.jl but with more allocations
     @test_trixi_include(joinpath(EXAMPLES_DIR,
@@ -84,7 +84,7 @@ end
 
 @testitem "serre_green_naghdi_soliton_fourier.jl with bathymetry_variable" setup=[
     Setup,
-    SerreGreenNaghdiEquations1D,
+    SerreGreenNaghdiEquations1D
 ] begin
     # same values as serre_green_naghdi_soliton_fourier.jl but with more allocations
     @test_trixi_include(joinpath(EXAMPLES_DIR,
@@ -115,7 +115,7 @@ end
 
 @testitem "serre_green_naghdi_soliton_upwind.jl with bathymetry_mild_slope" setup=[
     Setup,
-    SerreGreenNaghdiEquations1D,
+    SerreGreenNaghdiEquations1D
 ] begin
     # same as serre_green_naghdi_soliton_upwind.jl but with more allocations
     @test_trixi_include(joinpath(EXAMPLES_DIR,
@@ -133,7 +133,7 @@ end
 
 @testitem "serre_green_naghdi_soliton_upwind.jl with bathymetry_variable" setup=[
     Setup,
-    SerreGreenNaghdiEquations1D,
+    SerreGreenNaghdiEquations1D
 ] begin
     # same as serre_green_naghdi_soliton_upwind.jl but with more allocations
     @test_trixi_include(joinpath(EXAMPLES_DIR,
@@ -151,7 +151,7 @@ end
 
 @testitem "serre_green_naghdi_soliton_relaxation.jl" setup=[
     Setup,
-    SerreGreenNaghdiEquations1D,
+    SerreGreenNaghdiEquations1D
 ] begin
     @test_trixi_include(joinpath(EXAMPLES_DIR,
                                  "serre_green_naghdi_soliton_relaxation.jl"),
@@ -167,7 +167,7 @@ end
 
 @testitem "serre_green_naghdi_soliton_relaxation.jl with bathymetry_mild_slope" setup=[
     Setup,
-    SerreGreenNaghdiEquations1D,
+    SerreGreenNaghdiEquations1D
 ] begin
     # same as serre_green_naghdi_soliton_relaxation.jl but with more allocations
     @test_trixi_include(joinpath(EXAMPLES_DIR,
@@ -185,7 +185,7 @@ end
 
 @testitem "serre_green_naghdi_soliton_relaxation.jl with bathymetry_variable" setup=[
     Setup,
-    SerreGreenNaghdiEquations1D,
+    SerreGreenNaghdiEquations1D
 ] begin
     # same as serre_green_naghdi_soliton_relaxation.jl but with more allocations
     @test_trixi_include(joinpath(EXAMPLES_DIR,
@@ -218,7 +218,7 @@ end
 
 @testitem "serre_green_naghdi_well_balanced.jl with bathymetry_mild_slope" setup=[
     Setup,
-    SerreGreenNaghdiEquations1D,
+    SerreGreenNaghdiEquations1D
 ] begin
     @test_trixi_include(joinpath(EXAMPLES_DIR,
                                  "serre_green_naghdi_well_balanced.jl"),
@@ -251,7 +251,7 @@ end
 
 @testitem "serre_green_naghdi_dingemans.jl with bathymetry_mild_slope" setup=[
     Setup,
-    SerreGreenNaghdiEquations1D,
+    SerreGreenNaghdiEquations1D
 ] begin
     @test_trixi_include(joinpath(EXAMPLES_DIR,
                                  "serre_green_naghdi_dingemans.jl"),
@@ -283,7 +283,7 @@ end
 
 @testitem "serre_green_naghdi_conservation.jl with bathymetry_mild_slope" setup=[
     Setup,
-    SerreGreenNaghdiEquations1D,
+    SerreGreenNaghdiEquations1D
 ] begin
     @test_trixi_include(joinpath(EXAMPLES_DIR,
                                  "serre_green_naghdi_conservation.jl"),

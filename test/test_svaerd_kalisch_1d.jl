@@ -20,7 +20,7 @@ end
 @testitem "svaerd_kalisch_1d_dingemans" setup=[
     Setup,
     SvaerdKalischEquations1D,
-    AdditionalImports,
+    AdditionalImports
 ] begin
     @test_trixi_include(joinpath(EXAMPLES_DIR,
                                  "svaerd_kalisch_1d_dingemans.jl"),
