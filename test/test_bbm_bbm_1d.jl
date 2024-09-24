@@ -42,6 +42,24 @@ end
     end
 
     @test_allocations(semi, sol, allocs=10_000)
+
+    # test PeriodicRationalDerivativeOperator
+    D1 = periodic_derivative_operator(1, accuracy_order, xmin(mesh), xmax(mesh),
+                                      nnodes(mesh))
+    D2 = D1^2
+    solver = Solver(D1, D2)
+    @test_trixi_include(joinpath(EXAMPLES_DIR, "bbm_bbm_1d_basic.jl"),
+                        tspan=(0.0, 1.0),
+                        solver=solver,
+                        l2=[0.0016951648276611925 0.0034269307395771303 0.0],
+                        linf=[0.001453478820216958 0.001805665634286413 0.0],
+                        cons_error=[2.055466838899258e-14 0.0 0.0],
+                        change_waterheight=2.055466838899258e-14,
+                        change_velocity=0.0,
+                        change_entropy=0.00023833941781958856,
+                        atol_ints=1e-10) # to make CI pass
+
+    @test_allocations(semi, sol, allocs=10_000)
 end
 
 @testitem "bbm_bbm_1d_basic with bathymetry_variable" setup=[Setup, BBMBBMEquation1D] begin
@@ -82,6 +100,35 @@ end
                         change_waterheight=3.364296388121304e-14,
                         change_velocity=-9.947598300641403e-14,
                         change_entropy=-0.000791230828923517)
+
+    @test_allocations(semi, sol, allocs=10_000)
+end
+
+@testitem "bbm_bbm_1d_fourier" setup=[Setup, BBMBBMEquation1D] begin
+    @test_trixi_include(joinpath(EXAMPLES_DIR, "bbm_bbm_1d_fourier.jl"),
+                        tspan=(0.0, 1.0),
+                        l2=[7.291521968885259e-7 7.702204594455217e-7 0.0],
+                        linf=[4.3579646391567195e-7 4.9442969896063e-7 0.0],
+                        cons_error=[3.9206314028412105e-14 4.547473508864641e-13 0.0],
+                        change_waterheight=3.9206314028412105e-14,
+                        change_velocity=-4.547473508864641e-13,
+                        change_entropy=0.0002383147650562023,
+                        atol_ints=1e-10) # to make CI pass
+
+    @test_allocations(semi, sol, allocs=10_000)
+end
+
+@testitem "bbm_bbm_1d_fourier with bathymetry_variable" setup=[Setup, BBMBBMEquation1D] begin
+    @test_trixi_include(joinpath(EXAMPLES_DIR, "bbm_bbm_1d_fourier.jl"),
+                        bathymetry_type=bathymetry_variable,
+                        tspan=(0.0, 1.0),
+                        l2=[7.291481123937497e-7 7.70214005540768e-7 0.0],
+                        linf=[4.357912374297612e-7 4.94414834406598e-7 0.0],
+                        cons_error=[6.232593470137382e-13 4.547473508864641e-13 0.0],
+                        change_waterheight=6.232593470137382e-13,
+                        change_velocity=-4.547473508864641e-13,
+                        change_entropy=0.0002383154298968293,
+                        atol_ints=1e-10) # to make CI pass
 
     @test_allocations(semi, sol, allocs=10_000)
 end

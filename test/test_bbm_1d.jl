@@ -41,6 +41,23 @@ end
     end
 
     @test_allocations(semi, sol, allocs=5_000)
+
+    # test PeriodicRationalDerivativeOperator
+    D1 = periodic_derivative_operator(1, accuracy_order, xmin(mesh), xmax(mesh),
+                                      nnodes(mesh))
+    D2 = D1^2
+    solver = Solver(D1, D2)
+    @test_trixi_include(joinpath(EXAMPLES_DIR, "bbm_1d_basic.jl"),
+                        tspan=(0.0, 100.0),
+                        solver=solver,
+                        l2=[0.013447144236536044],
+                        linf=[0.007184057857459125],
+                        cons_error=[1.5543122344752192e-15],
+                        change_waterheight=-1.5543122344752192e-15,
+                        change_entropy_modified=-8.68871272874383e-7,
+                        change_hamiltonian=-3.697687313897191e-6)
+
+    @test_allocations(semi, sol, allocs=5_000)
 end
 
 @testitem "bbm_1d_basic with split_form = false" setup=[

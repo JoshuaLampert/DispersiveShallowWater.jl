@@ -178,7 +178,8 @@ function create_cache(mesh, equations::SvaerdKalischEquations1D,
     M_beta = copy(beta_hat)
     scale_by_mass_matrix!(M_beta, D1)
     if D1 isa PeriodicDerivativeOperator ||
-       D1 isa UniformPeriodicCoupledOperator
+       D1 isa UniformPeriodicCoupledOperator ||
+       D1 isa FourierDerivativeOperator
         D1_central = D1
         D1mat = sparse(D1_central)
         minus_MD1betaD1 = D1mat' * Diagonal(M_beta) * D1mat
@@ -195,7 +196,7 @@ function create_cache(mesh, equations::SvaerdKalischEquations1D,
                                     D1, D1mat_minus, equations)
         end
     else
-        @error "unknown type of first-derivative operator: $(typeof(D1))"
+        throw(ArgumentError("unknown type of first-derivative operator: $(typeof(D1))"))
     end
     factorization = cholesky(system_matrix)
     cache = (; factorization, minus_MD1betaD1, D, h, hv, b, eta_x, v_x,
@@ -251,7 +252,8 @@ function rhs!(dq, q, t, mesh, equations::SvaerdKalischEquations1D,
         @.. hv = h * v
 
         if D1 isa PeriodicDerivativeOperator ||
-           D1 isa UniformPeriodicCoupledOperator
+           D1 isa UniformPeriodicCoupledOperator ||
+           D1 isa FourierDerivativeOperator
             mul!(eta_x, D1_central, eta)
             mul!(v_x, D1_central, v)
             @.. tmp1 = alpha_hat * eta_x
@@ -282,7 +284,7 @@ function rhs!(dq, q, t, mesh, equations::SvaerdKalischEquations1D,
             mul!(deta, D1.minus, tmp1)
             mul!(deta, D1_central, hv, -1.0, 1.0)
         else
-            @error "unknown type of first derivative operator: $(typeof(D1))"
+            throw(ArgumentError("unknown type of first-derivative operator: $(typeof(D1))"))
         end
     end
 

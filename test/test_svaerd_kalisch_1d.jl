@@ -17,7 +17,11 @@ end
     @test_allocations(semi, sol, allocs=90_000)
 end
 
-@testitem "svaerd_kalisch_1d_dingemans" setup=[Setup, SvaerdKalischEquations1D] begin
+@testitem "svaerd_kalisch_1d_dingemans" setup=[
+    Setup,
+    SvaerdKalischEquations1D,
+    AdditionalImports,
+] begin
     @test_trixi_include(joinpath(EXAMPLES_DIR,
                                  "svaerd_kalisch_1d_dingemans.jl"),
                         tspan=(0.0, 1.0),
@@ -28,6 +32,25 @@ end
                         change_waterheight=-3.979039320256561e-13,
                         change_entropy=-0.00024362648639453255,
                         change_entropy_modified=-6.311893230304122e-9)
+
+    @test_allocations(semi, sol, allocs=350_000)
+
+    # test PeriodicRationalDerivativeOperator
+    D1 = periodic_derivative_operator(1, accuracy_order, xmin(mesh), xmax(mesh),
+                                      nnodes(mesh))
+    D2 = D1^2
+    solver = Solver(D1, D2)
+    @test_trixi_include(joinpath(EXAMPLES_DIR,
+                                 "svaerd_kalisch_1d_dingemans.jl"),
+                        tspan=(0.0, 1.0),
+                        N=512,
+                        solver=solver,
+                        l2=[0.22796180766836865 0.7519296292874257 0.0],
+                        linf=[0.036709492542750466 0.12104908724733915 0.0],
+                        cons_error=[2.842170943040401e-14 4.9341465183441843e-5 0.0],
+                        change_waterheight=-2.842170943040401e-14,
+                        change_entropy=-0.00024270962080663594,
+                        change_entropy_modified=-7.430799087160267e-9)
 
     @test_allocations(semi, sol, allocs=350_000)
 end
@@ -44,6 +67,20 @@ end
                         change_entropy_modified=-2.6815314413397573e-9)
 
     @test_allocations(semi, sol, allocs=750_000)
+end
+
+@testitem "svaerd_kalisch_1d_dingemans_fourier" setup=[Setup, SvaerdKalischEquations1D] begin
+    @test_trixi_include(joinpath(EXAMPLES_DIR,
+                                 "svaerd_kalisch_1d_dingemans_fourier.jl"),
+                        tspan=(0.0, 1.0),
+                        l2=[0.22799246923254327 0.7520172891302948 0.0],
+                        linf=[0.03671494177483947 0.12129171577180138 0.0],
+                        cons_error=[8.526512829121202e-14 5.3078570574495334e-5 0.0],
+                        change_waterheight=-8.526512829121202e-14,
+                        change_entropy=-0.0002424441479433881,
+                        change_entropy_modified=-4.00007138523506e-9)
+
+    @test_allocations(semi, sol, allocs=13_000_000)
 end
 
 @testitem "svaerd_kalisch_1d_dingemans_upwind" setup=[Setup, SvaerdKalischEquations1D] begin
