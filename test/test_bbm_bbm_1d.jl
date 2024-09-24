@@ -22,24 +22,16 @@ end
                           N = mesh.N)
     D2 = sparse(D1.plus) * sparse(D1.minus)
     solver = Solver(D1, D2)
-    semi = Semidiscretization(mesh, equations, initial_condition, solver,
-                              boundary_conditions = boundary_conditions)
-    ode = semidiscretize(semi, (0.0, 1.0))
-    sol = solve(ode, Tsit5(), abstol = 1e-7, reltol = 1e-7,
-                save_everystep = false, callback = callbacks, saveat = saveat)
-    atol = 1e-11 # to make CI pass
-    rtol = 1e-12
-    errs = errors(analysis_callback)
-    l2 = [0.0026452454364373377 0.005181138085234744 0.0]
-    l2_measured = errs.l2_error[:, end]
-    for (l2_expected, l2_actual) in zip(l2, l2_measured)
-        @test isapprox(l2_expected, l2_actual, atol = atol, rtol = rtol)
-    end
-    linf = [0.002240297682717385 0.003138940449190386 0.0]
-    linf_measured = errs.linf_error[:, end]
-    for (linf_expected, linf_actual) in zip(linf, linf_measured)
-        @test isapprox(linf_expected, linf_actual, atol = atol, rtol = rtol)
-    end
+    @test_trixi_include(joinpath(EXAMPLES_DIR, "bbm_bbm_1d_basic.jl"),
+                        tspan=(0.0, 1.0),
+                        solver=solver,
+                        l2=[0.0026452454364373377 0.005181138085234744 0.0],
+                        linf=[0.002240297682717385 0.003138940449190386 0.0],
+                        cons_error=[6.490606933236491e-14 3.694822225952521e-13 0.0],
+                        change_waterheight=6.490606933236491e-14,
+                        change_velocity=3.694822225952521e-13,
+                        change_entropy=0.0002383181188179151,
+                        atol_ints=1e-10) # to make CI pass
 
     @test_allocations(semi, sol, allocs=10_000)
 
@@ -242,25 +234,17 @@ end
                           N = mesh.N)
     D2 = sparse(D1.plus) * sparse(D1.minus)
     solver = Solver(D1, D2)
-    semi = Semidiscretization(mesh, equations, initial_condition, solver,
-                              boundary_conditions = boundary_conditions,
-                              source_terms = source_terms)
-    ode = semidiscretize(semi, (0.0, 1.0))
-    sol = solve(ode, Tsit5(), abstol = 1e-7, reltol = 1e-7,
-                save_everystep = false, callback = callbacks, saveat = saveat)
-    atol = 1e-7 # to make CI pass
-    rtol = 1e-12
-    errs = errors(analysis_callback)
-    l2 = [0.002345799818043513 3.254313503127441e-8 0.0]
-    l2_measured = errs.l2_error[:, end]
-    for (l2_expected, l2_actual) in zip(l2, l2_measured)
-        @test isapprox(l2_expected, l2_actual, atol = atol, rtol = rtol)
-    end
-    linf = [0.05625950533062252 6.815531732318192e-7 0.0]
-    linf_measured = errs.linf_error[:, end]
-    for (linf_expected, linf_actual) in zip(linf, linf_measured)
-        @test isapprox(linf_expected, linf_actual, atol = atol, rtol = rtol)
-    end
+    @test_trixi_include(joinpath(EXAMPLES_DIR, "bbm_bbm_1d_basic_reflecting.jl"),
+                        tspan=(0.0, 1.0),
+                        solver=solver,
+                        l2=[0.002345799818043513 3.254313503127441e-8 0.0],
+                        linf=[0.05625950533062252 6.815531732318192e-7 0.0],
+                        cons_error=[1.6607871307809518e-9 0.5469460993745239 0.0],
+                        change_waterheight=-1.6607871307809518e-9,
+                        change_velocity=0.5469460993745239,
+                        change_entropy=132.10938489083918,
+                        atol=1e-7,
+                        atol_ints=1e-10) # to make CI pass
 
     @test_allocations(semi, sol, allocs=2_000)
 end
@@ -291,25 +275,18 @@ end
                           N = mesh.N)
     D2 = sparse(D1.plus) * sparse(D1.minus)
     solver = Solver(D1, D2)
-    semi = Semidiscretization(mesh, equations, initial_condition, solver,
-                              boundary_conditions = boundary_conditions,
-                              source_terms = source_terms)
-    ode = semidiscretize(semi, (0.0, 1.0))
-    sol = solve(ode, Tsit5(), abstol = 1e-7, reltol = 1e-7,
-                save_everystep = false, callback = callbacks, saveat = saveat)
-    atol = 1e-8 # to make CI pass
-    rtol = 1e-12
-    errs = errors(analysis_callback)
-    l2 = [9.791289242253764e-5 6.608214058228884e-9 0.0]
-    l2_measured = errs.l2_error[:, end]
-    for (l2_expected, l2_actual) in zip(l2, l2_measured)
-        @test isapprox(l2_expected, l2_actual, atol = atol, rtol = rtol)
-    end
-    linf = [0.0023482494155127043 8.684315878915161e-8 0.0]
-    linf_measured = errs.linf_error[:, end]
-    for (linf_expected, linf_actual) in zip(linf, linf_measured)
-        @test isapprox(linf_expected, linf_actual, atol = atol, rtol = rtol)
-    end
+    @test_trixi_include(joinpath(EXAMPLES_DIR, "bbm_bbm_1d_basic_reflecting.jl"),
+                        bathymetry_type=bathymetry_flat,
+                        tspan=(0.0, 1.0),
+                        solver=solver,
+                        l2=[9.791289242253764e-5 6.608214058228884e-9 0.0],
+                        linf=[0.0023482494155127043 8.684315878915161e-8 0.0],
+                        cons_error=[1.4778607518007766e-10 0.5469460970051805 0.0],
+                        change_waterheight=-1.4778607518007766e-10,
+                        change_velocity=0.5469460970051805,
+                        change_entropy=132.04866880504562,
+                        atol=1e-8,
+                        atol_ints=1e-10) # to make CI pass
 
     @test_allocations(semi, sol, allocs=2_000)
 end
