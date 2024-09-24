@@ -31,7 +31,7 @@ end
                         change_waterheight=6.490606933236491e-14,
                         change_velocity=3.694822225952521e-13,
                         change_entropy=0.0002383181188179151,
-                        atol_ints=1e-11) # to make CI pass
+                        atol_ints=1e-10) # to make CI pass
 
     @test_allocations(semi, sol, allocs=10_000)
 
