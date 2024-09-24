@@ -84,7 +84,7 @@ makedocs(;
              "Development" => "development.md",
              "Reference" => [
                  "TrixiBase" => "ref-trixibase.md",
-                 "DispersiveShallowWater" => "ref.md",
+                 "DispersiveShallowWater" => "ref.md"
              ],
              "Changelog" => "changelog.md",
              "Contributing" => "contributing.md",

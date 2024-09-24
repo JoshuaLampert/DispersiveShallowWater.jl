@@ -175,7 +175,7 @@ end
 
 @testitem "bbm_bbm_1d_upwind_relaxation with bathymetry_variable" setup=[
     Setup,
-    BBMBBMEquation1D,
+    BBMBBMEquation1D
 ] begin
     @test_trixi_include(joinpath(EXAMPLES_DIR, "bbm_bbm_1d_upwind_relaxation.jl"),
                         bathymetry_type=bathymetry_variable,
@@ -268,7 +268,7 @@ end
 @testitem "bbm_bbm_1d_basic_reflecting with bathymetry_flat" setup=[
     Setup,
     BBMBBMEquation1D,
-    AdditionalImports,
+    AdditionalImports
 ] begin
     @test_trixi_include(joinpath(EXAMPLES_DIR, "bbm_bbm_1d_basic_reflecting.jl"),
                         bathymetry_type=bathymetry_flat,

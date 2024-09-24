@@ -105,7 +105,7 @@ end
         prim2phys,
         energy_total_modified,
         entropy_modified,
-        hamiltonian,
+        hamiltonian
     ]
     for conversion in conversion_functions
         @test DispersiveShallowWater.varnames(conversion, equations) isa Tuple
@@ -155,7 +155,7 @@ end
         prim2prim,
         prim2phys,
         energy_total_modified,
-        entropy_modified,
+        entropy_modified
     ]
     for conversion in conversion_functions
         @test DispersiveShallowWater.varnames(conversion, equations) isa Tuple
@@ -213,7 +213,7 @@ end
         prim2prim,
         prim2phys,
         energy_total_modified,
-        entropy_modified,
+        entropy_modified
     ]
     for conversion in conversion_functions
         @test DispersiveShallowWater.varnames(conversion, equations) isa Tuple
@@ -268,7 +268,7 @@ end
         prim2prim,
         prim2phys,
         energy_total_modified,
-        entropy_modified,
+        entropy_modified
     ]
     for conversion in conversion_functions
         @test DispersiveShallowWater.varnames(conversion, equations) isa Tuple
@@ -323,7 +323,7 @@ end
         prim2prim,
         prim2phys,
         energy_total_modified,
-        entropy_modified,
+        entropy_modified
     ]
     for conversion in conversion_functions
         @test DispersiveShallowWater.varnames(conversion, equations) isa Tuple
