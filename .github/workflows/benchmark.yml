@@ -58,7 +58,7 @@ jobs:
                 echo '' >> body.md
                 echo '' >> body.md
                 echo '### Benchmark Plots' >> body.md
-                echo '![Benchmark Plot](plots/plot_'"$steps.extract-package-name.outputs.package_name"'.png)' >> body.md
+                echo '![Benchmark Plot](plots/plot_'"${{steps.extract-package-name.outputs.package_name}}"'.png)' >> body.md
 
             - name: Find Comment
               uses: peter-evans/find-comment@v3
