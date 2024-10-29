@@ -7,15 +7,19 @@ on:
     tags: '*'
     paths-ignore:
       - '.zenodo.json'
+      - '.github/workflows/benchmark.yml'
       - '.github/workflows/CI.yml'
       - '.github/workflows/CompatHelper.yml'
       - '.github/workflows/TagBot.yml'
+      - 'benchmark/**'
   pull_request:
     paths-ignore:
       - '.zenodo.json'
+      - '.github/workflows/benchmark.yml'
       - '.github/workflows/CI.yml'
       - '.github/workflows/CompatHelper.yml'
       - '.github/workflows/TagBot.yml'
+      - 'benchmark/**'
   workflow_dispatch:
 
 concurrency:

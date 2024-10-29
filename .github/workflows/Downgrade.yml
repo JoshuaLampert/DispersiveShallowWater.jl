@@ -8,11 +8,13 @@ on:
       - 'LICENSE.md'
       - 'README.md'
       - '.zenodo.json'
+      - '.github/workflows/benchmark.yml'
       - '.github/workflows/CompatHelper.yml'
       - '.github/workflows/Documenter.yml'
       - '.github/workflows/Format-check.yml'
       - '.github/workflows/TagBot.yml'
       - '.github/workflows/SpellCheck.yml'
+      - 'benchmark/**'
       - 'docs/**'
   workflow_dispatch:
 

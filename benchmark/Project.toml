@@ -1,0 +1,9 @@
+[deps]
+BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
+OrdinaryDiffEq = "1dea7af3-3e70-54e6-95c3-0bf5283fa5ed"
+SummationByPartsOperators = "9f78cca6-572e-554e-b819-917d2f1cf240"
+
+[compat]
+BenchmarkTools = "1"
+OrdinaryDiffEq = "6.49.1"
+SummationByPartsOperators = "0.5.63"

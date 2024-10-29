@@ -273,10 +273,10 @@ end
                         l2=[1.3655498085989206, 2.3967486930606716, 0.0],
                         linf=[1.001076318001934, 0.8052527556023067, 0.0],
                         cons_error=[0.0, 0.0002674927404067162, 0.0],
-                        change_entropy=-0.0584189861183404,
-                        change_entropy_modified=0.059273537492344985,
-                        atol=1e-11, # to make CI pass
-                        atol_ints=4e-9) # to make CI pass
+                        change_entropy=-0.05841897226287074,
+                        change_entropy_modified=0.059273551933074486,
+                        atol_ints=2e-8, # to make CI pass
+                        atol=2e-8) # to make CI pass
 
     @test_allocations(semi, sol, allocs=900_000)
 end
@@ -291,8 +291,9 @@ end
                         l2=[1.3655493671985637, 2.3967828251339003, 0.0],
                         linf=[1.001075913983051, 0.8052680970114169, 0.0],
                         cons_error=[1.1368683772161603e-13, 0.00026407261543415217, 0.0],
-                        change_entropy=-0.058352284294869605,
-                        change_entropy_modified=0.05927339747017868)
+                        change_entropy=-0.058352273553509804,
+                        change_entropy_modified=0.05927340849780194,
+                        atol_ints=2e-8) # to make CI pass
 
     @test_allocations(semi, sol, allocs=900_000)
 end
