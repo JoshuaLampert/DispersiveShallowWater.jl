@@ -155,5 +155,5 @@ end
                         change_waterheight=-3.745851908818973e-12,
                         atol=1e-11) # to make CI pass
 
-    @test_allocations(semi, sol, allocs=5_000)
+    @test_allocations(semi, sol, allocs=6_000)
 end

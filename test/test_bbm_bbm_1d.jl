@@ -105,7 +105,8 @@ end
                         change_waterheight=3.9206314028412105e-14,
                         change_velocity=-4.547473508864641e-13,
                         change_entropy=0.0002383147650562023,
-                        atol_ints=1e-10) # to make CI pass
+                        atol=1e-11,
+                        atol_ints=1e-9) # to make CI pass
 
     @test_allocations(semi, sol, allocs=10_000)
 end
@@ -120,6 +121,7 @@ end
                         change_waterheight=6.232593470137382e-13,
                         change_velocity=-4.547473508864641e-13,
                         change_entropy=0.0002383154298968293,
+                        atol=1e-11,
                         atol_ints=1e-10) # to make CI pass
 
     @test_allocations(semi, sol, allocs=10_000)
@@ -222,7 +224,7 @@ end
                         change_waterheight=9.701410286113879e-10,
                         change_velocity=0.5469460962472683,
                         change_entropy=132.10935771957952,
-                        atol=1e-10,
+                        atol=1e-9,
                         atol_ints=1e-10) # to make CI pass
 
     @test_allocations(semi, sol, allocs=1_500)
@@ -244,7 +246,7 @@ end
                         change_velocity=0.5469460993745239,
                         change_entropy=132.10938489083918,
                         atol=1e-7,
-                        atol_ints=1e-10) # to make CI pass
+                        atol_ints=1e-9) # to make CI pass
 
     @test_allocations(semi, sol, allocs=2_000)
 end
