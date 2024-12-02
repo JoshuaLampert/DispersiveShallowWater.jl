@@ -27,7 +27,7 @@ In order to conduct a numerical simulation with DispersiveShallowWater.jl, we pe
 First, we load the necessary libraries:
 
 ```@example overview
-using DispersiveShallowWater, OrdinaryDiffEq
+using DispersiveShallowWater, OrdinaryDiffEqTsit5
 ```
 
 ## Define physical setup
@@ -106,7 +106,9 @@ is a nonlinear invariant and should be constant over time as well. During the si
 
 Finally, the `ode` can be `solve`d using the interface from [OrdinaryDiffEq.jl](https://github.com/SciML/OrdinaryDiffEq.jl). This means, we can specify a time-stepping
 scheme we want to use the tolerances for the adaptive time-stepping and the time values, where the solution values should be saved. In this case, we use the adaptive
-explicit Runge-Kutta method `Tsit5` by Tsitouras of order 5(4). Here, we save the solution at 100 equidistant points.
+explicit Runge-Kutta method `Tsit5` by Tsitouras of order 5(4), which is implemented in the subpackage OrdinaryDiffEqTsit5.jl. If you want to use other time-stepping
+schemes, you can install the respective subpackage or the whole package OrdinaryDiffEq.jl, which will install every available solver.
+Here, we save the solution at 100 equidistant points.
 
 ```@example overview
 tspan = (0.0, 25.0)
@@ -214,7 +216,6 @@ nothing # hide
 
 ![analysis callback relaxation](analysis_callback_relaxation.png)
 
-
 ## [Customize solver](@id customize_solver)
 
 In the semidiscretization created above, we used the default SBP operators, which are periodic finite difference operators. Using different SBP operators for the
@@ -307,4 +308,3 @@ and [plot_examples.jl](https://github.com/JoshuaLampert/2023-master-thesis/blob/
     Ranocha, Sayyari, Dalcin, Parsani, Ketcheson (2020):
     Relaxation Runge–Kutta Methods: Fully-Discrete Explicit Entropy-Stable Schemes for the Compressible Euler and Navier–Stokes Equations
     [DOI: 10.1137/19M1263480](https://doi.org/10.1137/19M1263480)
-

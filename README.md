@@ -26,14 +26,20 @@ A more detailed documentation can be found [online](https://JoshuaLampert.github
 
 If you have not yet installed Julia, then you first need to [download Julia](https://julialang.org/downloads/). Please [follow the instructions for your operating system](https://julialang.org/downloads/platform/).
 DispersiveShallowWater.jl works with Julia v1.9 and newer. DispersiveShallowWater.jl is a registered Julia package. Therefore, you can install it by executing the following commands from the Julia REPL
+
 ```julia
 julia> using Pkg
 
-julia> Pkg.add(["DispersiveShallowWater", "OrdinaryDiffEq", "Plots"])
+julia> Pkg.add(["DispersiveShallowWater", "OrdinaryDiffEqTsit5", "Plots"])
 ```
-In addition, this installs the packages [OrdinaryDiffEq.jl](https://github.com/SciML/OrdinaryDiffEq.jl) used for time-integration and [Plots.jl](https://github.com/JuliaPlots/Plots.jl) to visualize the results.
+
+In addition, this installs the packages OrdinaryDiffEqTsit5.jl from [OrdinaryDiffEq.jl](https://github.com/SciML/OrdinaryDiffEq.jl)
+used for time-integration and [Plots.jl](https://github.com/JuliaPlots/Plots.jl) to visualize the results. If you want to use
+other time integration methods than `Tsit5`, you can install the respective subpackage or OrdinaryDiffEq.jl, which will install
+every available solver.
 If you want to use other SBP operators than the default operators that DispersiveShallowWater.jl uses, then you also need [SummationByPartsOperators.jl](https://github.com/ranocha/SummationByPartsOperators.jl),
 which can be installed running
+
 ```julia
 julia> Pkg.add("SummationByPartsOperators")
 ```
@@ -41,19 +47,24 @@ julia> Pkg.add("SummationByPartsOperators")
 ## Usage
 
 In the Julia REPL, first load the package DispersiveShallowWater.jl
+
 ```julia
 julia> using DispersiveShallowWater
 ```
 
 You can run a basic simulation that solves the BBM-BBM equations by executing
+
 ```julia
 julia> include(default_example());
 ```
+
 The result can be visualized by using the package Plots.jl
+
 ```julia
 julia> using Plots
 julia> plot(semi => sol)
 ```
+
 The command `plot` expects a `Pair` consisting of a `Semidiscretization` and an `ODESolution`. The visualization can also be customized, see the [documentation](https://JoshuaLampert.github.io/DispersiveShallowWater.jl/stable/overview#visualize_results)
 for more details. Other examples can be found in the subdirectory [examples/](https://github.com/JoshuaLampert/DispersiveShallowWater.jl/tree/main/examples).
 A list of all examples is returned by running `get_examples()`. You can pass the filename of one of the examples or your own simulation file to `include` in order to run it,
@@ -62,6 +73,7 @@ e.g., `include(joinpath(examples_dir(), "svaerd_kalisch_1d", "svaerd_kalisch_1d_
 ## Referencing
 
 You can directly refer to DispersiveShallowWater.jl as
+
 ```bibtex
 @misc{lampert2023dispersive,
   title={{D}ispersive{S}hallow{W}ater.jl: {S}tructure-preserving numerical

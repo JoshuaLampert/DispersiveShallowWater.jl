@@ -1,4 +1,4 @@
-using OrdinaryDiffEq
+using OrdinaryDiffEqTsit5
 using DispersiveShallowWater
 using SummationByPartsOperators: legendre_derivative_operator, UniformPeriodicMesh1D,
                                  couple_continuously, legendre_second_derivative_operator
