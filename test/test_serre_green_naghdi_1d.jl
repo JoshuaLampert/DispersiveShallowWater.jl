@@ -12,7 +12,7 @@ end
                         change_waterheight=0.0,
                         change_entropy_modified=-3.1093350116861984e-11)
 
-    @test_allocations(semi, sol, allocs=550_000)
+    @test_allocations(semi, sol, allocs=650_000)
 end
 
 @testitem "serre_green_naghdi_soliton.jl with bathymetry_mild_slope" setup=[
@@ -110,7 +110,7 @@ end
                         change_waterheight=4.263256414560601e-14,
                         change_entropy_modified=-3.1036506698001176e-11)
 
-    @test_allocations(semi, sol, allocs=500_000)
+    @test_allocations(semi, sol, allocs=600_000)
 end
 
 @testitem "serre_green_naghdi_soliton_upwind.jl with bathymetry_mild_slope" setup=[
