@@ -54,7 +54,7 @@ jobs:
           - macos-latest
           - windows-latest
         include:
-          - version: '1.9'
+          - version: '1.11'
             os: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
