@@ -26,7 +26,7 @@ TrixiBase = "9a0f1c46-06d5-4909-a5a3-ce25d3fa3284"
 [compat]
 BandedMatrices = "1"
 DiffEqBase = "6.152.2"
-FastBroadcast = "0.3.4"
+FastBroadcast = "0.3.5"
 Interpolations = "0.15.1"
 LinearAlgebra = "1"
 PolynomialBases = "0.4.15"
