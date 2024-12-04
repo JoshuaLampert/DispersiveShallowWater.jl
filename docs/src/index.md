@@ -15,7 +15,7 @@ To date, it provides provably conservative, entropy-conserving and well-balanced
 * the [Benjamin-Bona-Mahony (BBM) equation, also known as regularized long-wave equation](https://doi.org/10.4208/cicp.OA-2020-0119),
 * the [BBM-BBM equations with varying bottom topography](https://iopscience.iop.org/article/10.1088/1361-6544/ac3c29),
 * the [dispersive shallow water model proposed by Magnus Svärd and Henrik Kalisch](https://arxiv.org/abs/2302.09924),
-* the [Serre-Green-Naghdi equations](https://arxiv.org/abs/2408.02665).
+* the [Serre-Green-Naghdi equations in standard and hyperbolic form](https://arxiv.org/abs/2408.02665).
 
 The semidiscretizations are based on summation-by-parts (SBP) operators, which are implemented in [SummationByPartsOperators.jl](https://github.com/ranocha/SummationByPartsOperators.jl/).
 To obtain fully discrete schemes, the time integration methods from [OrdinaryDiffEq.jl](https://github.com/SciML/OrdinaryDiffEq.jl) are used to solve the resulting ordinary differential equations.
