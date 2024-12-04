@@ -6,7 +6,7 @@
 #   equations in standard and hyperbolic form
 #   [arXiv: 2408.02665](https://arxiv.org/abs/2408.02665)
 
-using OrdinaryDiffEq
+using OrdinaryDiffEqLowStorageRK
 using DispersiveShallowWater
 
 ###############################################################################

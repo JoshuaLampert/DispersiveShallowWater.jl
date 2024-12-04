@@ -1,4 +1,4 @@
-using OrdinaryDiffEq
+using OrdinaryDiffEqLowStorageRK
 using DispersiveShallowWater
 using SummationByPartsOperators: fourier_derivative_operator
 

@@ -1,4 +1,4 @@
-using OrdinaryDiffEq
+using OrdinaryDiffEqTsit5
 using DispersiveShallowWater
 using SummationByPartsOperators: MattssonNordström2004, derivative_operator
 

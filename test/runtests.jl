@@ -19,5 +19,5 @@ end
                                      Mattsson2017
 
     using SparseArrays: sparse, SparseMatrixCSC
-    using OrdinaryDiffEq: solve
+    using OrdinaryDiffEqTsit5: solve
 end

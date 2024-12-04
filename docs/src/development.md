@@ -19,7 +19,7 @@ cd DispersiveShallowWater
 mkdir run
 cd run
 julia --project=. -e 'using Pkg; Pkg.develop(PackageSpec(path=".."))' # Install local DispersiveShallowWater.jl clone
-julia --project=. -e 'using Pkg; Pkg.add(["OrdinaryDiffEq", "Plots", "SummationByPartsOperators"])' # Install additional packages
+julia --project=. -e 'using Pkg; Pkg.add(["OrdinaryDiffEqTsit5", "Plots", "SummationByPartsOperators"])' # Install additional packages
 ```
 
 If you use other packages for executing DispersiveShallowWater.jl, you can add them to the project in the `run`
