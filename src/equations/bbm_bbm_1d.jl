@@ -432,7 +432,8 @@ function rhs!(dq, q, t, mesh, equations::BBMBBMEquations1D, initial_condition,
     end
     # energy and mass conservative semidiscretization
     if solver.D1 isa PeriodicDerivativeOperator ||
-       solver.D1 isa UniformPeriodicCoupledOperator
+       solver.D1 isa UniformPeriodicCoupledOperator ||
+       solver.D1 isa FourierDerivativeOperator
         @trixi_timeit timer() "deta hyperbolic" begin
             mul!(deta, solver.D1, tmp1)
         end
