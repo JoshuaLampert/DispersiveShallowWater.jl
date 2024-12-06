@@ -17,7 +17,11 @@ end
     @test_allocations(semi, sol, allocs=90_000)
 end
 
-@testitem "svaerd_kalisch_1d_basic_reflecting" setup=[Setup, SvaerdKalischEquations1D, AdditionalImports] begin
+@testitem "svaerd_kalisch_1d_basic_reflecting" setup=[
+    Setup,
+    SvaerdKalischEquations1D,
+    AdditionalImports
+] begin
     @test_trixi_include(joinpath(EXAMPLES_DIR, "svaerd_kalisch_1d_basic_reflecting.jl"),
                         tspan=(0.0, 1.0),
                         l2=[4.067039325687744e-5 6.705583873243185e-8 0.0],
