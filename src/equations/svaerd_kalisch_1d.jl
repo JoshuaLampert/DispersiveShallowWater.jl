@@ -140,6 +140,79 @@ function source_terms_manufactured(q, x, t, equations::SvaerdKalischEquations1D)
     return SVector(dq1, dq2, zero(dq1))
 end
 
+"""
+    initial_condition_manufactured_reflecting(x, t, equations::SvaerdKalischEquations1D, mesh)
+
+A smooth manufactured solution for reflecting boundary conditions in combination
+with [`source_terms_manufactured_reflecting`](@ref).
+"""
+function initial_condition_manufactured_reflecting(x, t,
+                                                   equations::SvaerdKalischEquations1D,
+                                                   mesh)
+    eta = exp(2 * t) * cospi(x)
+    v = exp(t) * x * sinpi(x)
+    b = -5 - 2 * cospi(2 * x)
+    D = equations.eta0 - b
+    return SVector(eta, v, D)
+end
+
+"""
+    source_terms_manufactured_reflecting(q, x, t, equations::SvaerdKalischEquations1D, mesh)
+
+A smooth manufactured solution for reflecting boundary conditions in combination
+with [`initial_condition_manufactured_reflecting`](@ref).
+"""
+function source_terms_manufactured_reflecting(q, x, t, equations::SvaerdKalischEquations1D)
+    g = gravity_constant(equations)
+    eta0 = still_water_surface(q, equations)
+    beta = equations.beta
+    a1 = sinpi(2 * x)
+    a2 = cospi(2 * x)
+    a9 = exp(t)
+    a11 = eta0 + 2.0 * a2 + 5.0
+    a13 = 0.2 * eta0 + 0.4 * a2 + 1
+    a22 = sinpi(x)
+    a23 = cospi(x)
+    a24 = exp(2 * t)
+    a25 = a24 * a23
+    a26 = a25 + 2.0 * a2 + 5.0
+    a27 = a9 * a22
+    a28 = pi * x * a9 * a23 + a27
+    a29 = -pi * a24 * a22 - 4.0 * pi * a1
+    a30 = a26 * a24
+    a31 = a26 * a27
+    dq1 = x * a29 * a27 + pi * x * a26 * a9 * a23 + a31 + 2 * a25
+    dq2 = 100.0 * pi * beta * a28 * a13^2 * a1 + 40.0 * pi * beta * a28 * a13 * a11 * a1 -
+          25.0 * beta * (-pi^2 * x * a27 + 2 * pi * a9 * a23) * a13^2 * a11 -
+          pi * g * a30 * a22 + x^2 * a29 * a24 * a22^2 / 2 + pi * x^2 * a30 * a22 * a23 +
+          x * a28 * a31 / 2 + x * a30 * a22^2 + x * a31 -
+          x * (x * a29 * a27 + pi * x * a26 * a9 * a23 + a31) * a27 / 2
+
+    return SVector(dq1, dq2, zero(dq1))
+end
+
+# For periodic boundary conditions
+function assemble_system_matrix!(cache, h, D1,
+                                 ::SvaerdKalischEquations1D)
+    (; M_h, minus_MD1betaD1) = cache
+
+    @.. M_h = h
+    scale_by_mass_matrix!(M_h, D1)
+
+    # Floating point errors accumulate a bit and the system matrix
+    # is not necessarily perfectly symmetric but only up to
+    # round-off errors. We wrap it here to avoid issues with the
+    # factorization.
+    return Symmetric(Diagonal(M_h) + minus_MD1betaD1)
+end
+
+# For reflecting boundary conditions
+function assemble_system_matrix!(cache, h,
+                                 ::SvaerdKalischEquations1D)
+    (; D1betaD1d) = cache
+    return Diagonal((@view h[2:(end - 1)])) - D1betaD1d
+end
+
 function create_cache(mesh, equations::SvaerdKalischEquations1D,
                       solver, initial_condition,
                       ::BoundaryConditionPeriodic,
@@ -185,7 +258,7 @@ function create_cache(mesh, equations::SvaerdKalischEquations1D,
         minus_MD1betaD1 = D1mat' * Diagonal(M_beta) * D1mat
         system_matrix = let cache = (; M_h, minus_MD1betaD1)
             assemble_system_matrix!(cache, h,
-                                    D1, D1mat, equations)
+                                    D1, equations)
         end
     elseif D1 isa PeriodicUpwindOperators
         D1_central = D1.central
@@ -193,7 +266,7 @@ function create_cache(mesh, equations::SvaerdKalischEquations1D,
         minus_MD1betaD1 = D1mat_minus' * Diagonal(M_beta) * D1mat_minus
         system_matrix = let cache = (; M_h, minus_MD1betaD1)
             assemble_system_matrix!(cache, h,
-                                    D1, D1mat_minus, equations)
+                                    D1, equations)
         end
     else
         throw(ArgumentError("unknown type of first-derivative operator: $(typeof(D1))"))
@@ -211,18 +284,48 @@ function create_cache(mesh, equations::SvaerdKalischEquations1D,
     return cache
 end
 
-function assemble_system_matrix!(cache, h, D1, D1mat,
-                                 ::SvaerdKalischEquations1D)
-    (; M_h, minus_MD1betaD1) = cache
-
-    @.. M_h = h
-    scale_by_mass_matrix!(M_h, D1)
-
-    # Floating point errors accumulate a bit and the system matrix
-    # is not necessarily perfectly symmetric but only up to
-    # round-off errors. We wrap it here to avoid issues with the
-    # factorization.
-    return Symmetric(Diagonal(M_h) + minus_MD1betaD1)
+# Reflecting boundary conditions assume alpha = gamma = 0
+function create_cache(mesh, equations::SvaerdKalischEquations1D,
+                      solver, initial_condition,
+                      ::BoundaryConditionReflecting,
+                      RealT, uEltype)
+    if !isapprox(equations.alpha, 0, atol = 1e-14) ||
+       !isapprox(equations.gamma, 0, atol = 1e-14)
+        throw(ArgumentError("Reflecting boundary conditions for Svärd-Kalisch equations only implemented for alpha = gamma = 0"))
+    end
+    D1 = solver.D1
+    N = nnodes(mesh)
+    #  Assume D is independent of time and compute D evaluated at mesh points once.
+    D = Array{RealT}(undef, N)
+    x = grid(solver)
+    for i in eachnode(solver)
+        D[i] = still_waterdepth(initial_condition(x[i], 0.0, equations, mesh), equations)
+    end
+    h = ones(RealT, N)
+    hv = zero(h)
+    b = zero(h)
+    eta_x = zero(h)
+    v_x = zero(h)
+    h_v_x = zero(h)
+    hv2_x = zero(h)
+    beta_hat = equations.beta * D .^ 3
+    if D1 isa DerivativeOperator ||
+       D1 isa UniformCoupledOperator
+        D1_central = D1
+        D1mat = sparse(D1_central)
+        Pd = BandedMatrix((-1 => fill(one(real(mesh)), N - 2),), (N, N - 2))
+        D1betaD1d = sparse(D1mat * Diagonal(beta_hat) * D1mat * Pd)[2:(end - 1), :]
+        system_matrix = let cache = (; D1betaD1d)
+            assemble_system_matrix!(cache, h, equations)
+        end
+        factorization = lu(system_matrix)
+    else
+        throw(ArgumentError("unknown type of first-derivative operator: $(typeof(D1))"))
+    end
+    factorization = lu(system_matrix)
+    cache = (; factorization, D1betaD1d, D, h, hv, b, eta_x, v_x,
+             h_v_x, hv2_x, beta_hat, D1_central, D1)
+    return cache
 end
 
 # Discretization that conserves
@@ -315,12 +418,58 @@ function rhs!(dq, q, t, mesh, equations::SvaerdKalischEquations1D,
     @trixi_timeit timer() "source terms" calc_sources!(dq, q, t, source_terms, equations,
                                                        solver)
     @trixi_timeit timer() "assemble system matrix" begin
-        system_matrix = assemble_system_matrix!(cache, h, D1, D1_central, equations)
+        system_matrix = assemble_system_matrix!(cache, h, D1, equations)
     end
     @trixi_timeit timer() "solving elliptic system" begin
         tmp1 .= dv
         solve_system_matrix!(dv, system_matrix, tmp1,
                              equations, D1, cache)
+    end
+
+    return nothing
+end
+
+function rhs!(dq, q, t, mesh, equations::SvaerdKalischEquations1D,
+              initial_condition, ::BoundaryConditionReflecting, source_terms,
+              solver, cache)
+    (; D, h, hv, b, eta_x, v_x, h_v_x, hv2_x, tmp1, D1_central, D1) = cache
+
+    g = gravity_constant(equations)
+    eta, v = q.x
+    deta, dv, dD = dq.x
+    fill!(dD, zero(eltype(dD)))
+
+    @trixi_timeit timer() "deta hyperbolic" begin
+        @.. b = equations.eta0 - D
+        @.. h = eta - b
+        @.. hv = h * v
+
+        mul!(deta, D1_central, -hv)
+    end
+
+    # split form
+    @trixi_timeit timer() "dv hyperbolic" begin
+        mul!(eta_x, D1_central, eta)
+        mul!(v_x, D1_central, v)
+        mul!(h_v_x, D1_central, hv)
+        @.. tmp1 = hv * v
+        mul!(hv2_x, D1_central, tmp1)
+        @.. dv = -(0.5 * (hv2_x + hv * v_x - v * h_v_x) +
+                   g * h * eta_x)
+    end
+
+    # no split form
+    #     dv[:] = -(D1_central * (hv .* v) - v .* (D1_central * hv)+
+    #               g * h .* eta_x)
+
+    @trixi_timeit timer() "source terms" calc_sources!(dq, q, t, source_terms, equations,
+                                                       solver)
+    @trixi_timeit timer() "assemble system matrix" begin
+        system_matrix = assemble_system_matrix!(cache, h, equations)
+    end
+    @trixi_timeit timer() "solving elliptic system" begin
+        solve_system_matrix!((@view dv[2:(end - 1)]), system_matrix, equations, cache)
+        dv[1] = dv[end] = zero(eltype(dv))
     end
 
     return nothing

@@ -19,7 +19,7 @@ using BandedMatrices: BandedMatrix
 using DiffEqBase: DiffEqBase, SciMLBase, terminate!
 using FastBroadcast: @..
 using Interpolations: Interpolations, linear_interpolation
-using LinearAlgebra: mul!, ldiv!, I, Diagonal, Symmetric, diag, lu, cholesky, cholesky!,
+using LinearAlgebra: mul!, ldiv!, I, Diagonal, Symmetric, diag, lu, lu!, cholesky, cholesky!,
                      issuccess
 using PolynomialBases: PolynomialBases
 using Printf: @printf, @sprintf

@@ -338,8 +338,7 @@ function create_cache(mesh, equations::BBMBBMEquations1D{BathymetryFlat},
 
     # homogeneous Neumann boundary conditions
     if solver.D1 isa DerivativeOperator ||
-       solver.D1 isa UniformCoupledOperator ||
-       solver.D1 isa FourierDerivativeOperator
+       solver.D1 isa UniformCoupledOperator
         D1_b = BandedMatrix(solver.D1)
         invImD2n = lu(I + 1 / 6 * D^2 * inv(M) * D1_b' * PdM * D1_b)
     elseif solver.D1 isa UpwindOperators
@@ -382,8 +381,7 @@ function create_cache(mesh, equations::BBMBBMEquations1D,
 
     # homogeneous Neumann boundary conditions
     if solver.D1 isa DerivativeOperator ||
-       solver.D1 isa UniformCoupledOperator ||
-       solver.D1 isa FourierDerivativeOperator
+       solver.D1 isa UniformCoupledOperator
         D1_b = BandedMatrix(solver.D1)
         invImD2n = lu(I + 1 / 6 * inv(M) * D1_b' * PdM * K * D1_b)
     elseif solver.D1 isa UpwindOperators
@@ -434,8 +432,7 @@ function rhs!(dq, q, t, mesh, equations::BBMBBMEquations1D, initial_condition,
     end
     # energy and mass conservative semidiscretization
     if solver.D1 isa PeriodicDerivativeOperator ||
-       solver.D1 isa UniformPeriodicCoupledOperator ||
-       solver.D1 isa FourierDerivativeOperator
+       solver.D1 isa UniformPeriodicCoupledOperator
         @trixi_timeit timer() "deta hyperbolic" begin
             mul!(deta, solver.D1, tmp1)
         end
@@ -501,8 +498,7 @@ function rhs!(dq, q, t, mesh, equations::BBMBBMEquations1D, initial_condition,
     end
     # energy and mass conservative semidiscretization
     if solver.D1 isa DerivativeOperator ||
-       solver.D1 isa UniformCoupledOperator ||
-       solver.D1 isa FourierDerivativeOperator
+       solver.D1 isa UniformCoupledOperator
         @trixi_timeit timer() "deta hyperbolic" begin
             mul!(deta, solver.D1, tmp1)
         end

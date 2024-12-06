@@ -581,6 +581,13 @@ function solve_system_matrix!(dv, system_matrix, rhs,
     return nothing
 end
 
+# Svärd-Kalisch equations for reflecting boundary conditions uses LU factorization
+function solve_system_matrix!(dv, system_matrix, ::SvaerdKalischEquations1D, cache)
+    (; factorization) = cache
+    lu!(factorization, system_matrix)
+    ldiv!(factorization, dv)
+end
+
 function solve_system_matrix!(dv, system_matrix, ::Union{BBMEquation1D, BBMBBMEquations1D})
     ldiv!(system_matrix, dv)
 end
