@@ -28,29 +28,26 @@ end
                         linf=[0.00028373482419530305 1.4602668701318988e-7 0.0],
                         cons_error=[1.0484869654379814e-9 0.5469460930247622 0.0],
                         change_waterheight=1.0484869654379814e-9,
-                        change_velocity=0.5469460930247622,
-                        change_entropy=14.059432069002527)
+                        change_entropy_modified=459.90372362418947)
 
     @test_allocations(semi, sol, allocs=650_000)
 
-    # # test upwind operators
-    # D1 = upwind_operators(Mattsson2017; derivative_order = 1,
-    #                       accuracy_order = accuracy_order, xmin = mesh.xmin,
-    #                       xmax = mesh.xmax,
-    #                       N = mesh.N)
-    # D2 = sparse(D1.plus) * sparse(D1.minus)
-    # solver = Solver(D1, D2)
-    # @test_trixi_include(joinpath(EXAMPLES_DIR, "svaerd_kalisch_1d_basic_reflecting.jl"),
-    #                     tspan=(0.0, 1.0),
-    #                     solver=solver,
-    #                     l2=[0.002345799818043513 3.254313503127441e-8 0.0],
-    #                     linf=[0.05625950533062252 6.815531732318192e-7 0.0],
-    #                     cons_error=[1.6607871307809518e-9 0.5469460993745239 0.0],
-    #                     change_waterheight=-1.6607871307809518e-9,
-    #                     change_velocity=0.5469460993745239,
-    #                     change_entropy=132.10938489083918)
+    # test upwind operators
+    D1 = upwind_operators(Mattsson2017; derivative_order = 1,
+                          accuracy_order = accuracy_order, xmin = mesh.xmin,
+                          xmax = mesh.xmax,
+                          N = mesh.N)
+    solver = Solver(D1, nothing)
+    @test_trixi_include(joinpath(EXAMPLES_DIR, "svaerd_kalisch_1d_basic_reflecting.jl"),
+                        tspan=(0.0, 1.0),
+                        solver=solver,
+                        l2=[5.1845375611538653e-5 4.111955051600758e-9 0.0],
+                        linf=[0.0003710888676375923 8.797788351305735e-8 0.0],
+                        cons_error=[1.7004244096716813e-9 0.5469460935005923 0.0],
+                        change_waterheight=-1.7004244096716813e-9,
+                        change_entropy_modified=459.9037221456176)
 
-    # @test_allocations(semi, sol, allocs=2_000)
+    @test_allocations(semi, sol, allocs=650_000)
 end
 
 @testitem "svaerd_kalisch_1d_dingemans" setup=[

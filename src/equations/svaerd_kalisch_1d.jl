@@ -233,7 +233,6 @@ function create_cache(mesh, equations::SvaerdKalischEquations1D,
     alpha_eta_x_x = zero(h)
     y_x = zero(h)
     v_y_x = zero(h)
-    yv_x = zero(h)
     vy = zero(h)
     vy_x = zero(h)
     y_v_x = zero(h)
@@ -273,7 +272,7 @@ function create_cache(mesh, equations::SvaerdKalischEquations1D,
     end
     factorization = cholesky(system_matrix)
     cache = (; factorization, minus_MD1betaD1, D, h, hv, b, eta_x, v_x,
-             alpha_eta_x_x, y_x, v_y_x, yv_x, vy, vy_x, y_v_x, h_v_x, hv2_x, v_xx,
+             alpha_eta_x_x, y_x, v_y_x, vy, vy_x, y_v_x, h_v_x, hv2_x, v_xx,
              gamma_v_xx_x, gamma_v_x_xx,
              alpha_hat, beta_hat, gamma_hat, tmp2, D1_central, M, D1, M_h)
     if D1 isa PeriodicUpwindOperators
@@ -309,16 +308,22 @@ function create_cache(mesh, equations::SvaerdKalischEquations1D,
     h_v_x = zero(h)
     hv2_x = zero(h)
     beta_hat = equations.beta * D .^ 3
+    Pd = BandedMatrix((-1 => fill(one(real(mesh)), N - 2),), (N, N - 2))
     if D1 isa DerivativeOperator ||
        D1 isa UniformCoupledOperator
         D1_central = D1
         D1mat = sparse(D1_central)
-        Pd = BandedMatrix((-1 => fill(one(real(mesh)), N - 2),), (N, N - 2))
         D1betaD1d = sparse(D1mat * Diagonal(beta_hat) * D1mat * Pd)[2:(end - 1), :]
         system_matrix = let cache = (; D1betaD1d)
             assemble_system_matrix!(cache, h, equations)
         end
-        factorization = lu(system_matrix)
+    elseif D1 isa UpwindOperators
+        D1_central = D1.central
+        D1betaD1d = sparse(sparse(D1.plus) * Diagonal(beta_hat) *
+                           sparse(D1.minus) * Pd)[2:(end - 1), :]
+        system_matrix = let cache = (; D1betaD1d)
+            assemble_system_matrix!(cache, h, equations)
+        end
     else
         throw(ArgumentError("unknown type of first-derivative operator: $(typeof(D1))"))
     end
@@ -340,9 +345,9 @@ end
 function rhs!(dq, q, t, mesh, equations::SvaerdKalischEquations1D,
               initial_condition, ::BoundaryConditionPeriodic, source_terms,
               solver, cache)
-    (; D, h, hv, b, eta_x, v_x, alpha_eta_x_x, y_x, v_y_x, yv_x, vy, vy_x,
+    (; D, h, hv, b, eta_x, v_x, alpha_eta_x_x, y_x, v_y_x, vy, vy_x,
     y_v_x, h_v_x, hv2_x, v_xx, gamma_v_xx_x, gamma_v_x_xx, alpha_hat, gamma_hat,
-    tmp1, tmp2, D1_central, M, D1) = cache
+    tmp1, tmp2, D1_central, D1) = cache
 
     g = gravity_constant(equations)
     eta, v = q.x
@@ -432,7 +437,7 @@ end
 function rhs!(dq, q, t, mesh, equations::SvaerdKalischEquations1D,
               initial_condition, ::BoundaryConditionReflecting, source_terms,
               solver, cache)
-    (; D, h, hv, b, eta_x, v_x, h_v_x, hv2_x, tmp1, D1_central, D1) = cache
+    (; D, h, hv, b, eta_x, v_x, h_v_x, hv2_x, tmp1, D1_central) = cache
 
     g = gravity_constant(equations)
     eta, v = q.x
@@ -507,7 +512,8 @@ See also [`energy_total_modified`](@ref).
     @.. b = equations.eta0 - D
     @.. h = eta - b
 
-    if D1 isa PeriodicUpwindOperators
+    if D1 isa PeriodicUpwindOperators ||
+       D1 isa UpwindOperators
         mul!(v_x, D1.minus, v)
     else
         mul!(v_x, D1, v)

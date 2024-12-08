@@ -4,7 +4,7 @@ using SummationByPartsOperators: MattssonNordström2004, derivative_operator
 
 ###############################################################################
 # Semidiscretization of the Svärd-Kalisch equations
-
+# For reflecting boundary conditions, alpha and gamma need to be 0
 equations = SvaerdKalischEquations1D(gravity_constant = 1.0, eta0 = 0.0,
                                      alpha = 0.0, beta = 1 / 3, gamma = 0.0)
 
@@ -23,10 +23,7 @@ accuracy_order = 4
 D1 = derivative_operator(MattssonNordström2004(),
                          derivative_order = 1, accuracy_order = accuracy_order,
                          xmin = mesh.xmin, xmax = mesh.xmax, N = mesh.N)
-D2 = derivative_operator(MattssonNordström2004(),
-                         derivative_order = 2, accuracy_order = accuracy_order,
-                         xmin = mesh.xmin, xmax = mesh.xmax, N = mesh.N)
-solver = Solver(D1, D2)
+solver = Solver(D1, nothing)
 
 # semidiscretization holds all the necessary data structures for the spatial discretization
 semi = Semidiscretization(mesh, equations, initial_condition, solver,
@@ -41,7 +38,7 @@ summary_callback = SummaryCallback()
 analysis_callback = AnalysisCallback(semi; interval = 100,
                                      extra_analysis_errors = (:conservation_error,),
                                      extra_analysis_integrals = (waterheight_total,
-                                                                 velocity, entropy))
+                                                                 entropy_modified))
 callbacks = CallbackSet(analysis_callback, summary_callback)
 
 saveat = range(tspan..., length = 100)
