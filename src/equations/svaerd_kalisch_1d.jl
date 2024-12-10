@@ -272,7 +272,7 @@ function rhs!(dq, q, t, mesh, equations::SvaerdKalischEquations1D,
             mul!(v_x, D1_central, v)
             mul!(eta_x_upwind, D1.plus, eta)
             @.. tmp1 = alpha_hat * eta_x_upwind
-            mul!(alpha_eta_x_x, D1_central, tmp1)
+            mul!(alpha_eta_x_x, D1.minus, tmp1)
             @.. tmp1 = alpha_hat * alpha_eta_x_x
             mul!(y_x, D1.minus, tmp1)
             @.. v_y_x = v * y_x
