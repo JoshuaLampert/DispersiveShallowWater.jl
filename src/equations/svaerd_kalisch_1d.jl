@@ -288,7 +288,7 @@ function create_cache(mesh, equations::SvaerdKalischEquations1D,
                       solver, initial_condition,
                       ::BoundaryConditionReflecting,
                       RealT, uEltype)
-    if !iszero(equations.alpha) || !iszero(equations.gamma,)
+    if !iszero(equations.alpha) || !iszero(equations.gamma)
         throw(ArgumentError("Reflecting boundary conditions for Svärd-Kalisch equations only implemented for alpha = gamma = 0"))
     end
     D1 = solver.D1
