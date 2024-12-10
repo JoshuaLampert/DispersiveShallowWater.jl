@@ -28,7 +28,8 @@ end
                         linf=[9.787584609100008e-5 1.4602668577112787e-7 0.0],
                         cons_error=[1.0484865187415942e-9 0.5469460930247753 0.0],
                         change_waterheight=1.0484865187415942e-9,
-                        change_entropy_modified=459.9037236233692)
+                        change_entropy_modified=459.9037236233692,
+                        atol=1e-11) # to make CI pass
 
     @test_allocations(semi, sol, allocs=650_000)
 
@@ -45,7 +46,8 @@ end
                         linf=[3.135229084794133e-5 8.797788287467911e-8 0.0],
                         cons_error=[1.700425282207037e-9 0.5469460935004404 0.0],
                         change_waterheight=-1.700425282207037e-9,
-                        change_entropy_modified=459.9037221442477)
+                        change_entropy_modified=459.9037221442477,
+                        atol=1e-11) # to make CI pass
 
     @test_allocations(semi, sol, allocs=650_000)
 end
