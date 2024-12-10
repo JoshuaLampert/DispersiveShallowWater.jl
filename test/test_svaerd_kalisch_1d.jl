@@ -24,11 +24,11 @@ end
 ] begin
     @test_trixi_include(joinpath(EXAMPLES_DIR, "svaerd_kalisch_1d_basic_reflecting.jl"),
                         tspan=(0.0, 1.0),
-                        l2=[4.067039325687744e-5 6.705583873243185e-8 0.0],
-                        linf=[0.00028373482419530305 1.4602668701318988e-7 0.0],
-                        cons_error=[1.0484869654379814e-9 0.5469460930247622 0.0],
-                        change_waterheight=1.0484869654379814e-9,
-                        change_entropy_modified=459.90372362418947)
+                        l2=[5.402315467757905e-6 6.705583190754449e-8 0.0],
+                        linf=[9.787584609100008e-5 1.4602668577112787e-7 0.0],
+                        cons_error=[1.0484865187415942e-9 0.5469460930247753 0.0],
+                        change_waterheight=1.0484865187415942e-9,
+                        change_entropy_modified=459.9037236233692)
 
     @test_allocations(semi, sol, allocs=650_000)
 
@@ -41,11 +41,11 @@ end
     @test_trixi_include(joinpath(EXAMPLES_DIR, "svaerd_kalisch_1d_basic_reflecting.jl"),
                         tspan=(0.0, 1.0),
                         solver=solver,
-                        l2=[5.1845375611538653e-5 4.111955051600758e-9 0.0],
-                        linf=[0.0003710888676375923 8.797788351305735e-8 0.0],
-                        cons_error=[1.7004244096716813e-9 0.5469460935005923 0.0],
-                        change_waterheight=-1.7004244096716813e-9,
-                        change_entropy_modified=459.9037221456176)
+                        l2=[5.862278093002509e-6 4.111933117101271e-9 0.0],
+                        linf=[3.135229084794133e-5 8.797788287467911e-8 0.0],
+                        cons_error=[1.700425282207037e-9 0.5469460935004404 0.0],
+                        change_waterheight=-1.700425282207037e-9,
+                        change_entropy_modified=459.9037221442477)
 
     @test_allocations(semi, sol, allocs=650_000)
 end

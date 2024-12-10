@@ -42,5 +42,5 @@ analysis_callback = AnalysisCallback(semi; interval = 100,
 callbacks = CallbackSet(analysis_callback, summary_callback)
 
 saveat = range(tspan..., length = 100)
-sol = solve(ode, Tsit5(), abstol = 1e-7, reltol = 1e-7,
+sol = solve(ode, Tsit5(), abstol = 1e-12, reltol = 1e-12,
             save_everystep = false, callback = callbacks, saveat = saveat)
