@@ -288,8 +288,7 @@ function create_cache(mesh, equations::SvaerdKalischEquations1D,
                       solver, initial_condition,
                       ::BoundaryConditionReflecting,
                       RealT, uEltype)
-    if !isapprox(equations.alpha, 0, atol = 1e-14) ||
-       !isapprox(equations.gamma, 0, atol = 1e-14)
+    if !iszero(equations.alpha) || !iszero(equations.gamma,)
         throw(ArgumentError("Reflecting boundary conditions for Svärd-Kalisch equations only implemented for alpha = gamma = 0"))
     end
     D1 = solver.D1
@@ -307,7 +306,7 @@ function create_cache(mesh, equations::SvaerdKalischEquations1D,
     v_x = zero(h)
     h_v_x = zero(h)
     hv2_x = zero(h)
-    beta_hat = equations.beta * D .^ 3
+    beta_hat = equations.beta .* D .^ 3
     Pd = BandedMatrix((-1 => fill(one(real(mesh)), N - 2),), (N, N - 2))
     if D1 isa DerivativeOperator ||
        D1 isa UniformCoupledOperator
@@ -437,6 +436,8 @@ end
 function rhs!(dq, q, t, mesh, equations::SvaerdKalischEquations1D,
               initial_condition, ::BoundaryConditionReflecting, source_terms,
               solver, cache)
+    # When constructing the `cache`, we assert that alpha and gamma are zero.
+    # We use this explicitly in the code below.
     (; D, h, hv, b, eta_x, v_x, h_v_x, hv2_x, tmp1, D1_central) = cache
 
     g = gravity_constant(equations)
@@ -462,10 +463,6 @@ function rhs!(dq, q, t, mesh, equations::SvaerdKalischEquations1D,
         @.. dv = -(0.5 * (hv2_x + hv * v_x - v * h_v_x) +
                    g * h * eta_x)
     end
-
-    # no split form
-    #     dv[:] = -(D1_central * (hv .* v) - v .* (D1_central * hv)+
-    #               g * h .* eta_x)
 
     @trixi_timeit timer() "source terms" calc_sources!(dq, q, t, source_terms, equations,
                                                        solver)
