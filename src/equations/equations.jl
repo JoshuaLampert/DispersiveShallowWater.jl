@@ -558,16 +558,16 @@ include("serre_green_naghdi_1d.jl")
 include("hyperbolic_serre_green_naghdi_1d.jl")
 
 function solve_system_matrix!(dv, system_matrix, rhs,
-                              ::Union{SvaerdKalischEquations1D,
-                                      SerreGreenNaghdiEquations1D},
+                              equations::Union{SvaerdKalischEquations1D,
+                                               SerreGreenNaghdiEquations1D},
                               D1, cache, ::BoundaryConditionPeriodic)
     scale_by_mass_matrix!(rhs, D1)
     solve_system_matrix!(dv, system_matrix, rhs, equations, D1, cache)
 end
 
 function solve_system_matrix!(dv, system_matrix, rhs,
-                              ::Union{SvaerdKalischEquations1D,
-                                      SerreGreenNaghdiEquations1D},
+                              equations::Union{SvaerdKalischEquations1D,
+                                               SerreGreenNaghdiEquations1D},
                               D1, cache, ::BoundaryConditionReflecting)
     scale_by_mass_matrix!(rhs, D1)
     solve_system_matrix!(dv, system_matrix, (@view rhs[2:(end - 1)]), equations, D1, cache)
