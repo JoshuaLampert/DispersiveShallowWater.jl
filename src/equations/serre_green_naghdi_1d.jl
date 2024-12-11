@@ -318,9 +318,11 @@ function rhs!(dq, q, t, mesh,
               source_terms::Nothing,
               solver, cache)
     if cache.D1 isa PeriodicUpwindOperators
-        rhs_sgn_upwind!(dq, q, equations, source_terms, cache, equations.bathymetry_type, boundary_conditions)
+        rhs_sgn_upwind!(dq, q, equations, source_terms, cache, equations.bathymetry_type,
+                        boundary_conditions)
     else
-        rhs_sgn_central!(dq, q, equations, source_terms, cache, equations.bathymetry_type, boundary_conditions)
+        rhs_sgn_central!(dq, q, equations, source_terms, cache, equations.bathymetry_type,
+                         boundary_conditions)
     end
 
     return nothing
