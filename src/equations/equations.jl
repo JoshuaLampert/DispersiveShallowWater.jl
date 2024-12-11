@@ -567,7 +567,7 @@ function solve_system_matrix!(dv, system_matrix, rhs,
         if issuccess(factorization)
             scale_by_mass_matrix!(rhs, D1)
             # see https://github.com/JoshuaLampert/DispersiveShallowWater.jl/issues/122
-            dv .= factorization \ rhs
+            dv .= system_matrix \ rhs[2:(end - 1)]
         else
             # The factorization may fail if the time step is too large
             # and h becomes negative.
