@@ -567,7 +567,7 @@ function solve_system_matrix!(dv, system_matrix, rhs,
         if issuccess(factorization)
             scale_by_mass_matrix!(rhs, D1)
             # see https://github.com/JoshuaLampert/DispersiveShallowWater.jl/issues/122
-            dv .= system_matrix \ rhs[2:(end - 1)]
+            dv .= factorization \ rhs[2:(end - 1)]
         else
             # The factorization may fail if the time step is too large
             # and h becomes negative.
@@ -579,13 +579,6 @@ function solve_system_matrix!(dv, system_matrix, rhs,
         ldiv!(dv, factorization, rhs)
     end
     return nothing
-end
-
-# Svärd-Kalisch equations for reflecting boundary conditions uses LU factorization
-function solve_system_matrix_lu!(dv, system_matrix_lu, ::SvaerdKalischEquations1D, cache)
-    (; factorization_lu) = cache
-    lu!(factorization_lu, system_matrix_lu)
-    ldiv!(factorization_lu, dv)
 end
 
 function solve_system_matrix!(dv, system_matrix, ::Union{BBMEquation1D, BBMBBMEquations1D})
