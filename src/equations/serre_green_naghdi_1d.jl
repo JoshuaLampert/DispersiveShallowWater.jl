@@ -485,7 +485,7 @@ function rhs_sgn_upwind!(dq, q, equations, source_terms, cache, ::BathymetryFlat
     end
 
     @trixi_timeit timer() "solving elliptic system" begin
-        scale_by_mass_matrix!(tmp1, D1)
+        scale_by_mass_matrix!(tmp, D1)
         solve_system_matrix!(dv, system_matrix, tmp,
                              equations, D1, cache)
     end
@@ -591,7 +591,7 @@ function rhs_sgn_central!(dq, q, equations, source_terms, cache,
     end
 
     @trixi_timeit timer() "solving elliptic system" begin
-        scale_by_mass_matrix!(tmp1, D1)
+        scale_by_mass_matrix!(tmp, D1)
         solve_system_matrix!(dv, system_matrix, tmp,
                              equations, D1, cache)
     end
@@ -705,7 +705,7 @@ function rhs_sgn_upwind!(dq, q, equations, source_terms, cache,
     end
 
     @trixi_timeit timer() "solving elliptic system" begin
-        scale_by_mass_matrix!(tmp1, D1)
+        scale_by_mass_matrix!(tmp, D1)
         solve_system_matrix!(dv, system_matrix, tmp,
                              equations, D1, cache)
     end
