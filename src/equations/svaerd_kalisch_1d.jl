@@ -220,7 +220,7 @@ function assemble_system_matrix!(cache, h,
     # is not necessarily perfectly symmetric but only up to
     # round-off errors. We wrap it here to avoid issues with the
     # factorization.
-    return Symmetric(Diagonal((@view M_h[2:(end - 1)])) + minus_MD1betaD1)
+    return Symmetric(Diagonal((@view M_h[(begin + 1):(end - 1)])) + minus_MD1betaD1)
 end
 
 function create_cache(mesh, equations::SvaerdKalischEquations1D,
@@ -326,15 +326,16 @@ function create_cache(mesh, equations::SvaerdKalischEquations1D,
        D1 isa UniformCoupledOperator
         D1_central = D1
         D1mat = sparse(D1_central)
-        minus_MD1betaD1 = sparse(D1mat' * Diagonal(M_beta) * D1mat * Pd)[2:(end - 1), :]
+        minus_MD1betaD1 = sparse(D1mat' * Diagonal(M_beta) *
+                                 D1mat * Pd)[(begin + 1):(end - 1), :]
         system_matrix = let cache = (; D1, M_h, minus_MD1betaD1)
             assemble_system_matrix!(cache, h, equations, boundary_conditions)
         end
     elseif D1 isa UpwindOperators
         D1_central = D1.central
         D1mat_minus = sparse(D1.minus)
-        minus_MD1betaD1 = sparse(D1mat_minus' * Diagonal(M_beta) * D1mat_minus * Pd)[2:(end - 1),
-                                                                                     :]
+        minus_MD1betaD1 = sparse(D1mat_minus' * Diagonal(M_beta) *
+                                 D1mat_minus * Pd)[(begin + 1):(end - 1), :]
         system_matrix = let cache = (; D1, M_h, minus_MD1betaD1)
             assemble_system_matrix!(cache, h, equations, boundary_conditions)
         end
@@ -487,7 +488,7 @@ function rhs!(dq, q, t, mesh, equations::SvaerdKalischEquations1D,
     end
     @trixi_timeit timer() "solving elliptic system" begin
         tmp1 .= dv
-        solve_system_matrix!((@view dv[2:(end - 1)]), system_matrix,
+        solve_system_matrix!((@view dv[(begin + 1):(end - 1)]), system_matrix,
                              tmp1, equations, D1, cache, boundary_conditions)
         dv[1] = dv[end] = zero(eltype(dv))
     end
