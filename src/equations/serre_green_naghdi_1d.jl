@@ -314,19 +314,22 @@ end
 function rhs!(dq, q, t, mesh,
               equations::SerreGreenNaghdiEquations1D,
               initial_condition,
-              ::BoundaryConditionPeriodic,
+              boundary_conditions::BoundaryConditionPeriodic,
               source_terms::Nothing,
               solver, cache)
     if cache.D1 isa PeriodicUpwindOperators
-        rhs_sgn_upwind!(dq, q, equations, source_terms, cache, equations.bathymetry_type)
+        rhs_sgn_upwind!(dq, q, equations, source_terms, cache, equations.bathymetry_type,
+                        boundary_conditions)
     else
-        rhs_sgn_central!(dq, q, equations, source_terms, cache, equations.bathymetry_type)
+        rhs_sgn_central!(dq, q, equations, source_terms, cache, equations.bathymetry_type,
+                         boundary_conditions)
     end
 
     return nothing
 end
 
-function rhs_sgn_central!(dq, q, equations, source_terms, cache, ::BathymetryFlat)
+function rhs_sgn_central!(dq, q, equations, source_terms, cache, ::BathymetryFlat,
+                          boundary_conditions::BoundaryConditionPeriodic)
     # Unpack physical parameters and SBP operator `D1` as well as the
     # SBP operator in sparse matrix form `D1mat`
     g = gravity_constant(equations)
@@ -399,14 +402,15 @@ function rhs_sgn_central!(dq, q, equations, source_terms, cache, ::BathymetryFla
     end
 
     @trixi_timeit timer() "solving elliptic system" begin
-        solve_system_matrix!(dv, system_matrix, tmp,
-                             equations, D1, cache)
+        solve_system_matrix!(dv, system_matrix,
+                             tmp, equations, D1, cache, boundary_conditions)
     end
 
     return nothing
 end
 
-function rhs_sgn_upwind!(dq, q, equations, source_terms, cache, ::BathymetryFlat)
+function rhs_sgn_upwind!(dq, q, equations, source_terms, cache, ::BathymetryFlat,
+                         boundary_conditions::BoundaryConditionPeriodic)
     # Unpack physical parameters and SBP operator `D1` as well as the
     # SBP upwind operator in sparse matrix form `D1mat_minus`
     g = gravity_constant(equations)
@@ -484,15 +488,16 @@ function rhs_sgn_upwind!(dq, q, equations, source_terms, cache, ::BathymetryFlat
     end
 
     @trixi_timeit timer() "solving elliptic system" begin
-        solve_system_matrix!(dv, system_matrix, tmp,
-                             equations, D1, cache)
+        solve_system_matrix!(dv, system_matrix,
+                             tmp, equations, D1, cache, boundary_conditions)
     end
 
     return nothing
 end
 
 function rhs_sgn_central!(dq, q, equations, source_terms, cache,
-                          ::Union{BathymetryMildSlope, BathymetryVariable})
+                          ::Union{BathymetryMildSlope, BathymetryVariable},
+                          boundary_conditions::BoundaryConditionPeriodic)
     # Unpack physical parameters and SBP operator `D1` as well as the
     # SBP operator in sparse matrix form `D1mat`
     g = gravity_constant(equations)
@@ -589,15 +594,16 @@ function rhs_sgn_central!(dq, q, equations, source_terms, cache,
     end
 
     @trixi_timeit timer() "solving elliptic system" begin
-        solve_system_matrix!(dv, system_matrix, tmp,
-                             equations, D1, cache)
+        solve_system_matrix!(dv, system_matrix,
+                             tmp, equations, D1, cache, boundary_conditions)
     end
 
     return nothing
 end
 
 function rhs_sgn_upwind!(dq, q, equations, source_terms, cache,
-                         ::Union{BathymetryMildSlope, BathymetryVariable})
+                         ::Union{BathymetryMildSlope, BathymetryVariable},
+                         boundary_conditions::BoundaryConditionPeriodic)
     # Unpack physical parameters and SBP operator `D1` as well as the
     # SBP operator in sparse matrix form `D1mat`
     g = gravity_constant(equations)
@@ -702,8 +708,8 @@ function rhs_sgn_upwind!(dq, q, equations, source_terms, cache,
     end
 
     @trixi_timeit timer() "solving elliptic system" begin
-        solve_system_matrix!(dv, system_matrix, tmp,
-                             equations, D1, cache)
+        solve_system_matrix!(dv, system_matrix,
+                             tmp, equations, D1, cache, boundary_conditions)
     end
 
     return nothing

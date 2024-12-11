@@ -558,6 +558,23 @@ include("serre_green_naghdi_1d.jl")
 include("hyperbolic_serre_green_naghdi_1d.jl")
 
 function solve_system_matrix!(dv, system_matrix, rhs,
+                              equations::Union{SvaerdKalischEquations1D,
+                                               SerreGreenNaghdiEquations1D},
+                              D1, cache, ::BoundaryConditionPeriodic)
+    scale_by_mass_matrix!(rhs, D1)
+    solve_system_matrix!(dv, system_matrix, rhs, equations, D1, cache)
+end
+
+function solve_system_matrix!(dv, system_matrix, rhs,
+                              equations::Union{SvaerdKalischEquations1D,
+                                               SerreGreenNaghdiEquations1D},
+                              D1, cache, ::BoundaryConditionReflecting)
+    scale_by_mass_matrix!(rhs, D1)
+    solve_system_matrix!(dv, system_matrix, (@view rhs[(begin + 1):(end - 1)]), equations,
+                         D1, cache)
+end
+
+function solve_system_matrix!(dv, system_matrix, rhs,
                               ::Union{SvaerdKalischEquations1D,
                                       SerreGreenNaghdiEquations1D},
                               D1, cache)
@@ -565,7 +582,6 @@ function solve_system_matrix!(dv, system_matrix, rhs,
         (; factorization) = cache
         cholesky!(factorization, system_matrix; check = false)
         if issuccess(factorization)
-            scale_by_mass_matrix!(rhs, D1)
             # see https://github.com/JoshuaLampert/DispersiveShallowWater.jl/issues/122
             dv .= factorization \ rhs
         else
@@ -575,7 +591,6 @@ function solve_system_matrix!(dv, system_matrix, rhs,
         end
     else
         factorization = cholesky!(system_matrix)
-        scale_by_mass_matrix!(rhs, D1)
         ldiv!(dv, factorization, rhs)
     end
     return nothing
