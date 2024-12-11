@@ -192,9 +192,10 @@ function source_terms_manufactured_reflecting(q, x, t, equations::SvaerdKalischE
 end
 
 # For periodic boundary conditions
-function assemble_system_matrix!(cache, h, D1,
-                                 ::SvaerdKalischEquations1D)
-    (; M_h, minus_MD1betaD1) = cache
+function assemble_system_matrix!(cache, h,
+                                 ::SvaerdKalischEquations1D,
+                                 ::BoundaryConditionPeriodic)
+    (; D1, M_h, minus_MD1betaD1) = cache
 
     @.. M_h = h
     scale_by_mass_matrix!(M_h, D1)
@@ -208,14 +209,23 @@ end
 
 # For reflecting boundary conditions
 function assemble_system_matrix!(cache, h,
-                                 ::SvaerdKalischEquations1D)
-    (; D1betaD1d) = cache
-    return Diagonal((@view h[2:(end - 1)])) - D1betaD1d
+                                 ::SvaerdKalischEquations1D,
+                                 ::BoundaryConditionReflecting)
+    (; D1, M_h, minus_MD1betaD1) = cache
+
+    @.. M_h = h
+    scale_by_mass_matrix!(M_h, D1)
+
+    # Floating point errors accumulate a bit and the system matrix
+    # is not necessarily perfectly symmetric but only up to
+    # round-off errors. We wrap it here to avoid issues with the
+    # factorization.
+    return Symmetric(Diagonal((@view M_h[2:(end - 1)])) + minus_MD1betaD1)
 end
 
 function create_cache(mesh, equations::SvaerdKalischEquations1D,
                       solver, initial_condition,
-                      ::BoundaryConditionPeriodic,
+                      boundary_conditions::BoundaryConditionPeriodic,
                       RealT, uEltype)
     D1 = solver.D1
     #  Assume D is independent of time and compute D evaluated at mesh points once.
@@ -245,8 +255,8 @@ function create_cache(mesh, equations::SvaerdKalischEquations1D,
     beta_hat = equations.beta * D .^ 3
     gamma_hat = equations.gamma * sqrt.(g * D) .* D .^ 3
     tmp2 = zero(h)
-    M = mass_matrix(D1)
-    M_h = zero(h)
+    M_h = copy(h)
+    scale_by_mass_matrix!(M_h, D1)
     M_beta = copy(beta_hat)
     scale_by_mass_matrix!(M_beta, D1)
     if D1 isa PeriodicDerivativeOperator ||
@@ -255,17 +265,17 @@ function create_cache(mesh, equations::SvaerdKalischEquations1D,
         D1_central = D1
         D1mat = sparse(D1_central)
         minus_MD1betaD1 = D1mat' * Diagonal(M_beta) * D1mat
-        system_matrix = let cache = (; M_h, minus_MD1betaD1)
+        system_matrix = let cache = (; D1, M_h, minus_MD1betaD1)
             assemble_system_matrix!(cache, h,
-                                    D1, equations)
+                                    equations, boundary_conditions)
         end
     elseif D1 isa PeriodicUpwindOperators
         D1_central = D1.central
         D1mat_minus = sparse(D1.minus)
         minus_MD1betaD1 = D1mat_minus' * Diagonal(M_beta) * D1mat_minus
-        system_matrix = let cache = (; M_h, minus_MD1betaD1)
+        system_matrix = let cache = (; D1, M_h, minus_MD1betaD1)
             assemble_system_matrix!(cache, h,
-                                    D1, equations)
+                                    equations, boundary_conditions)
         end
     else
         throw(ArgumentError("unknown type of first-derivative operator: $(typeof(D1))"))
@@ -274,7 +284,7 @@ function create_cache(mesh, equations::SvaerdKalischEquations1D,
     cache = (; factorization, minus_MD1betaD1, D, h, hv, b, eta_x, v_x,
              alpha_eta_x_x, y_x, v_y_x, vy, vy_x, y_v_x, h_v_x, hv2_x, v_xx,
              gamma_v_xx_x, gamma_v_x_xx,
-             alpha_hat, beta_hat, gamma_hat, tmp2, D1_central, M, D1, M_h)
+             alpha_hat, beta_hat, gamma_hat, tmp2, D1_central, D1, M_h)
     if D1 isa PeriodicUpwindOperators
         eta_x_upwind = zero(h)
         v_x_upwind = zero(h)
@@ -286,7 +296,7 @@ end
 # Reflecting boundary conditions assume alpha = gamma = 0
 function create_cache(mesh, equations::SvaerdKalischEquations1D,
                       solver, initial_condition,
-                      ::BoundaryConditionReflecting,
+                      boundary_conditions::BoundaryConditionReflecting,
                       RealT, uEltype)
     if !iszero(equations.alpha) || !iszero(equations.gamma)
         throw(ArgumentError("Reflecting boundary conditions for Svärd-Kalisch equations only implemented for alpha = gamma = 0"))
@@ -307,28 +317,33 @@ function create_cache(mesh, equations::SvaerdKalischEquations1D,
     h_v_x = zero(h)
     hv2_x = zero(h)
     beta_hat = equations.beta .* D .^ 3
+    M_h = copy(h)
+    scale_by_mass_matrix!(M_h, D1)
+    M_beta = copy(beta_hat)
+    scale_by_mass_matrix!(M_beta, D1)
     Pd = BandedMatrix((-1 => fill(one(real(mesh)), N - 2),), (N, N - 2))
     if D1 isa DerivativeOperator ||
        D1 isa UniformCoupledOperator
         D1_central = D1
         D1mat = sparse(D1_central)
-        D1betaD1d = sparse(D1mat * Diagonal(beta_hat) * D1mat * Pd)[2:(end - 1), :]
-        system_matrix = let cache = (; D1betaD1d)
-            assemble_system_matrix!(cache, h, equations)
+        minus_MD1betaD1 = sparse(D1mat' * Diagonal(M_beta) * D1mat * Pd)[2:(end - 1), :]
+        system_matrix = let cache = (; D1, M_h, minus_MD1betaD1)
+            assemble_system_matrix!(cache, h, equations, boundary_conditions)
         end
     elseif D1 isa UpwindOperators
         D1_central = D1.central
-        D1betaD1d = sparse(sparse(D1.plus) * Diagonal(beta_hat) *
-                           sparse(D1.minus) * Pd)[2:(end - 1), :]
-        system_matrix = let cache = (; D1betaD1d)
-            assemble_system_matrix!(cache, h, equations)
+        D1mat_minus = sparse(D1.minus)
+        minus_MD1betaD1 = sparse(D1mat_minus' * Diagonal(M_beta) * D1mat_minus * Pd)[2:(end - 1),
+                                                                                     :]
+        system_matrix = let cache = (; D1, M_h, minus_MD1betaD1)
+            assemble_system_matrix!(cache, h, equations, boundary_conditions)
         end
     else
         throw(ArgumentError("unknown type of first-derivative operator: $(typeof(D1))"))
     end
-    factorization = lu(system_matrix)
-    cache = (; factorization, D1betaD1d, D, h, hv, b, eta_x, v_x,
-             h_v_x, hv2_x, beta_hat, D1_central, D1)
+    factorization = cholesky(system_matrix)
+    cache = (; factorization, minus_MD1betaD1, D, h, hv, b, eta_x, v_x,
+             h_v_x, hv2_x, beta_hat, D1_central, D1, M_h)
     return cache
 end
 
@@ -342,8 +357,8 @@ end
 #   [DOI: 10.48550/arXiv.2402.16669](https://doi.org/10.48550/arXiv.2402.16669)
 # TODO: Simplify for the case of flat bathymetry and use higher-order operators
 function rhs!(dq, q, t, mesh, equations::SvaerdKalischEquations1D,
-              initial_condition, ::BoundaryConditionPeriodic, source_terms,
-              solver, cache)
+              initial_condition, boundary_conditions::BoundaryConditionPeriodic,
+              source_terms, solver, cache)
     (; D, h, hv, b, eta_x, v_x, alpha_eta_x_x, y_x, v_y_x, vy, vy_x,
     y_v_x, h_v_x, hv2_x, v_xx, gamma_v_xx_x, gamma_v_x_xx, alpha_hat, gamma_hat,
     tmp1, tmp2, D1_central, D1) = cache
@@ -422,7 +437,8 @@ function rhs!(dq, q, t, mesh, equations::SvaerdKalischEquations1D,
     @trixi_timeit timer() "source terms" calc_sources!(dq, q, t, source_terms, equations,
                                                        solver)
     @trixi_timeit timer() "assemble system matrix" begin
-        system_matrix = assemble_system_matrix!(cache, h, D1, equations)
+        system_matrix = assemble_system_matrix!(cache, h, equations,
+                                                boundary_conditions)
     end
     @trixi_timeit timer() "solving elliptic system" begin
         tmp1 .= dv
@@ -434,11 +450,11 @@ function rhs!(dq, q, t, mesh, equations::SvaerdKalischEquations1D,
 end
 
 function rhs!(dq, q, t, mesh, equations::SvaerdKalischEquations1D,
-              initial_condition, ::BoundaryConditionReflecting, source_terms,
-              solver, cache)
+              initial_condition, boundary_conditions::BoundaryConditionReflecting,
+              source_terms, solver, cache)
     # When constructing the `cache`, we assert that alpha and gamma are zero.
     # We use this explicitly in the code below.
-    (; D, h, hv, b, eta_x, v_x, h_v_x, hv2_x, tmp1, D1_central) = cache
+    (; D, h, hv, b, eta_x, v_x, h_v_x, hv2_x, tmp1, D1_central, D1) = cache
 
     g = gravity_constant(equations)
     eta, v = q.x
@@ -467,10 +483,12 @@ function rhs!(dq, q, t, mesh, equations::SvaerdKalischEquations1D,
     @trixi_timeit timer() "source terms" calc_sources!(dq, q, t, source_terms, equations,
                                                        solver)
     @trixi_timeit timer() "assemble system matrix" begin
-        system_matrix = assemble_system_matrix!(cache, h, equations)
+        system_matrix = assemble_system_matrix!(cache, h, equations, boundary_conditions)
     end
     @trixi_timeit timer() "solving elliptic system" begin
-        solve_system_matrix!((@view dv[2:(end - 1)]), system_matrix, equations, cache)
+        tmp1 .= dv
+        solve_system_matrix!((@view dv[2:(end - 1)]), system_matrix, (@view tmp1[2:(end - 1)]), equations, D1,
+                             cache)
         dv[1] = dv[end] = zero(eltype(dv))
     end
 
