@@ -570,7 +570,8 @@ function solve_system_matrix!(dv, system_matrix, rhs,
                                                SerreGreenNaghdiEquations1D},
                               D1, cache, ::BoundaryConditionReflecting)
     scale_by_mass_matrix!(rhs, D1)
-    solve_system_matrix!(dv, system_matrix, (@view rhs[(begin + 1):(end - 1)]), equations, D1, cache)
+    solve_system_matrix!(dv, system_matrix, (@view rhs[(begin + 1):(end - 1)]), equations,
+                         D1, cache)
 end
 
 function solve_system_matrix!(dv, system_matrix, rhs,
