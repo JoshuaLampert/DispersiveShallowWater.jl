@@ -250,6 +250,15 @@ end
         U_modified_total = @inferred DispersiveShallowWater.integrate(U_modified, semi)
         @test isapprox(U_modified_total, e_modified_total)
     end
+
+    @testset "reflecting boundary conditions" begin
+        initial_condition = initial_condition_manufactured_reflecting
+        boundary_conditions = boundary_condition_reflecting
+        mesh = Mesh1D(-1.0, 1.0, 10)
+        solver = Solver(mesh, 4)
+        @test_throws ArgumentError Semidiscretization(mesh, equations, initial_condition,
+                                                      solver; boundary_conditions)
+    end
 end
 
 @testitem "SerreGreenNaghdiEquations1D" setup=[Setup] begin
