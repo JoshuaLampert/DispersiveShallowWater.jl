@@ -442,6 +442,7 @@ function rhs!(dq, q, t, mesh, equations::SvaerdKalischEquations1D,
     end
     @trixi_timeit timer() "solving elliptic system" begin
         tmp1 .= dv
+        scale_by_mass_matrix!(tmp1, D1)
         solve_system_matrix!(dv, system_matrix, tmp1,
                              equations, D1, cache)
     end
@@ -487,8 +488,9 @@ function rhs!(dq, q, t, mesh, equations::SvaerdKalischEquations1D,
     end
     @trixi_timeit timer() "solving elliptic system" begin
         tmp1 .= dv
+        scale_by_mass_matrix!(tmp1, D1)
         solve_system_matrix!((@view dv[2:(end - 1)]), system_matrix,
-                             tmp1, equations, D1,
+                             (@view tmp1[2:(end - 1)]), equations, D1,
                              cache)
         dv[1] = dv[end] = zero(eltype(dv))
     end

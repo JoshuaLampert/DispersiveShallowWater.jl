@@ -24,11 +24,11 @@ end
 ] begin
     @test_trixi_include(joinpath(EXAMPLES_DIR, "svaerd_kalisch_1d_basic_reflecting.jl"),
                         tspan=(0.0, 1.0),
-                        l2=[5.402315467757905e-6 6.705583190754449e-8 0.0],
-                        linf=[9.787584609100008e-5 1.4602668577112787e-7 0.0],
-                        cons_error=[1.0484865187415942e-9 0.5469460930247753 0.0],
-                        change_waterheight=1.0484865187415942e-9,
-                        change_entropy_modified=459.9037236233692,
+                        l2=[5.402315494643131e-6 6.70558305594986e-8 0.0],
+                        linf=[9.787585531206844e-5 1.460266869784954e-7 0.0],
+                        cons_error=[1.0484871583691058e-9 0.5469460930247998 0.0],
+                        change_waterheight=1.0484871583691058e-9,
+                        change_entropy_modified=459.90372362340514,
                         atol=1e-11) # to make CI pass
 
     @test_allocations(semi, sol, allocs=650_000)
@@ -42,11 +42,11 @@ end
     @test_trixi_include(joinpath(EXAMPLES_DIR, "svaerd_kalisch_1d_basic_reflecting.jl"),
                         tspan=(0.0, 1.0),
                         solver=solver,
-                        l2=[5.862278093002509e-6 4.111933117101271e-9 0.0],
-                        linf=[3.135229084794133e-5 8.797788287467911e-8 0.0],
-                        cons_error=[1.700425282207037e-9 0.5469460935004404 0.0],
-                        change_waterheight=-1.700425282207037e-9,
-                        change_entropy_modified=459.9037221442477,
+                        l2=[5.862278175937948e-6 4.11195454078554e-9 0.0],
+                        linf=[3.135228725170691e-5 8.797787950237668e-8 0.0],
+                        cons_error=[1.700425028441774e-9 0.5469460935005555 0.0],
+                        change_waterheight=-1.700425028441774e-9,
+                        change_entropy_modified=459.9037221442321,
                         atol=1e-11) # to make CI pass
 
     @test_allocations(semi, sol, allocs=650_000)

@@ -565,9 +565,8 @@ function solve_system_matrix!(dv, system_matrix, rhs,
         (; factorization) = cache
         cholesky!(factorization, system_matrix; check = false)
         if issuccess(factorization)
-            scale_by_mass_matrix!(rhs, D1)
             # see https://github.com/JoshuaLampert/DispersiveShallowWater.jl/issues/122
-            dv .= factorization \ rhs[2:(end - 1)]
+            dv .= factorization \ rhs
         else
             # The factorization may fail if the time step is too large
             # and h becomes negative.
@@ -575,7 +574,6 @@ function solve_system_matrix!(dv, system_matrix, rhs,
         end
     else
         factorization = cholesky!(system_matrix)
-        scale_by_mass_matrix!(rhs, D1)
         ldiv!(dv, factorization, rhs)
     end
     return nothing
