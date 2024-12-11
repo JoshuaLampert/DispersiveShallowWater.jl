@@ -223,6 +223,13 @@ function assemble_system_matrix!(cache, h,
     return Symmetric(Diagonal((@view M_h[2:(end - 1)])) + minus_MD1betaD1)
 end
 
+function assemble_system_matrix_lu!(cache, h,
+                                    ::SvaerdKalischEquations1D,
+                                    ::BoundaryConditionReflecting)
+    (; D1betaD1d) = cache
+    return Diagonal((@view h[2:(end - 1)])) - D1betaD1d
+end
+
 function create_cache(mesh, equations::SvaerdKalischEquations1D,
                       solver, initial_condition,
                       boundary_conditions::BoundaryConditionPeriodic,
@@ -326,9 +333,14 @@ function create_cache(mesh, equations::SvaerdKalischEquations1D,
        D1 isa UniformCoupledOperator
         D1_central = D1
         D1mat = sparse(D1_central)
+        D1betaD1d = sparse(D1mat * Diagonal(beta_hat) * D1mat * Pd)[2:(end - 1), :]
         minus_MD1betaD1 = sparse(D1mat' * Diagonal(M_beta) * D1mat * Pd)[2:(end - 1), :]
         system_matrix = let cache = (; D1, M_h, minus_MD1betaD1)
             assemble_system_matrix!(cache, h, equations, boundary_conditions)
+        end
+        system_matrix_lu = let cache = (; D1betaD1d)
+            assemble_system_matrix_lu!(cache, h,
+                                       equations, boundary_conditions)
         end
     elseif D1 isa UpwindOperators
         D1_central = D1.central
@@ -342,7 +354,9 @@ function create_cache(mesh, equations::SvaerdKalischEquations1D,
         throw(ArgumentError("unknown type of first-derivative operator: $(typeof(D1))"))
     end
     factorization = cholesky(system_matrix)
-    cache = (; factorization, minus_MD1betaD1, D, h, hv, b, eta_x, v_x,
+    factorization_lu = lu(system_matrix_lu)
+    cache = (; factorization, factorization_lu, minus_MD1betaD1, D1betaD1d, D, h, hv, b,
+             eta_x, v_x,
              h_v_x, hv2_x, beta_hat, D1_central, D1, M_h)
     return cache
 end
@@ -490,6 +504,50 @@ function rhs!(dq, q, t, mesh, equations::SvaerdKalischEquations1D,
         solve_system_matrix!((@view dv[2:(end - 1)]), system_matrix,
                              (@view tmp1[2:(end - 1)]), equations, D1,
                              cache)
+        dv[1] = dv[end] = zero(eltype(dv))
+    end
+
+    return nothing
+end
+
+function rhs_lu!(dq, q, t, mesh, equations::SvaerdKalischEquations1D,
+                 initial_condition, boundary_conditions::BoundaryConditionReflecting,
+                 source_terms, solver, cache)
+    # When constructing the `cache`, we assert that alpha and gamma are zero.
+    # We use this explicitly in the code below.
+    (; D, h, hv, b, eta_x, v_x, h_v_x, hv2_x, tmp1, D1_central, D1) = cache
+
+    g = gravity_constant(equations)
+    eta, v = q.x
+    deta, dv, dD = dq.x
+    fill!(dD, zero(eltype(dD)))
+
+    @trixi_timeit timer() "deta hyperbolic" begin
+        @.. b = equations.eta0 - D
+        @.. h = eta - b
+        @.. hv = h * v
+
+        mul!(deta, D1_central, -hv)
+    end
+
+    # split form
+    @trixi_timeit timer() "dv hyperbolic" begin
+        mul!(eta_x, D1_central, eta)
+        mul!(v_x, D1_central, v)
+        mul!(h_v_x, D1_central, hv)
+        @.. tmp1 = hv * v
+        mul!(hv2_x, D1_central, tmp1)
+        @.. dv = -(0.5 * (hv2_x + hv * v_x - v * h_v_x) +
+                   g * h * eta_x)
+    end
+
+    @trixi_timeit timer() "source terms" calc_sources!(dq, q, t, source_terms, equations,
+                                                       solver)
+    @trixi_timeit timer() "assemble system matrix" begin
+        system_matrix_lu = assemble_system_matrix_lu!(cache, h, equations, boundary_conditions)
+    end
+    @trixi_timeit timer() "solving elliptic system" begin
+        solve_system_matrix_lu!((@view dv[2:(end - 1)]), system_matrix_lu, equations, cache)
         dv[1] = dv[end] = zero(eltype(dv))
     end
 
