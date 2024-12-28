@@ -77,13 +77,6 @@ end
 # - Didier Clamond Denys Dutykh, Dimitrios Mitsotakis (2017)
 #   Conservative modified Serre–Green–Naghdi equations with improved dispersion characteristics
 #   [DOI: 10.1016/j.cnsns.2016.10.009](https://doi.org/10.1016/j.cnsns.2016.10.009)
-#
-# Note that the dispersion relation, eq. (18), in
-# - Favrie and Gavrilyuk.
-#   A rapid numerical method for solving Serre-Green-Naghdi equations
-#   describing long free surface gravity waves
-#   [DOI: 10.1088/1361-6544/aa712d](https://doi.org/10.1088/1361-6544/aa712d)
-# is wrong (it should be ``c_p = g/(τ_0 + k^2/(3τ_0))``).
 function (disp_rel::LinearDispersionRelation)(equations::SerreGreenNaghdiEquations1D, k)
     h0 = disp_rel.ref_height
     g = gravity_constant(equations)
