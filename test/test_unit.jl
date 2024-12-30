@@ -432,6 +432,9 @@ end
                                                                            lambda = 1.0)))
         @test isapprox(disp_rel(equations, k), frequencies[i])
         @test isapprox(wave_speed(disp_rel, equations, k), wave_speeds[i])
+        # Add test for correct broadcasting
+        @test isapprox(disp_rel.(equations, [k, k]), [frequencies[i], frequencies[i]])
+        @test isapprox(wave_speed.(disp_rel, equations, [k, k]), [wave_speeds[i], wave_speeds[i]])
         # For the normalized wave speed we expect c(0) = 1. Use eps() to avoid division by zero in c = omega / k
         @test isapprox(wave_speed(disp_rel, equations, eps(), normalize = true), 1.0)
     end
