@@ -16,6 +16,13 @@ Modules = [DispersiveShallowWater]
 Pages = Main.EQUATIONS_FILES
 ```
 
+## Linear dispersion relations
+
+```@autodocs
+Modules = [DispersiveShallowWater]
+Pages = ["dispersion_relation.jl"]
+```
+
 ## Mesh
 
 ```@autodocs
