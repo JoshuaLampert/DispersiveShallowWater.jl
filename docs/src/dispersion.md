@@ -25,7 +25,7 @@ relation of the full wave system is given by
 
 In DispersiveShallowWater.jl, we can investigate the dispersion relations of the different equations. Let us
 plot the wave speeds of the different equations normalized by the shallow water wave speed ``c_0`` as a function
-of the wave number. We pick a reference water height of ``h_0 = 1.0`` and gravitational acceleration of ``g = 9.81``.
+of the wave number. We pick a reference water height of ``h_0 = 0.8`` and gravitational acceleration of ``g = 9.81``.
 
 ```@example dispersion
 using DispersiveShallowWater
