@@ -16,12 +16,13 @@ function Base.show(io::IO, disp_rel::LinearDispersionRelation)
     print(io, "LinearDispersionRelation(h0 = ", disp_rel.ref_height, ")")
 end
 
-Base.broadcastable(disp_rel::LinearDispersionRelation) = Ref(disp_rel)
+Base.broadcastable(disp_rel::LinearDispersionRelation) = (disp_rel,)
 
 @doc raw"""
     wave_speed(disp_rel, equations, k; normalize = false)
 
-Compute the wave speed ``c`` for a given wavenumber ``k`` using the linear dispersion relation ``disp_rel``
+Compute the wave speed ``c`` for a given wavenumber ``k`` using the 
+[`LinearDispersionRelation`](@ref) `disp_rel`
 of the `equations`.
 The wave speed is given by ``c = \omega(k) / k``. If `normalize` is `true`, the wave speed is normalized
 by the shallow water wave speed ``\sqrt{g h0}``, where `g` is the gravity constant and `h0` is the reference
