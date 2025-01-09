@@ -26,7 +26,7 @@ Compute the wave speed ``c`` for a given wavenumber ``k`` using the
 [`LinearDispersionRelation`](@ref) `disp_rel`
 of the `equations`.
 The wave speed is given by ``c = \omega(k) / k``. If `normalize` is `true`, the wave speed is normalized
-by the shallow water wave speed ``\sqrt{g h0}``, where `g` is the gravity constant and `h0` is the reference
+by the shallow water wave speed ``\sqrt{g h_0}``, where `g` is the gravity constant and `h0` is the reference
 water height of the dispersion relation.
 
 See also [`LinearDispersionRelation`](@ref).
