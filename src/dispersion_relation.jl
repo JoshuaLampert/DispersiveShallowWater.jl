@@ -40,7 +40,7 @@ function wave_speed(disp_rel::LinearDispersionRelation, equations, k;
     return c
 end
 
-"""
+@doc raw"""
     EulerEquations1D(; gravity_constant, eta0 = 0.0)
 
 A struct representing the 1D Euler equations with a given gravity constant and a still-water surface
@@ -48,7 +48,11 @@ A struct representing the 1D Euler equations with a given gravity constant and a
 
 !!! note
     In DispersiveShallowWater.jl, the Euler equations are *only* used for computing the full linear dispersion
-    relation. They cannot be solved as a system of equations.
+    relation
+    ```math
+    \omega(k) = \sqrt{g k \tanh(h_0 k)}.
+    ```
+    They cannot be solved as a system of equations.
 """
 struct EulerEquations1D{RealT <: Real} <: AbstractEquations{1, 0}
     gravity::RealT
