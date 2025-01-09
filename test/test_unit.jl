@@ -410,6 +410,7 @@ end
     g = 9.81
     k = 2 * pi
     frequencies = [
+        7.850990247314777,
         0.5660455316649682,
         0.5660455316649682,
         7.700912310929906,
@@ -417,6 +418,7 @@ end
         3.1189522995345467
     ]
     wave_speeds = [
+        1.2495239060264087,
         0.09008894437955965,
         0.09008894437955965,
         1.2256382606017253,
@@ -424,7 +426,8 @@ end
         0.4963966757387569
     ]
 
-    for (i, equations) in enumerate((BBMEquation1D(gravity_constant = g),
+    for (i, equations) in enumerate((EulerEquations1D(gravity_constant = g),
+                                     BBMEquation1D(gravity_constant = g),
                                      BBMBBMEquations1D(gravity_constant = g),
                                      SvärdKalischEquations1D(gravity_constant = g),
                                      SerreGreenNaghdiEquations1D(gravity_constant = g),
