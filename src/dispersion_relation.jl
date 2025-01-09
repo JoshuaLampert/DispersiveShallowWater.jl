@@ -81,7 +81,7 @@ end
 #   [DOI: 10.1016/j.ocemod.2022.102157](https://doi.org/10.1016/j.ocemod.2022.102157)
 #
 # or eq. (53) (β = 0) in
-# - Didier Clamond Denys Dutykh, Dimitrios Mitsotakis (2017)
+# - Didier Clamond, Denys Dutykh, Dimitrios Mitsotakis (2017)
 #   Conservative modified Serre–Green–Naghdi equations with improved dispersion characteristics
 #   [DOI: 10.1016/j.cnsns.2016.10.009](https://doi.org/10.1016/j.cnsns.2016.10.009)
 function (disp_rel::LinearDispersionRelation)(equations::SerreGreenNaghdiEquations1D, k)
