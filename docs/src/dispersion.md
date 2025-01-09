@@ -40,17 +40,7 @@ g = 9.81
 disp_rel = LinearDispersionRelation(h0)
 k = 0.01:0.01:5.0
 
-struct EulerEquations1D <: DispersiveShallowWater.AbstractEquations{1, 0}
-    gravity::Float64
-    eta0::Float64
-end
-function (disp_rel::LinearDispersionRelation)(equations::EulerEquations1D, k)
-    h0 = disp_rel.ref_height
-    g = gravity_constant(equations)
-    return sqrt(g * k * tanh(h0 * k))
-end
-
-euler = EulerEquations1D(g, eta0)
+euler = EulerEquations1D(; gravity_constant = g, eta0 = eta0)
 c_euler = wave_speed.(disp_rel, euler, k; normalize = true)
 plot(k, c_euler, label = "Euler", xlabel = "k", ylabel = "c / c_0", legend = :topright)
 
