@@ -23,11 +23,10 @@ Base.broadcastable(disp_rel::LinearDispersionRelation) = (disp_rel,)
     wave_speed(disp_rel, equations, k; normalize = false)
 
 Compute the wave speed ``c`` for a given wavenumber ``k`` using the
-[`LinearDispersionRelation`](@ref) `disp_rel`
-of the `equations`.
+[`LinearDispersionRelation`](@ref) `disp_rel` of the `equations`.
 The wave speed is given by ``c = \omega(k) / k``. If `normalize` is `true`, the wave speed is normalized
-by the shallow water wave speed ``\sqrt{g h_0}``, where `g` is the gravity constant and `h0` is the reference
-water height of the dispersion relation.
+by the shallow water wave speed ``\sqrt{g h_0}``, where ``g`` is the `gravity_constant` of the `equations`
+and ``h_0`` is the `ref_height` of the dispersion relation `disp_rel`.
 
 See also [`LinearDispersionRelation`](@ref).
 """
