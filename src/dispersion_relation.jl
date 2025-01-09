@@ -2,7 +2,11 @@
     LinearDispersionRelation(ref_height)
 
 A struct representing a linear dispersion relation ``\omega(k)`` of an equation. The reference
-water height `h0` is given by `ref_height`.
+water height `h0` is given by `ref_height`. A dispersion relation can be called as
+`disp_rel(equations, k)` to compute the wave frequency ``\omega(k)`` for a given wavenumber `k`
+and a set of equations.
+
+See also [`wave_speed`](@ref) for computing the wave speed ``c = \omega(k) / k``.
 """
 struct LinearDispersionRelation{RealT <: Real}
     ref_height::RealT
@@ -22,6 +26,8 @@ of the `equations`.
 The wave speed is given by ``c = \omega(k) / k``. If `normalize` is `true`, the wave speed is normalized
 by the shallow water wave speed ``\sqrt{g h0}``, where `g` is the gravity constant and `h0` is the reference
 water height of the dispersion relation.
+
+See also [`LinearDispersionRelation`](@ref).
 """
 function wave_speed(disp_rel::LinearDispersionRelation, equations, k;
                     normalize = false)
