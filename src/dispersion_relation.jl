@@ -6,7 +6,8 @@ water height `h0` is given by `ref_height`. A dispersion relation can be called 
 `disp_rel(equations, k)` to compute the wave frequency ``\omega(k)`` for a given wavenumber `k`
 and a set of equations.
 
-See also [`wave_speed`](@ref) for computing the wave speed ``c = \omega(k) / k``.
+See also [`wave_speed`](@ref) for computing the wave speed ``c = \omega(k) / k`` given a linear
+dispersion relation.
 """
 struct LinearDispersionRelation{RealT <: Real}
     ref_height::RealT
@@ -21,7 +22,7 @@ Base.broadcastable(disp_rel::LinearDispersionRelation) = (disp_rel,)
 @doc raw"""
     wave_speed(disp_rel, equations, k; normalize = false)
 
-Compute the wave speed ``c`` for a given wavenumber ``k`` using the 
+Compute the wave speed ``c`` for a given wavenumber ``k`` using the
 [`LinearDispersionRelation`](@ref) `disp_rel`
 of the `equations`.
 The wave speed is given by ``c = \omega(k) / k``. If `normalize` is `true`, the wave speed is normalized
