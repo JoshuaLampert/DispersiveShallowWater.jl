@@ -52,6 +52,7 @@ using TrixiBase: TrixiBase, @trixi_timeit, timer
 include("boundary_conditions.jl")
 include("mesh.jl")
 include("equations/equations.jl")
+include("dispersion_relation.jl")
 include("solver.jl")
 include("semidiscretization.jl")
 include("callbacks_step/callbacks_step.jl")
@@ -64,6 +65,8 @@ export AbstractShallowWaterEquations,
        BBMEquation1D, BBMBBMEquations1D,
        SvärdKalischEquations1D, SvaerdKalischEquations1D,
        SerreGreenNaghdiEquations1D, HyperbolicSerreGreenNaghdiEquations1D
+
+export LinearDispersionRelation, EulerEquations1D, wave_speed
 
 export prim2prim, prim2cons, cons2prim, prim2phys,
        waterheight_total, waterheight,
