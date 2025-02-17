@@ -81,6 +81,7 @@ makedocs(;
                                   size_threshold_warn = 1000 * 1024),
          pages = ["Home" => "index.md",
              "Overview" => "overview.md",
+             "Dispersion" => "dispersion.md",
              "Development" => "development.md",
              "Reference" => [
                  "TrixiBase" => "ref-trixibase.md",

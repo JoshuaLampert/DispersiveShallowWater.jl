@@ -49,6 +49,7 @@ struct BBMEquation1D{RealT <: Real} <: AbstractBBMEquation{1, 1}
 end
 
 function BBMEquation1D(; gravity_constant, D = 1.0, eta0 = 0.0, split_form = true)
+    eta0 == 0.0 || @warn "The still-water surface needs to be 0 for the BBM equations"
     BBMEquation1D(gravity_constant, D, eta0, split_form)
 end
 

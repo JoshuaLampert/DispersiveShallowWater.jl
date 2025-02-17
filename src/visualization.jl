@@ -63,7 +63,7 @@ end
             @series begin
                 subplot --> i
                 linestyle := :solid
-                label := "initial $(names[i])"
+                label --> "initial $(names[i])"
                 grid(semi), data_exact[i, :]
             end
         end

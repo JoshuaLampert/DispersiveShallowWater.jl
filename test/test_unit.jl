@@ -403,6 +403,43 @@ end
     @test_nowarn display(summary_callback)
 end
 
+@testitem "LinearDispersionRelation" setup=[Setup] begin
+    disp_rel = LinearDispersionRelation(3.0)
+    @test_nowarn print(disp_rel)
+    @test_nowarn display(disp_rel)
+    g = 9.81
+    k = 2 * pi
+    frequencies = [
+        7.850990247314777,
+        0.5660455316649682,
+        0.5660455316649682,
+        7.700912310929906,
+        3.1189522995345467
+    ]
+    wave_speeds = [
+        1.2495239060264087,
+        0.09008894437955965,
+        0.09008894437955965,
+        1.2256382606017253,
+        0.4963966757387569
+    ]
+
+    for (i, equations) in enumerate((EulerEquations1D(gravity_constant = g),
+                                     BBMEquation1D(gravity_constant = g),
+                                     BBMBBMEquations1D(gravity_constant = g),
+                                     SvärdKalischEquations1D(gravity_constant = g),
+                                     SerreGreenNaghdiEquations1D(gravity_constant = g)))
+        @test isapprox(disp_rel(equations, k), frequencies[i])
+        @test isapprox(wave_speed(disp_rel, equations, k), wave_speeds[i])
+        # Add test for correct broadcasting
+        @test isapprox(disp_rel.(equations, [k, k]), [frequencies[i], frequencies[i]])
+        @test isapprox(wave_speed.(disp_rel, equations, [k, k]),
+                       [wave_speeds[i], wave_speeds[i]])
+        # For the normalized wave speed we expect c(0) = 1. Use eps() to avoid division by zero in c = omega / k
+        @test isapprox(wave_speed(disp_rel, equations, eps(), normalize = true), 1.0)
+    end
+end
+
 @testitem "util" setup=[Setup] begin
     @test_nowarn get_examples()
 
