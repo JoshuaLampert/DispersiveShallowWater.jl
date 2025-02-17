@@ -117,12 +117,3 @@ function (disp_rel::LinearDispersionRelation)(equations::SerreGreenNaghdiEquatio
     g = gravity_constant(equations)
     return sqrt(g * h0) * k / sqrt(1.0 + (k * h0)^2 / 3)
 end
-
-# TODO: Make this for general lambda (how to understand eq. (19) in Favrie and Gavrilyuk?)
-function (disp_rel::LinearDispersionRelation)(equations::HyperbolicSerreGreenNaghdiEquations1D,
-                                              k)
-    h0 = disp_rel.ref_height
-    g = gravity_constant(equations)
-    lambda = equations.lambda
-    return sqrt(g * h0) * k / sqrt(1.0 + (k * h0)^2 / 3)
-end
