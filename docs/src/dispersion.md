@@ -117,7 +117,7 @@ anim = @animate for step in eachindex(sol.u)
     index = argmin(abs.(DispersiveShallowWater.grid(semi) .- x_t_sk))
     scatter([x_t_euler], [initial_condition_traveling_wave(x_t_euler, t, euler, mesh)],
             color = :blue, label = nothing)
-    eta, _ = sol.u[step].x
+    eta, = sol.u[step].x
     scatter!([x_t_sk], [eta[index]],
              color = :green, label = nothing)
     plot!(semi => sol, plot_initial = true, plot_bathymetry = false,

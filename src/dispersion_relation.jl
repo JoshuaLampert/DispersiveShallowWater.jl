@@ -69,7 +69,6 @@ function (disp_rel::LinearDispersionRelation)(equations::EulerEquations1D, k)
     return sqrt(g * k * tanh(h0 * k))
 end
 
-# TODO: Factor of 5/2 in front?
 function (disp_rel::LinearDispersionRelation)(equations::BBMEquation1D, k)
     h0 = disp_rel.ref_height
     g = gravity_constant(equations)
