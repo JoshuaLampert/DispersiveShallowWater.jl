@@ -70,19 +70,21 @@ function (disp_rel::LinearDispersionRelation)(equations::EulerEquations1D, k)
 end
 
 function (disp_rel::LinearDispersionRelation)(equations::BBMEquation1D, k)
+    eta0 = equations.eta0
     h0 = disp_rel.ref_height
     g = gravity_constant(equations)
-    return sqrt(g * h0) * k / (1 + 1 / 6 * (h0 * k)^2)
+    return sqrt(g * h0) * k * (1 + 1.5 * eta0 / h0) / (1 + 1 / 6 * (h0 * k)^2)
 end
 
 # See
 # - Joshua Lampert, Hendrik Ranocha (2024)
 #  Structure-Preserving Numerical Methods for Two Nonlinear Systems of Dispersive Wave Equations
 #  [DOI: 10.48550/arXiv.2402.16669](https://doi.org/10.48550/arXiv.2402.16669)
+# Here, for general `eta0`.
 function (disp_rel::LinearDispersionRelation)(equations::BBMBBMEquations1D, k)
     h0 = disp_rel.ref_height
     g = gravity_constant(equations)
-    return sqrt(g * h0) * k / (1 + 1 / 6 * (h0 * k)^2)
+    return sqrt(g * (h0 + equations.eta0)) * k / (1 + 1 / 6 * (h0 * k)^2)
 end
 
 # See

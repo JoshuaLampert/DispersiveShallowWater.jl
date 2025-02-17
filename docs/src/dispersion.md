@@ -35,7 +35,9 @@ of the wave number. We pick a reference water height of ``h_0 = 0.8`` and gravit
 using DispersiveShallowWater
 using Plots
 
-h0 = eta0 = 0.8
+eta0 = 0.0
+reference_height() = 0.8
+h0 = reference_height()
 g = 9.81
 disp_rel = LinearDispersionRelation(h0)
 k = 0.01:0.01:5.0
@@ -44,7 +46,7 @@ euler = EulerEquations1D(; gravity_constant = g, eta0 = eta0)
 c_euler = wave_speed.(disp_rel, euler, k; normalize = true)
 plot(k, c_euler, label = "Euler", xlabel = "k", ylabel = "c / c_0", legend = :topright)
 
-bbm = BBMEquation1D(; gravity_constant = g, eta0 = eta0)
+bbm = BBMEquation1D(; gravity_constant = g, eta0 = eta0, D = h0)
 c_bbm = wave_speed.(disp_rel, bbm, k; normalize = true)
 plot!(k, c_bbm, label = "BBM")
 
@@ -71,18 +73,19 @@ solve the problem with the Svärd-Kalisch equations.
 using OrdinaryDiffEqTsit5
 using Printf
 
+equations = sk
 wave_number() = 3.0
 frequency(k) = disp_rel(euler, k)
 
 function initial_condition_traveling_wave(x, t, equations, mesh)
     k = wave_number()
     omega = frequency(k)
-    h0 = equations.eta0
+    h0 = reference_height()
     A = 0.02
     h = A * cos(k * x - omega * t)
     v = sqrt(equations.gravity / k * tanh(k * h0)) * h / h0
-    eta = h + h0
-    D = equations.eta0
+    eta = h + equations.eta0
+    D = h0
     return SVector(eta, v, D)
 end
 
@@ -97,7 +100,7 @@ accuracy_order = 4
 solver = Solver(mesh, accuracy_order)
 
 # semidiscretization holds all the necessary data structures for the spatial discretization
-semi = Semidiscretization(mesh, sk, initial_condition_traveling_wave, solver,
+semi = Semidiscretization(mesh, equations, initial_condition_traveling_wave, solver,
                           boundary_conditions = boundary_condition_periodic)
 
 tspan = (0.0, 3.0)
@@ -109,20 +112,20 @@ sol = solve(ode, Tsit5(), abstol = 1e-7, reltol = 1e-7,
 
 x = 0.2 * (coordinates_max - coordinates_min)
 c_euler = wave_speed(disp_rel, euler, k)
-c_sk = wave_speed(disp_rel, sk, k)
+c = wave_speed(disp_rel, equations, k)
 anim = @animate for step in eachindex(sol.u)
     t = sol.t[step]
     x_t_euler = x + c_euler * t
-    x_t_sk = x + c_sk * t
-    index = argmin(abs.(DispersiveShallowWater.grid(semi) .- x_t_sk))
+    x_t = x + c * t
+    index = argmin(abs.(DispersiveShallowWater.grid(semi) .- x_t))
     scatter([x_t_euler], [initial_condition_traveling_wave(x_t_euler, t, euler, mesh)],
             color = :blue, label = nothing)
     eta, = sol.u[step].x
-    scatter!([x_t_sk], [eta[index]],
+    scatter!([x_t], [eta[index]],
              color = :green, label = nothing)
     plot!(semi => sol, plot_initial = true, plot_bathymetry = false,
           conversion = waterheight_total, step = step, legend = :topleft, linewidth = 2,
-          plot_title = @sprintf("t = %.3f", t), yrange = (0.77, 0.83),
+          plot_title = @sprintf("t = %.3f", t), yrange = (eta0 - 0.03, eta0 + 0.03),
           linestyles = [:solid :dot], labels = ["Euler" "Svärd-Kälisch"],
           color = [:blue :green])
 end
