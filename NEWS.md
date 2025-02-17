@@ -9,6 +9,7 @@ for human readability.
 ## Changes in the v0.5 lifecycle
 
 #### Added
+- Add `LinearDispersionRelation` and documentation about dispersion ([#168]).
 - Reflecting boundary conditions are added for the Svärd-Kalisch equations with `alpha = gamma = 0` ([#166]).
 - Fix a bug in the upwind discretization of the `SvärdKalischEquations1D`.
 - Use OrdinaryDiffEqTsit5.jl and OrdinaryDiffEqLowStorageRK.jl instead of OrdinaryDiffEq.jl in all examples to
