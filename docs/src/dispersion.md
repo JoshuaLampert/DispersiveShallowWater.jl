@@ -12,7 +12,7 @@ The linear dispersion relation of a wave equation describes the relationship bet
 ``\omega`` and the wavenumber ``k`` of a wave. The angular frequency is related to the period ``T`` of the wave
 by ``\omega = 2\pi / T`` and the wavenumber is related to the wavelength ``\lambda`` by ``k = 2\pi / \lambda``.
 The simple case of just one wave traveling with speed ``c`` is a harmonic (or plane wave) solution of the form
-``\eta(x, t) = \mathrm{e}^{\mathrm{i}(k x - \omega t)}`` with ``c = \omega / k``. The linear dispersion relation
+``\eta(t, x) = \mathrm{e}^{\mathrm{i}(k x - \omega t)}`` with ``c = \omega / k``. The linear dispersion relation
 of a wave equation is then derived by substituting this solution into a linearized version of the equation and
 solving for ``\omega`` in terms of ``k``.
 

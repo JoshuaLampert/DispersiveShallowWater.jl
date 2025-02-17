@@ -2,7 +2,7 @@
     LinearDispersionRelation(ref_height)
 
 A struct representing a linear dispersion relation ``\omega(k)`` of an equation. The reference
-water height `h0` is given by `ref_height`. A dispersion relation can be called as
+water height ``h_0`` is given by `ref_height`. A dispersion relation can be called as
 `disp_rel(equations, k)` to compute the wave frequency ``\omega(k)`` for a given wavenumber `k`
 and a set of equations.
 
@@ -47,12 +47,13 @@ A struct representing the 1D Euler equations with a given gravity constant and a
 `eta0`.
 
 !!! note
-    In DispersiveShallowWater.jl, the Euler equations are *only* used for computing the full linear dispersion
-    relation
+    In DispersiveShallowWater.jl, the Euler equations are *only* used for computing
+    the full linear dispersion relation
     ```math
-    \omega(k) = \sqrt{g k \tanh(h_0 k)}.
+    \omega(k) = \sqrt{g k \tanh(h_0 k)},
     ```
-    They cannot be solved as a system of equations.
+    see [`LinearDispersionRelation`](@ref) and [`wave_speed`](@ref).
+    The `EulerEquations1D` cannot be solved as a system of equations.
 """
 struct EulerEquations1D{RealT <: Real} <: AbstractEquations{1, 0}
     gravity::RealT
