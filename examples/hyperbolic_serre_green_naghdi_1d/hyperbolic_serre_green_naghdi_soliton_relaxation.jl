@@ -7,7 +7,7 @@ using SummationByPartsOperators: fourier_derivative_operator
 
 equations = HyperbolicSerreGreenNaghdiEquations1D(bathymetry_type = bathymetry_flat,
                                                   lambda = 500.0,
-                                                  gravity_constant = 9.81)
+                                                  gravity = 9.81)
 
 initial_condition = initial_condition_soliton
 boundary_conditions = boundary_condition_periodic
@@ -28,7 +28,7 @@ semi = Semidiscretization(mesh, equations, initial_condition, solver,
 
 ###############################################################################
 # Create `ODEProblem` and run the simulation
-tspan = (0.0, (xmax(mesh) - xmin(mesh)) / sqrt(1.2 * gravity_constant(equations))) # one period
+tspan = (0.0, (xmax(mesh) - xmin(mesh)) / sqrt(1.2 * gravity(equations))) # one period
 ode = semidiscretize(semi, tspan)
 summary_callback = SummaryCallback()
 analysis_callback = AnalysisCallback(semi; interval = 100,

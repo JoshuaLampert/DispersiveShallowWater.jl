@@ -1,6 +1,6 @@
 @doc raw"""
     SvaerdKalischEquations1D(; bathymetry_type = bathymetry_variable,
-                             gravity_constant, eta0 = 0.0, alpha = 0.0,
+                             gravity, eta0 = 0.0, alpha = 0.0,
                              beta = 0.2308939393939394, gamma = 0.04034343434343434)
 
 Dispersive system by Svärd and Kalisch (2023) in one spatial dimension. The equations for variable bathymetry
@@ -22,7 +22,7 @@ The equations can be rewritten in primitive variables as
 \end{aligned}
 ```
 The unknown quantities of the Svärd-Kalisch equations are the total water height ``\eta`` and the velocity ``v``.
-The gravitational constant is denoted by `g` and the bottom topography (bathymetry) ``b = \eta_0 - D``.
+The gravitational acceleration `gravity` is denoted by ``g`` and the bottom topography (bathymetry) ``b = \eta_0 - D``.
 The water height above the bathymetry is therefore given by
 ``h = \eta - \eta_0 + D``.
 
@@ -49,7 +49,7 @@ Additionally, it is well-balanced for the lake-at-rest stationary solution, see 
 struct SvaerdKalischEquations1D{Bathymetry <: AbstractBathymetry, RealT <: Real} <:
        AbstractSvaerdKalischEquations{1, 3}
     bathymetry_type::Bathymetry # type of bathymetry
-    gravity::RealT # gravitational constant
+    gravity::RealT # gravitational acceleration
     eta0::RealT    # constant still-water surface
     alpha::RealT   # coefficient
     beta::RealT    # coefficient
@@ -59,9 +59,9 @@ end
 const SvärdKalischEquations1D = SvaerdKalischEquations1D
 
 function SvaerdKalischEquations1D(; bathymetry_type = bathymetry_variable,
-                                  gravity_constant, eta0 = 0.0, alpha = 0.0,
+                                  gravity, eta0 = 0.0, alpha = 0.0,
                                   beta = 0.2308939393939394, gamma = 0.04034343434343434)
-    SvaerdKalischEquations1D(bathymetry_type, gravity_constant, eta0, alpha, beta, gamma)
+    SvaerdKalischEquations1D(bathymetry_type, gravity, eta0, alpha, beta, gamma)
 end
 
 """
@@ -85,7 +85,7 @@ end
 A smooth manufactured solution in combination with [`initial_condition_manufactured`](@ref).
 """
 function source_terms_manufactured(q, x, t, equations::SvaerdKalischEquations1D)
-    g = gravity_constant(equations)
+    g = gravity(equations)
     eta0 = still_water_surface(q, equations)
     alpha = equations.alpha
     beta = equations.beta
@@ -163,7 +163,7 @@ A smooth manufactured solution for reflecting boundary conditions in combination
 with [`initial_condition_manufactured_reflecting`](@ref).
 """
 function source_terms_manufactured_reflecting(q, x, t, equations::SvaerdKalischEquations1D)
-    g = gravity_constant(equations)
+    g = gravity(equations)
     eta0 = still_water_surface(q, equations)
     beta = equations.beta
     a1 = sinpi(2 * x)
@@ -234,7 +234,7 @@ function create_cache(mesh, equations::SvaerdKalischEquations1D,
     for i in eachnode(solver)
         D[i] = still_waterdepth(initial_condition(x[i], 0.0, equations, mesh), equations)
     end
-    g = gravity_constant(equations)
+    g = gravity(equations)
     h = ones(RealT, nnodes(mesh))
     hv = zero(h)
     b = zero(h)
@@ -364,7 +364,7 @@ function rhs!(dq, q, t, mesh, equations::SvaerdKalischEquations1D,
     y_v_x, h_v_x, hv2_x, v_xx, gamma_v_xx_x, gamma_v_x_xx, alpha_hat, gamma_hat,
     tmp1, tmp2, D1_central, D1) = cache
 
-    g = gravity_constant(equations)
+    g = gravity(equations)
     eta, v = q.x
     deta, dv, dD = dq.x
     fill!(dD, zero(eltype(dD)))
@@ -457,7 +457,7 @@ function rhs!(dq, q, t, mesh, equations::SvaerdKalischEquations1D,
     # We use this explicitly in the code below.
     (; D, h, hv, b, eta_x, v_x, h_v_x, hv2_x, tmp1, D1_central, D1) = cache
 
-    g = gravity_constant(equations)
+    g = gravity(equations)
     eta, v = q.x
     deta, dv, dD = dq.x
     fill!(dD, zero(eltype(dD)))
@@ -519,7 +519,7 @@ See also [`energy_total_modified`](@ref).
 @inline function energy_total_modified!(e, q_global, equations::SvaerdKalischEquations1D,
                                         cache)
     # unpack physical parameters and SBP operator `D1`
-    g = gravity_constant(equations)
+    g = gravity(equations)
     (; D1, h, b, v_x, beta_hat) = cache
 
     # `q_global` is an `ArrayPartition`. It collects the individual arrays for

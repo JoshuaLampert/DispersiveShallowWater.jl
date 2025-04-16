@@ -42,19 +42,19 @@ g = 9.81
 disp_rel = LinearDispersionRelation(h0)
 k = 0.01:0.01:5.0
 
-euler = EulerEquations1D(; gravity_constant = g, eta0 = eta0)
+euler = EulerEquations1D(; gravity = g, eta0 = eta0)
 c_euler = wave_speed.(disp_rel, euler, k; normalize = true)
 plot(k, c_euler, label = "Euler", xlabel = "k", ylabel = "c / c_0", legend = :topright)
 
-bbm = BBMEquation1D(; gravity_constant = g, eta0 = eta0, D = h0)
+bbm = BBMEquation1D(; gravity = g, eta0 = eta0, D = h0)
 c_bbm = wave_speed.(disp_rel, bbm, k; normalize = true)
 plot!(k, c_bbm, label = "BBM")
 
-sk = SvaerdKalischEquations1D(; gravity_constant = g, eta0 = eta0)
+sk = SvaerdKalischEquations1D(; gravity = g, eta0 = eta0)
 c_sk = wave_speed.(disp_rel, sk, k; normalize = true)
 plot!(k, c_sk, label = "Svärd-Kalisch")
 
-sgn = SerreGreenNaghdiEquations1D(; gravity_constant = g, eta0 = eta0)
+sgn = SerreGreenNaghdiEquations1D(; gravity = g, eta0 = eta0)
 c_sgn = wave_speed.(disp_rel, sgn, k; normalize = true)
 plot!(k, c_sgn, label = "Serre-Green-Naghdi")
 

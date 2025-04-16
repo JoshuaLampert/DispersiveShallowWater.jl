@@ -7,7 +7,7 @@ using SparseArrays: sparse
 # Semidiscretization of the Serre-Green-Naghdi equations
 
 equations = SerreGreenNaghdiEquations1D(bathymetry_type = bathymetry_flat,
-                                        gravity_constant = 9.81)
+                                        gravity = 9.81)
 
 # initial_condition_convergence_test needs periodic boundary conditions
 initial_condition = initial_condition_convergence_test

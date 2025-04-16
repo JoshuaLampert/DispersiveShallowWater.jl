@@ -7,7 +7,7 @@ using SummationByPartsOperators: MattssonNordström2004, derivative_operator
 
 # or bathymetry_flat instead of bathymetry_variable
 equations = BBMBBMEquations1D(bathymetry_type = bathymetry_variable,
-                              gravity_constant = 9.81)
+                              gravity = 9.81)
 
 initial_condition = initial_condition_manufactured_reflecting
 source_terms = source_terms_manufactured_reflecting

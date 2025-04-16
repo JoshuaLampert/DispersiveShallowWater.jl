@@ -71,7 +71,7 @@ export LinearDispersionRelation, EulerEquations1D, wave_speed
 export prim2prim, prim2cons, cons2prim, prim2phys,
        waterheight_total, waterheight,
        velocity, momentum, discharge,
-       gravity_constant,
+       gravity,
        bathymetry, still_water_surface,
        energy_total, entropy, lake_at_rest_error,
        energy_total_modified, entropy_modified,

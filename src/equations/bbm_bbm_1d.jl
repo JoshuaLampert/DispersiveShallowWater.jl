@@ -1,6 +1,6 @@
 @doc raw"""
     BBMBBMEquations1D(; bathymetry_type = bathymetry_variable,
-                      gravity_constant, eta0 = 0.0)
+                      gravity, eta0 = 0.0)
 
 BBM-BBM (Benjamin–Bona–Mahony) system in one spatial dimension. The equations for flat bathymetry are given by
 ```math
@@ -10,8 +10,9 @@ BBM-BBM (Benjamin–Bona–Mahony) system in one spatial dimension. The equation
 \end{aligned}
 ```
 The unknown quantities of the BBM-BBM equations are the total water height ``\eta`` and the velocity ``v``.
-The gravitational constant is denoted by `g` and the constant bottom topography (bathymetry) ``b = \eta_0 - D``. The water height above the bathymetry is therefore given by
-``h = \eta - \eta_0 + D``. The BBM-BBM equations are only implemented for ``\eta_0 = 0``.
+The gravitational acceleration `gravity` is denoted by ``g`` and the constant bottom topography (bathymetry) ``b = \eta_0 - D``.
+The water height above the bathymetry is therefore given by ``h = \eta - \eta_0 + D``.
+The BBM-BBM equations are only implemented for ``\eta_0 = 0``.
 
 Two types of `bathymetry_type` are supported:
 - [`bathymetry_flat`](@ref): flat bathymetry (typically ``b = 0`` everywhere)
@@ -53,20 +54,20 @@ Additionally, it is well-balanced for the lake-at-rest stationary solution, see 
 struct BBMBBMEquations1D{Bathymetry <: AbstractBathymetry, RealT <: Real} <:
        AbstractBBMBBMEquations{1, 3}
     bathymetry_type::Bathymetry # type of bathymetry
-    gravity::RealT # gravitational constant
+    gravity::RealT # gravitational acceleration
     eta0::RealT    # constant still-water surface
 end
 
 function BBMBBMEquations1D(; bathymetry_type = bathymetry_variable,
-                           gravity_constant, eta0 = 0.0)
+                           gravity, eta0 = 0.0)
     eta0 == 0.0 || @warn "The still-water surface needs to be 0 for the BBM-BBM equations"
-    BBMBBMEquations1D(bathymetry_type, gravity_constant, eta0)
+    BBMBBMEquations1D(bathymetry_type, gravity, eta0)
 end
 
 """
     initial_condition_convergence_test(x, t, equations::BBMBBMEquations1D, mesh)
 
-A travelling-wave solution used for convergence tests in a periodic domain.
+A traveling-wave solution used for convergence tests in a periodic domain.
 The bathymetry is constant.
 
 For details see Example 5 in Section 3 from (here adapted for dimensional equations):
@@ -75,7 +76,7 @@ For details see Example 5 in Section 3 from (here adapted for dimensional equati
   [DOI: 10.1023/A:1026667903256](https://doi.org/10.1023/A:1026667903256)
 """
 function initial_condition_convergence_test(x, t, equations::BBMBBMEquations1D, mesh)
-    g = gravity_constant(equations)
+    g = gravity(equations)
     D = 2.0 # constant bathymetry in this case
     c = 5 / 2 * sqrt(D * g)
     rho = 18 / 5
@@ -112,7 +113,7 @@ end
 A smooth manufactured solution in combination with [`initial_condition_manufactured`](@ref).
 """
 function source_terms_manufactured(q, x, t, equations::BBMBBMEquations1D)
-    g = gravity_constant(equations)
+    g = gravity(equations)
     a1 = cospi(2 * x)
     a2 = sinpi(2 * x)
     a3 = cospi(t - 2 * x)
@@ -140,7 +141,7 @@ function source_terms_manufactured(q, x, t, equations::BBMBBMEquations1D)
 end
 
 function source_terms_manufactured(q, x, t, equations::BBMBBMEquations1D{BathymetryFlat})
-    g = gravity_constant(equations)
+    g = gravity(equations)
     D = still_waterdepth(q, equations)
     a3 = cospi(t - 2 * x)
     a4 = sinpi(t - 2 * x)
@@ -185,7 +186,7 @@ A smooth manufactured solution for reflecting boundary conditions in combination
 with [`initial_condition_manufactured_reflecting`](@ref).
 """
 function source_terms_manufactured_reflecting(q, x, t, equations::BBMBBMEquations1D)
-    g = gravity_constant(equations)
+    g = gravity(equations)
     a1 = cospi(2 * x)
     a2 = sinpi(2 * x)
     a8 = cospi(x)
@@ -206,7 +207,7 @@ end
 
 function source_terms_manufactured_reflecting(q, x, t,
                                               equations::BBMBBMEquations1D{BathymetryFlat})
-    g = gravity_constant(equations)
+    g = gravity(equations)
     D = still_waterdepth(q, equations)
     a1 = cospi(2 * x)
     a2 = sinpi(2 * x)
@@ -243,7 +244,7 @@ References:
   [link](https://repository.tudelft.nl/islandora/object/uuid:c2091d53-f455-48af-a84b-ac86680455e9/datastream/OBJ/download)
 """
 function initial_condition_dingemans(x, t, equations::BBMBBMEquations1D, mesh)
-    g = gravity_constant(equations)
+    g = gravity(equations)
     h0 = 0.8
     A = 0.02
     # omega = 2*pi/(2.02*sqrt(2))
@@ -416,7 +417,7 @@ function rhs!(dq, q, t, mesh, equations::BBMBBMEquations1D, initial_condition,
         (; invImDKD, invImD2K) = cache
     end
 
-    g = gravity_constant(equations)
+    g = gravity(equations)
     eta, v, D = q.x
     deta, dv, dD = dq.x
     fill!(dD, zero(eltype(dD)))
@@ -483,7 +484,7 @@ function rhs!(dq, q, t, mesh, equations::BBMBBMEquations1D, initial_condition,
     (; etav, Dv, v2, tmp1, tmp2) = cache
     (; invImD2d, invImD2n) = cache
 
-    g = gravity_constant(equations)
+    g = gravity(equations)
     eta, v, D = q.x
     deta, dv, dD = dq.x
     fill!(dD, zero(eltype(dD)))

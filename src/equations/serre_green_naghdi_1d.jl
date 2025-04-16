@@ -1,6 +1,6 @@
 @doc raw"""
     SerreGreenNaghdiEquations1D(; bathymetry_type = bathymetry_variable,
-                                gravity_constant, eta0 = 0.0)
+                                gravity, eta0 = 0.0)
 
 Serre-Green-Naghdi system in one spatial dimension.
 The equations for flat bathymetry are given by
@@ -13,7 +13,7 @@ The equations for flat bathymetry are given by
 ```
 The unknown quantities of the Serre-Green-Naghdi equations are the
 total water height ``\eta = h + b`` and the velocity ``v``.
-The gravitational constant is denoted by `g` and the bottom topography
+The gravitational acceleration `gravity` is denoted by ``g`` and the bottom topography
 (bathymetry) ``b = \eta_0 - D``. The water height above the bathymetry
 is therefore given by ``h = \eta - \eta_0 + D``.
 The total water height is therefore given by ``\eta = h + b``.
@@ -71,13 +71,13 @@ Additionally, it is well-balanced for the lake-at-rest stationary solution, see
 struct SerreGreenNaghdiEquations1D{Bathymetry <: AbstractBathymetry, RealT <: Real} <:
        AbstractSerreGreenNaghdiEquations{1, 3}
     bathymetry_type::Bathymetry # type of bathymetry
-    gravity::RealT # gravitational constant
+    gravity::RealT # gravitational acceleration
     eta0::RealT # constant still-water surface
 end
 
 function SerreGreenNaghdiEquations1D(; bathymetry_type = bathymetry_variable,
-                                     gravity_constant, eta0 = 0.0)
-    SerreGreenNaghdiEquations1D(bathymetry_type, gravity_constant, eta0)
+                                     gravity, eta0 = 0.0)
+    SerreGreenNaghdiEquations1D(bathymetry_type, gravity, eta0)
 end
 
 """
@@ -87,7 +87,7 @@ A soliton solution used for convergence tests in a periodic domain.
 """
 function initial_condition_convergence_test(x, t, equations::SerreGreenNaghdiEquations1D,
                                             mesh)
-    g = gravity_constant(equations)
+    g = gravity(equations)
 
     # setup parameters data
     h1 = 1.0
@@ -332,7 +332,7 @@ function rhs_sgn_central!(dq, q, equations, source_terms, cache, ::BathymetryFla
                           boundary_conditions::BoundaryConditionPeriodic)
     # Unpack physical parameters and SBP operator `D1` as well as the
     # SBP operator in sparse matrix form `D1mat`
-    g = gravity_constant(equations)
+    g = gravity(equations)
     (; D1, D1mat) = cache
 
     # `q` and `dq` are `ArrayPartition`s. They collect the individual
@@ -413,7 +413,7 @@ function rhs_sgn_upwind!(dq, q, equations, source_terms, cache, ::BathymetryFlat
                          boundary_conditions::BoundaryConditionPeriodic)
     # Unpack physical parameters and SBP operator `D1` as well as the
     # SBP upwind operator in sparse matrix form `D1mat_minus`
-    g = gravity_constant(equations)
+    g = gravity(equations)
     (; D1mat_minus) = cache
     D1_upwind = cache.D1
     D1 = D1_upwind.central
@@ -500,7 +500,7 @@ function rhs_sgn_central!(dq, q, equations, source_terms, cache,
                           boundary_conditions::BoundaryConditionPeriodic)
     # Unpack physical parameters and SBP operator `D1` as well as the
     # SBP operator in sparse matrix form `D1mat`
-    g = gravity_constant(equations)
+    g = gravity(equations)
     (; D1, D1mat) = cache
 
     # `q` and `dq` are `ArrayPartition`s. They collect the individual
@@ -606,7 +606,7 @@ function rhs_sgn_upwind!(dq, q, equations, source_terms, cache,
                          boundary_conditions::BoundaryConditionPeriodic)
     # Unpack physical parameters and SBP operator `D1` as well as the
     # SBP operator in sparse matrix form `D1mat`
-    g = gravity_constant(equations)
+    g = gravity(equations)
     (; D1mat_minus) = cache
     D1_upwind = cache.D1
     D1 = D1_upwind.central
@@ -748,7 +748,7 @@ function energy_total_modified!(e, q_global,
                                 equations::SerreGreenNaghdiEquations1D,
                                 cache)
     # unpack physical parameters and SBP operator `D1`
-    g = gravity_constant(equations)
+    g = gravity(equations)
     (; D1, h, b, v_x) = cache
 
     # `q_global` is an `ArrayPartition`. It collects the individual arrays for

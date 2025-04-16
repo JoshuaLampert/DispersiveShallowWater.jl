@@ -1,6 +1,6 @@
 @doc raw"""
     HyperbolicSerreGreenNaghdiEquations1D(; bathymetry_type = bathymetry_mild_slope,
-                                          gravity_constant,
+                                          gravity,
                                           eta0 = 0.0,
                                           lambda)
 
@@ -17,7 +17,7 @@ dimension. The equations for flat bathymetry are given by
 ```
 The unknown quantities of the hyperbolized Serre-Green-Naghdi equations are the
 total water height ``\eta = h + b`` and the velocity ``v``.
-The gravitational constant is denoted by `g` and the bottom topography
+The gravitational acceleration `gravity` is denoted by ``g`` and the bottom topography
 (bathymetry) ``b = \eta_0 - D``. The water height above the bathymetry
 is therefore given by ``h = \eta - \eta_0 + D``.
 The total water height is therefore given by ``\eta = h + b``.
@@ -88,16 +88,16 @@ struct HyperbolicSerreGreenNaghdiEquations1D{Bathymetry <:
                                              RealT <: Real} <:
        AbstractSerreGreenNaghdiEquations{1, 5}
     bathymetry_type::Bathymetry # type of bathymetry
-    gravity::RealT # gravitational constant
+    gravity::RealT # gravitational acceleration
     eta0::RealT # constant still-water surface
     lambda::RealT # hyperbolic relaxation parameter (→ ∞ for Serre-Green-Naghdi)
 end
 
 function HyperbolicSerreGreenNaghdiEquations1D(; bathymetry_type = bathymetry_mild_slope,
-                                               gravity_constant,
+                                               gravity,
                                                eta0 = 0.0,
                                                lambda)
-    HyperbolicSerreGreenNaghdiEquations1D(bathymetry_type, gravity_constant, eta0, lambda)
+    HyperbolicSerreGreenNaghdiEquations1D(bathymetry_type, gravity, eta0, lambda)
 end
 
 function varnames(::typeof(prim2prim), ::HyperbolicSerreGreenNaghdiEquations1D)
@@ -164,7 +164,7 @@ See also [`initial_condition_convergence_test`](@ref).
 """
 function initial_condition_soliton(x, t, equations::HyperbolicSerreGreenNaghdiEquations1D,
                                    mesh)
-    g = gravity_constant(equations)
+    g = gravity(equations)
 
     # setup parameters data
     h1 = 1.0
@@ -218,7 +218,7 @@ A smooth manufactured solution in combination with
 """
 function source_terms_manufactured(q, x, t,
                                    equations::HyperbolicSerreGreenNaghdiEquations1D)
-    g = gravity_constant(equations)
+    g = gravity(equations)
 
     a1 = sinpi(4 * t - 2 * x)
     a2 = cospi(4 * t - 2 * x)
@@ -285,7 +285,7 @@ function rhs!(dq, q, t, mesh,
               source_terms,
               solver, cache)
     # Unpack physical parameters and SBP operator `D1`
-    g = gravity_constant(equations)
+    g = gravity(equations)
     (; lambda, bathymetry_type) = equations
     (; D1) = solver
 
@@ -434,7 +434,7 @@ function energy_total_modified!(e, q_global,
                                 equations::HyperbolicSerreGreenNaghdiEquations1D,
                                 cache)
     # unpack physical parameters and SBP operator `D1`
-    g = gravity_constant(equations)
+    g = gravity(equations)
     (; lambda) = equations
     (; h, b) = cache
 
