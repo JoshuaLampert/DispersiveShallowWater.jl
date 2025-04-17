@@ -5,7 +5,7 @@ using SummationByPartsOperators: MattssonNordström2004, derivative_operator
 ###############################################################################
 # Semidiscretization of the Svärd-Kalisch equations
 # For reflecting boundary conditions, alpha and gamma need to be 0
-equations = SvaerdKalischEquations1D(gravity_constant = 1.0, eta0 = 0.0,
+equations = SvaerdKalischEquations1D(gravity = 1.0, eta0 = 0.0,
                                      alpha = 0.0, beta = 1 / 3, gamma = 0.0)
 
 initial_condition = initial_condition_manufactured_reflecting

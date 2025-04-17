@@ -6,7 +6,7 @@ using DispersiveShallowWater
 
 equations = HyperbolicSerreGreenNaghdiEquations1D(bathymetry_type = bathymetry_mild_slope,
                                                   lambda = 500.0,
-                                                  gravity_constant = 1.0,
+                                                  gravity = 1.0,
                                                   eta0 = 2.0)
 
 initial_condition = initial_condition_discontinuous_well_balancedness

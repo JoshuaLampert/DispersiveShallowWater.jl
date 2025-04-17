@@ -25,7 +25,7 @@ Base.broadcastable(disp_rel::LinearDispersionRelation) = (disp_rel,)
 Compute the wave speed ``c`` for a given wavenumber ``k`` using the
 [`LinearDispersionRelation`](@ref) `disp_rel` of the `equations`.
 The wave speed is given by ``c = \omega(k) / k``. If `normalize` is `true`, the wave speed is normalized
-by the shallow water wave speed ``\sqrt{g h_0}``, where ``g`` is the `gravity_constant` of the `equations`
+by the shallow water wave speed ``\sqrt{g h_0}``, where ``g`` is the gravitational acceleration of the `equations`
 and ``h_0`` is the `ref_height` of the dispersion relation `disp_rel`.
 
 See also [`LinearDispersionRelation`](@ref).
@@ -35,15 +35,15 @@ function wave_speed(disp_rel::LinearDispersionRelation, equations, k;
     omega = disp_rel(equations, k)
     c = omega / k
     if normalize
-        c /= sqrt(gravity_constant(equations) * disp_rel.ref_height)
+        c /= sqrt(gravity(equations) * disp_rel.ref_height)
     end
     return c
 end
 
 @doc raw"""
-    EulerEquations1D(; gravity_constant, eta0 = 0.0)
+    EulerEquations1D(; gravity, eta0 = 0.0)
 
-A struct representing the 1D Euler equations with a given gravity constant and a still-water surface
+A struct representing the 1D Euler equations with a given gravitational acceleration `gravity` and a still-water surface
 `eta0`.
 
 !!! note
@@ -60,20 +60,20 @@ struct EulerEquations1D{RealT <: Real} <: AbstractEquations{1, 0}
     eta0::RealT
 end
 
-function EulerEquations1D(; gravity_constant, eta0 = 0.0)
-    return EulerEquations1D(gravity_constant, eta0)
+function EulerEquations1D(; gravity, eta0 = 0.0)
+    return EulerEquations1D(gravity, eta0)
 end
 
 function (disp_rel::LinearDispersionRelation)(equations::EulerEquations1D, k)
     h0 = disp_rel.ref_height
-    g = gravity_constant(equations)
+    g = gravity(equations)
     return sqrt(g * k * tanh(h0 * k))
 end
 
 function (disp_rel::LinearDispersionRelation)(equations::BBMEquation1D, k)
     eta0 = equations.eta0
     h0 = disp_rel.ref_height
-    g = gravity_constant(equations)
+    g = gravity(equations)
     return sqrt(g * h0) * k * (1 + 1.5 * eta0 / h0) / (1 + 1 / 6 * (h0 * k)^2)
 end
 
@@ -84,7 +84,7 @@ end
 # Here, for general `eta0`.
 function (disp_rel::LinearDispersionRelation)(equations::BBMBBMEquations1D, k)
     h0 = disp_rel.ref_height
-    g = gravity_constant(equations)
+    g = gravity(equations)
     return sqrt(g * (h0 + equations.eta0)) * k / (1 + 1 / 6 * (h0 * k)^2)
 end
 
@@ -94,7 +94,7 @@ end
 #   [arXiv: 2302.09924](https://arxiv.org/abs/2302.09924)
 function (disp_rel::LinearDispersionRelation)(equations::SvärdKalischEquations1D, k)
     h0 = disp_rel.ref_height
-    g = gravity_constant(equations)
+    g = gravity(equations)
     c0 = sqrt(g * h0)
     alpha = equations.alpha * c0 * h0^2
     beta = equations.beta * h0^3
@@ -117,6 +117,6 @@ end
 #   [DOI: 10.1016/j.cnsns.2016.10.009](https://doi.org/10.1016/j.cnsns.2016.10.009)
 function (disp_rel::LinearDispersionRelation)(equations::SerreGreenNaghdiEquations1D, k)
     h0 = disp_rel.ref_height
-    g = gravity_constant(equations)
+    g = gravity(equations)
     return sqrt(g * h0) * k / sqrt(1.0 + (k * h0)^2 / 3)
 end

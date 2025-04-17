@@ -14,7 +14,7 @@ using DispersiveShallowWater
 
 equations = HyperbolicSerreGreenNaghdiEquations1D(bathymetry_type = bathymetry_mild_slope,
                                                   lambda = 500.0,
-                                                  gravity_constant = 9.81,
+                                                  gravity = 9.81,
                                                   eta0 = 1.0)
 
 function initial_condition_conservation_test(x, t,

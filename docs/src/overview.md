@@ -37,7 +37,7 @@ including physical parameters, initial and boundary conditions as well as the do
 describes a traveling wave that moves towards a beach, which is modeled by a linearly increasing bathymetry.
 
 ```@example overview
-equations = BBMBBMEquations1D(bathymetry_type = bathymetry_variable, gravity_constant = 9.81)
+equations = BBMBBMEquations1D(bathymetry_type = bathymetry_variable, gravity = 9.81)
 
 function initial_condition_shoaling(x, t, equations::BBMBBMEquations1D, mesh)
     A = 0.07 # amplitude of wave

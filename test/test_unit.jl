@@ -56,7 +56,7 @@ end
 end
 
 @testitem "Semidiscretization" setup=[Setup] begin
-    equations = BBMBBMEquations1D(gravity_constant = 9.81)
+    equations = BBMBBMEquations1D(gravity = 9.81)
     initial_condition = initial_condition_convergence_test
     boundary_conditions = boundary_condition_periodic
     mesh = Mesh1D(-1, 1, 10)
@@ -74,7 +74,7 @@ end
     @test solver == solver
 
     equations_flat = BBMBBMEquations1D(bathymetry_type = bathymetry_flat,
-                                       gravity_constant = 9.81)
+                                       gravity = 9.81)
     initial_condition = initial_condition_dingemans
     mesh = Mesh1D(-138, 46, 10)
     solver = Solver(mesh, 4)
@@ -92,7 +92,7 @@ end
 end
 
 @testitem "BBMEquation1D" setup=[Setup] begin
-    equations = @test_nowarn @inferred BBMEquation1D(gravity_constant = 1.0)
+    equations = @test_nowarn @inferred BBMEquation1D(gravity = 1.0)
     @test_nowarn print(equations)
     @test_nowarn display(equations)
     conversion_functions = [
@@ -140,7 +140,7 @@ end
 end
 
 @testitem "BBMBBMEquations1D" setup=[Setup] begin
-    equations = @test_nowarn @inferred BBMBBMEquations1D(gravity_constant = 9.81)
+    equations = @test_nowarn @inferred BBMBBMEquations1D(gravity = 9.81)
     @test_nowarn print(equations)
     @test_nowarn display(equations)
     conversion_functions = [
@@ -195,7 +195,7 @@ end
 end
 
 @testitem "SvaerdKalischEquations1D" setup=[Setup] begin
-    equations = @test_nowarn SvaerdKalischEquations1D(gravity_constant = 9.81,
+    equations = @test_nowarn SvaerdKalischEquations1D(gravity = 9.81,
                                                       alpha = 0.0004040404040404049,
                                                       beta = 0.49292929292929294,
                                                       gamma = 0.15707070707070708)
@@ -262,7 +262,7 @@ end
 end
 
 @testitem "SerreGreenNaghdiEquations1D" setup=[Setup] begin
-    equations = @test_nowarn @inferred SerreGreenNaghdiEquations1D(gravity_constant = 9.81)
+    equations = @test_nowarn @inferred SerreGreenNaghdiEquations1D(gravity = 9.81)
     @test_nowarn print(equations)
     @test_nowarn display(equations)
     conversion_functions = [
@@ -316,7 +316,7 @@ end
 end
 
 @testitem "HyperbolicSerreGreenNaghdiEquations1D" setup=[Setup] begin
-    equations = @test_nowarn @inferred HyperbolicSerreGreenNaghdiEquations1D(gravity_constant = 9.81,
+    equations = @test_nowarn @inferred HyperbolicSerreGreenNaghdiEquations1D(gravity = 9.81,
                                                                              lambda = 500.0)
     @test_nowarn print(equations)
     @test_nowarn display(equations)
@@ -371,7 +371,7 @@ end
 end
 
 @testitem "AnalysisCallback" setup=[Setup] begin
-    equations = SvaerdKalischEquations1D(gravity_constant = 9.81)
+    equations = SvaerdKalischEquations1D(gravity = 9.81)
     initial_condition = initial_condition_dingemans
     boundary_conditions = boundary_condition_periodic
     mesh = Mesh1D(-1, 1, 10)
@@ -424,11 +424,11 @@ end
         0.4963966757387569
     ]
 
-    for (i, equations) in enumerate((EulerEquations1D(gravity_constant = g),
-                                     BBMEquation1D(gravity_constant = g),
-                                     BBMBBMEquations1D(gravity_constant = g),
-                                     SvärdKalischEquations1D(gravity_constant = g),
-                                     SerreGreenNaghdiEquations1D(gravity_constant = g)))
+    for (i, equations) in enumerate((EulerEquations1D(gravity = g),
+                                     BBMEquation1D(gravity = g),
+                                     BBMBBMEquations1D(gravity = g),
+                                     SvärdKalischEquations1D(gravity = g),
+                                     SerreGreenNaghdiEquations1D(gravity = g)))
         @test isapprox(disp_rel(equations, k), frequencies[i])
         @test isapprox(wave_speed(disp_rel, equations, k), wave_speeds[i])
         # Add test for correct broadcasting

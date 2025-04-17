@@ -7,7 +7,7 @@ using SummationByPartsOperators: upwind_operators, periodic_derivative_operator
 
 # or bathymetry_mild_slope instead of bathymetry_variable
 equations = SerreGreenNaghdiEquations1D(bathymetry_type = bathymetry_variable,
-                                        gravity_constant = 9.81)
+                                        gravity = 9.81)
 
 initial_condition = initial_condition_dingemans
 boundary_conditions = boundary_condition_periodic

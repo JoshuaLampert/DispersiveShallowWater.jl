@@ -14,7 +14,7 @@ using DispersiveShallowWater
 
 # or bathymetry_mild_slope instead of bathymetry_variable
 equations = SerreGreenNaghdiEquations1D(bathymetry_type = bathymetry_variable,
-                                        gravity_constant = 9.81,
+                                        gravity = 9.81,
                                         eta0 = 1.0)
 
 function initial_condition_conservation_test(x, t,

@@ -38,7 +38,7 @@ In 1D, the shallow water equations with flat bathymetry are given by
 ```
 where ``h`` is the [`waterheight`](@ref),
 ``v`` the [`velocity`](@ref), and
-``g`` the [`gravity_constant`](@ref).
+``g`` the [`gravity`](@ref).
 """
 abstract type AbstractShallowWaterEquations{NDIMS, NVARS} <: AbstractEquations{NDIMS, NVARS} end
 
@@ -48,7 +48,7 @@ abstract type AbstractShallowWaterEquations{NDIMS, NVARS} <: AbstractEquations{N
 Return the canonical, human-readable name for the given system of equations.
 # Examples
 ```jldoctest
-julia> DispersiveShallowWater.get_name(BBMBBMEquations1D(gravity_constant=1.0))
+julia> DispersiveShallowWater.get_name(BBMBBMEquations1D(gravity=1.0))
 "BBMBBMEquations1D-BathymetryVariable"
 ```
 """
@@ -257,11 +257,11 @@ be a constant value over time (given by the value ``\\eta_0`` passed to the
 end
 
 """
-    gravity_constant(equations)
+    gravity(equations)
 
-Return the gravity constant ``g`` for a given set of `equations`.
+Return the gravitational acceleration ``g`` for a given set of `equations`.
 """
-@inline function gravity_constant(equations::AbstractEquations)
+@inline function gravity(equations::AbstractEquations)
     return equations.gravity
 end
 
@@ -277,7 +277,7 @@ shallow water subsystem, i.e.,
 ```
 in 1D, where ``h`` is the [`waterheight`](@ref),
 ``\\eta = h + b`` the [`waterheight_total`](@ref),
-``v`` the [`velocity`](@ref), and ``g`` the [`gravity_constant`](@ref).
+``v`` the [`velocity`](@ref), and ``g`` the [`gravity`](@ref).
 
 `q` is a vector of the primitive variables at a single node, i.e., a vector
 of the correct length `nvariables(equations)`.
@@ -286,7 +286,7 @@ of the correct length `nvariables(equations)`.
     h = waterheight(q, equations)
     eta = waterheight_total(q, equations)
     v = velocity(q, equations)
-    return 0.5f0 * h * v^2 + 0.5f0 * gravity_constant(equations) * eta^2
+    return 0.5f0 * h * v^2 + 0.5f0 * gravity(equations) * eta^2
 end
 
 varnames(::typeof(energy_total), equations) = ("e_total",)
@@ -618,7 +618,7 @@ References:
   [link](https://repository.tudelft.nl/islandora/object/uuid:c2091d53-f455-48af-a84b-ac86680455e9/datastream/OBJ/download)
 """
 function initial_condition_dingemans(x, t, equations::AbstractShallowWaterEquations, mesh)
-    g = gravity_constant(equations)
+    g = gravity(equations)
     h0 = 0.8
     A = 0.02
     # omega = 2*pi/(2.02*sqrt(2))
