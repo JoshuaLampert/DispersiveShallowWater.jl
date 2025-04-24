@@ -584,7 +584,7 @@ function solve_system_matrix!(dv, system_matrix, rhs,
         (; factorization) = cache
         cholesky!(factorization, system_matrix; check = false)
         if issuccess(factorization)
-            # see https://github.com/JoshuaLampert/DispersiveShallowWater.jl/issues/122
+            # see https://github.com/NumericalMathematics/DispersiveShallowWater.jl/issues/122
             dv .= factorization \ rhs
         else
             # The factorization may fail if the time step is too large

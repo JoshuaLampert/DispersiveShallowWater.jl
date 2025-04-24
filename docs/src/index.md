@@ -1,15 +1,15 @@
 # DispersiveShallowWater.jl
 
-[![Docs-stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://JoshuaLampert.github.io/DispersiveShallowWater.jl/stable)
-[![Docs-dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://JoshuaLampert.github.io/DispersiveShallowWater.jl/dev/)
-[![Build Status](https://github.com/JoshuaLampert/DispersiveShallowWater.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/JoshuaLampert/DispersiveShallowWater.jl/actions/workflows/CI.yml?query=branch%3Amain)
-[![codecov](https://codecov.io/gh/JoshuaLampert/DispersiveShallowWater.jl/graph/badge.svg)](https://codecov.io/gh/JoshuaLampert/DispersiveShallowWater.jl)
-[![Coveralls](https://coveralls.io/repos/github/JoshuaLampert/DispersiveShallowWater.jl/badge.svg?branch=main)](https://coveralls.io/github/JoshuaLampert/DispersiveShallowWater.jl?branch=main)
+[![Docs-stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://NumericalMathematics.github.io/DispersiveShallowWater.jl/stable)
+[![Docs-dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://NumericalMathematics.github.io/DispersiveShallowWater.jl/dev/)
+[![Build Status](https://github.com/NumericalMathematics/DispersiveShallowWater.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/NumericalMathematics/DispersiveShallowWater.jl/actions/workflows/CI.yml?query=branch%3Amain)
+[![codecov](https://codecov.io/gh/NumericalMathematics/DispersiveShallowWater.jl/graph/badge.svg)](https://codecov.io/gh/NumericalMathematics/DispersiveShallowWater.jl)
+[![Coveralls](https://coveralls.io/repos/github/NumericalMathematics/DispersiveShallowWater.jl/badge.svg?branch=main)](https://coveralls.io/github/NumericalMathematics/DispersiveShallowWater.jl?branch=main)
 [![Aqua QA](https://raw.githubusercontent.com/JuliaTesting/Aqua.jl/master/badge.svg)](https://github.com/JuliaTesting/Aqua.jl)
 [![License: MIT](https://img.shields.io/badge/License-MIT-success.svg)](https://opensource.org/licenses/MIT)
 [![DOI](https://zenodo.org/badge/635090135.svg)](https://zenodo.org/doi/10.5281/zenodo.10034636)
 
-[**DispersiveShallowWater.jl**](https://github.com/JoshuaLampert/DispersiveShallowWater.jl) is a [Julia](https://julialang.org/) package that implements structure-preserving numerical methods for dispersive shallow water models.
+[**DispersiveShallowWater.jl**](https://github.com/NumericalMathematics/DispersiveShallowWater.jl) is a [Julia](https://julialang.org/) package that implements structure-preserving numerical methods for dispersive shallow water models.
 To date, it provides provably conservative, entropy-conserving and well-balanced numerical schemes for some dispersive shallow water models:
 
 * the [Benjamin-Bona-Mahony (BBM) equation, also known as regularized long-wave equation](https://doi.org/10.4208/cicp.OA-2020-0119),
@@ -65,7 +65,7 @@ julia> plot(semi => sol)
 ```
 
 The command `plot` expects a `Pair` consisting of a [`Semidiscretization`](@ref) and an `ODESolution`. The visualization can also be customized, see the [documentation](@ref visualize_results)
-for more details. Other examples can be found in the subdirectory [examples/](https://github.com/JoshuaLampert/DispersiveShallowWater.jl/tree/main/examples).
+for more details. Other examples can be found in the subdirectory [examples/](https://github.com/NumericalMathematics/DispersiveShallowWater.jl/tree/main/examples).
 A list of all examples is returned by running [`get_examples()`](@ref). You can pass the filename of one of the examples or your own simulation file to `include` in order to run it,
 e.g., `include(joinpath(examples_dir(), "svaerd_kalisch_1d", "svaerd_kalisch_1d_dingemans_relaxation.jl"))`.
 
@@ -80,7 +80,7 @@ You can directly refer to DispersiveShallowWater.jl as
   author={Lampert, Joshua and Ranocha, Hendrik},
   year={2023},
   month={10},
-  howpublished={\url{https://github.com/JoshuaLampert/DispersiveShallowWater.jl}},
+  howpublished={\url{https://github.com/NumericalMathematics/DispersiveShallowWater.jl}},
   doi={10.5281/zenodo.10034636}
 }
 ```
@@ -96,4 +96,4 @@ The code structure is inspired by [Trixi.jl](https://github.com/trixi-framework/
 
 ## License and contributing
 
-DispersiveShallowWater.jl is published under the MIT license (see [License](https://github.com/JoshuaLampert/DispersiveShallowWater.jl/blob/main/LICENSE)). We are pleased to accept contributions from everyone, preferably in the form of a PR.
+DispersiveShallowWater.jl is published under the MIT license (see [License](https://github.com/NumericalMathematics/DispersiveShallowWater.jl/blob/main/LICENSE)). We are pleased to accept contributions from everyone, preferably in the form of a PR.
