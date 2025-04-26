@@ -1,6 +1,6 @@
 # Dispersive properties of the equations
 
-The equations implemented in [DispersiveShallowWater.jl](https://github.com/JoshuaLampert/DispersiveShallowWater.jl)
+The equations implemented in [DispersiveShallowWater.jl](https://github.com/NumericalMathematics/DispersiveShallowWater.jl)
 describe the propagation of waves in a shallow water system.
 The equations are dispersive, meaning that the phase speed of the waves depends on their wavelength. This is in
 contrast to non-dispersive waves, where all waves travel at the same speed, such as the solution to the shallow
@@ -16,7 +16,7 @@ The simple case of just one wave traveling with speed ``c`` is a harmonic (or pl
 of a wave equation is then derived by substituting this solution into a linearized version of the equation and
 solving for ``\omega`` in terms of ``k``.
 
-Since all the equations implemented in [DispersiveShallowWater.jl](https://github.com/JoshuaLampert/DispersiveShallowWater.jl)
+Since all the equations implemented in [DispersiveShallowWater.jl](https://github.com/NumericalMathematics/DispersiveShallowWater.jl)
 are approximations to the full wave equations
 given by the Euler equations, their dispersion relations do not describe the exact speed of waves, but only
 an approximation to it, where the approximation usually becomes better for longer wavelengths. The dispersion
@@ -26,7 +26,7 @@ relation of the full wave system is given by
 \omega(k) = \pm \sqrt{g k \tanh(h_0 k)}.
 ```
 
-In [DispersiveShallowWater.jl](https://github.com/JoshuaLampert/DispersiveShallowWater.jl),
+In [DispersiveShallowWater.jl](https://github.com/NumericalMathematics/DispersiveShallowWater.jl),
 we can investigate the dispersion relations of the different equations. Let us
 plot the wave speeds of the different equations normalized by the shallow water wave speed ``c_0`` as a function
 of the wave number. We pick a reference water height of ``h_0 = 0.8`` and gravitational acceleration of ``g = 9.81``.

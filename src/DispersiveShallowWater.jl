@@ -11,7 +11,7 @@ obtain fully discrete schemes, the time integration methods from
 are used to solve the resulting ordinary differential equations.
 Fully discrete entropy-conservative methods can be obtained by using the relaxation method provided by DispersiveShallowWater.jl.
 
-See also: [DispersiveShallowWater.jl](https://github.com/JoshuaLampert/DispersiveShallowWater.jl)
+See also: [DispersiveShallowWater.jl](https://github.com/NumericalMathematics/DispersiveShallowWater.jl)
 """
 module DispersiveShallowWater
 

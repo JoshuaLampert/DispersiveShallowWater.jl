@@ -1,8 +1,8 @@
 # Development
 
 If you have any suggestions or ideas for improvements or new features, we are pleased to accept and discuss
-[issues](https://github.com/JoshuaLampert/DispersiveShallowWater.jl/issues) or if you are willing to contribute,
-feel free to [open a pull request](https://github.com/JoshuaLampert/DispersiveShallowWater.jl/pulls), even if it
+[issues](https://github.com/NumericalMathematics/DispersiveShallowWater.jl/issues) or if you are willing to contribute,
+feel free to [open a pull request](https://github.com/NumericalMathematics/DispersiveShallowWater.jl/pulls), even if it
 is only fixing a typo or improving the docs.
 
 ## Changing DispersiveShallowWater.jl and running it locally
@@ -14,7 +14,7 @@ by DispersiveShallowWater.jl. This way you can keep the Project.toml of the main
 can execute the following lines in a terminal:
 
 ```sh
-git clone https://github.com/JoshuaLampert/DispersiveShallowWater.jl.git
+git clone https://github.com/NumericalMathematics/DispersiveShallowWater.jl.git
 cd DispersiveShallowWater
 mkdir run
 cd run
@@ -49,5 +49,5 @@ julia --project=docs --color=yes docs/make.jl
 
 The resulting `.html` files can then be found in `docs/build/` and you can look at them by opening them in a browser.
 For pull requests from the main repository (i.e. not from a fork), the documentation is automatically built and can
-be previewed under `https://joshualampert.github.io/DispersiveShallowWater.jl/previews/PRXXX/` where `XXX` is the number
+be previewed under `https://NumericalMathematics.github.io/DispersiveShallowWater.jl/previews/PRXXX/` where `XXX` is the number
 of the pull request.
