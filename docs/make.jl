@@ -25,7 +25,7 @@ open(joinpath(@__DIR__, "src", "code_of_conduct.md"), "w") do io
     println(io,
             """
             ```@meta
-            EditURL = "https://github.com/JoshuaLampert/DispersiveShallowWater.jl/blob/main/CODE_OF_CONDUCT.md"
+            EditURL = "https://github.com/NumericalMathematics/DispersiveShallowWater.jl/blob/main/CODE_OF_CONDUCT.md"
             ```
             """)
     # Write the modified contents
@@ -41,7 +41,7 @@ open(joinpath(@__DIR__, "src", "contributing.md"), "w") do io
     println(io,
             """
             ```@meta
-            EditURL = "https://github.com/JoshuaLampert/DispersiveShallowWater.jl/blob/main/CONTRIBUTING.md"
+            EditURL = "https://github.com/NumericalMathematics/DispersiveShallowWater.jl/blob/main/CONTRIBUTING.md"
             ```
             """)
     # Write the modified contents
@@ -55,13 +55,13 @@ end
 Changelog.generate(Changelog.Documenter(),                           # output type
                    joinpath(@__DIR__, "..", "NEWS.md"),              # input file
                    joinpath(@__DIR__, "src", "changelog_tmp.md");    # output file
-                   repo = "JoshuaLampert/DispersiveShallowWater.jl", # default repository for links
+                   repo = "NumericalMathematics/DispersiveShallowWater.jl", # default repository for links
                    branch = "main",)
 # Fix edit URL of changelog
 open(joinpath(@__DIR__, "src", "changelog.md"), "w") do io
     for line in eachline(joinpath(@__DIR__, "src", "changelog_tmp.md"))
         if startswith(line, "EditURL")
-            line = "EditURL = \"https://github.com/JoshuaLampert/DispersiveShallowWater.jl/blob/main/NEWS.md\""
+            line = "EditURL = \"https://github.com/NumericalMathematics/DispersiveShallowWater.jl/blob/main/NEWS.md\""
         end
         println(io, line)
     end
@@ -70,11 +70,11 @@ end
 makedocs(;
          modules = [DispersiveShallowWater, TrixiBase],
          authors = "Joshua Lampert <joshua.lampert@uni-hamburg.de>",
-         repo = Remotes.GitHub("JoshuaLampert", "DispersiveShallowWater.jl"),
+         repo = Remotes.GitHub("NumericalMathematics", "DispersiveShallowWater.jl"),
          sitename = "DispersiveShallowWater.jl",
          format = Documenter.HTML(;
                                   prettyurls = get(ENV, "CI", "false") == "true",
-                                  canonical = "https://JoshuaLampert.github.io/DispersiveShallowWater.jl/stable",
+                                  canonical = "https://NumericalMathematics.github.io/DispersiveShallowWater.jl/stable",
                                   edit_link = "main",
                                   assets = String[],
                                   size_threshold = 1200 * 1024, # the generated .gif files can be too large
@@ -93,6 +93,6 @@ makedocs(;
              "License" => "license.md"])
 
 deploydocs(;
-           repo = "github.com/JoshuaLampert/DispersiveShallowWater.jl",
+           repo = "github.com/NumericalMathematics/DispersiveShallowWater.jl",
            devbranch = "main",
            push_preview = true)

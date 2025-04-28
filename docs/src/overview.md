@@ -76,7 +76,7 @@ define a [`Solver`](@ref). The simplest way to define a solver is to call the co
 following example, we use an accuracy order of 4. The default constructor simply creates periodic first- and second-derivative central finite difference
 summation-by-parts (SBP) operators of the provided order of accuracy. How to use other summation-by-parts operators, is described in the section on
 [how to customize the solver](@ref customize_solver). Note that for non-periodic boundary conditions, the solver also needs to be created with non-periodic
-operators, see, e.g. [examples/bbm\_bbm\_1d/bbm\_bbm\_1d\_basic\_reflecting.jl](https://github.com/JoshuaLampert/DispersiveShallowWater.jl/blob/main/examples/bbm_bbm_1d/bbm_bbm_1d_basic_reflecting.jl).
+operators, see, e.g. [examples/bbm\_bbm\_1d/bbm\_bbm\_1d\_basic\_reflecting.jl](https://github.com/NumericalMathematics/DispersiveShallowWater.jl/blob/main/examples/bbm_bbm_1d/bbm_bbm_1d_basic_reflecting.jl).
 
 ```@example overview
 solver = Solver(mesh, 4)
@@ -284,8 +284,8 @@ For more details see also the [documentation of SummationByPartsOperators.jl](ht
 
 ## Additional resources
 
-Some more examples sorted by the simulated equations can be found in the [examples/](https://github.com/JoshuaLampert/DispersiveShallowWater.jl/tree/main/examples) subdirectory.
-Especially, in [examples/svaerd\_kalisch\_1d/](https://github.com/JoshuaLampert/DispersiveShallowWater.jl/tree/main/examples/svaerd_kalisch_1d) you can find Julia scripts
+Some more examples sorted by the simulated equations can be found in the [examples/](https://github.com/NumericalMathematics/DispersiveShallowWater.jl/tree/main/examples) subdirectory.
+Especially, in [examples/svaerd\_kalisch\_1d/](https://github.com/NumericalMathematics/DispersiveShallowWater.jl/tree/main/examples/svaerd_kalisch_1d) you can find Julia scripts
 that solve the [`SvaerdKalischEquations1D`](@ref) that were not covered in this tutorial. The same steps as described above, however, apply in the same way to these equations.
 Attention must be paid for these equations because they do not conserve the classical total entropy ``\mathcal E``, but a modified entropy ``\hat{\mathcal E}``, available as [`entropy_modified`](@ref).
 

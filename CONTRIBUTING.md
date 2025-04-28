@@ -2,9 +2,9 @@
 
 DispersiveShallowWater.jl is an open-source project and we are very happy to accept contributions
 from the community. Please feel free to
-[open issues](https://github.com/JoshuaLampert/DispersiveShallowWater.jl/issues/new/choose)
+[open issues](https://github.com/NumericalMathematics/DispersiveShallowWater.jl/issues/new/choose)
 or submit patches (preferably as
-[pull requests](https://github.com/JoshuaLampert/DispersiveShallowWater.jl/pulls))
+[pull requests](https://github.com/NumericalMathematics/DispersiveShallowWater.jl/pulls))
 any time.
 
 DispersiveShallowWater.jl and its contributions are licensed under the MIT license (see
