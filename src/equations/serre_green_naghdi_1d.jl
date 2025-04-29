@@ -268,7 +268,7 @@ function assemble_system_matrix!(cache, h, D1, D1mat,
     # is not necessarily perfectly symmetric but only up to
     # round-off errors. We wrap it here to avoid issues with the
     # factorization.
-    return Symmetric(Diagonal(M_h) + D1mat' * spdiagm(M_h3_3) * D1mat)
+    return Symmetric(Diagonal(M_h) + D1mat' * (Diagonal(M_h3_3) * D1mat))
 end
 
 # variable bathymetry
