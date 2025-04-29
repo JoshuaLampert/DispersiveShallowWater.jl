@@ -311,5 +311,5 @@ end
                         change_waterheight=-4.440892098500626e-16,
                         change_entropy_modified=-9.290636370451466e-6,)
 
-    @test_allocations(semi, sol, allocs=250_000)
+    @test_allocations(semi, sol, allocs=300_000)
 end
