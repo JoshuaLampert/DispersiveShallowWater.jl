@@ -99,7 +99,6 @@ function initial_condition_convergence_test(x, t, equations::SerreGreenNaghdiEqu
     h = h1 + (h2 - h1) * sech(x_t / 2 * sqrt(3 * (h2 - h1) / (h1^2 * h2)))^2
     v = c * (1 - h1 / h)
 
-    
     return SVector(h, v, zero(h))
 end
 
@@ -111,14 +110,11 @@ A smooth manufactured solution in combination with [`source_terms_manufactured`]
 function initial_condition_manufactured(x, t,
                                         equations::SerreGreenNaghdiEquations1D,
                                         mesh)
-    h = 3  + cos(pi*(2 * (x - 2 * t))) 
-    v = (1 + sin(pi*(2 * (x - t / 2)))) 
-
+    h = 3 + cos(pi * (2 * (x - 2 * t)))
+    v = (1 + sin(pi * (2 * (x - t / 2))))
 
     return SVector(h, v, zero(h))
 end
-
-
 
 #= 
 The source terms where calculated using a CAS, here Symbolics.jl
@@ -673,9 +669,6 @@ function rhs_sgn_central!(dq, q, t, equations, source_terms, solver, cache,
         end
     end
 
-
-
-
     # The code below is equivalent to
     #   dv .= (Diagonal(h .+ factor .* h .* b_x.^2) - D1mat * (Diagonal(1/3 .* h.^3) * D1mat - Diagonal(0.5 .* h.^2 .* b_x) * D1mat) \ tmp
     # but faster since the symbolic factorization is reused.
@@ -789,7 +782,6 @@ function rhs_sgn_upwind!(dq, q, t, equations, source_terms, solver, cache,
             @.. tmp = tmp - psi * b_x
         end
     end
-
 
     # The code below is equivalent to
     #   dv .= (Diagonal(h .+ factor .* h .* b_x.^2) - D1mat * (Diagonal(1/3 .* h.^3) * D1mat - Diagonal(0.5 .* h.^2 .* b_x)) - Diagonal(0.5 .* h.^2 .* b_x) * D1mat) \ tmp
