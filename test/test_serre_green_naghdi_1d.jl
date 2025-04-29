@@ -299,7 +299,7 @@ end
 end
 
 #= NOT SURE IF THIS IS CORRECT
-    espacally the values, they are just copy paste
+    especially the values, they are just copy paste
 @testitem "serre_green_naghdi_manufactured.jl with bathymetry_flat" setup=[ Setup, SerreGreenNaghdiEquations1D] begin
     @test_trixi_include(joinpath(EXAMPLES_DIR, "serre_green_naghdi_manufactured.jl"),
                         bathymetry_type=bathymetry_flat,
