@@ -297,3 +297,19 @@ end
 
     @test_allocations(semi, sol, allocs=900_000)
 end
+
+#= NOT SURE IF THIS IS CORRECT
+    espacally the values, they are just copy paste
+@testitem "serre_green_naghdi_manufactured.jl with bathymetry_flat" setup=[ Setup, SerreGreenNaghdiEquations1D] begin
+    @test_trixi_include(joinpath(EXAMPLES_DIR, "serre_green_naghdi_manufactured.jl"),
+                        bathymetry_type=bathymetry_flat,
+                        tspan=(0.0, 1.0),
+                        l2=[5.564654145503227e-9 8.058808980392836e-10 0.0],
+                        linf=[7.905728516277577e-9 1.1420695500419242e-9 0.0],
+                        cons_error=[5.767395241940143e-12 4.184121331471304e-12 0.0],
+                        change_waterheight=4.263256414560601e-14,
+                        change_entropy_modified=-3.1036506698001176e-11,)
+
+    @test_allocations(semi, sol, allocs=10_000)
+end
+=#
