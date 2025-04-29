@@ -111,18 +111,14 @@ A smooth manufactured solution in combination with [`source_terms_manufactured`]
 function initial_condition_manufactured(x, t,
                                         equations::SerreGreenNaghdiEquations1D,
                                         mesh)
-    eta = 3  + cos(pi*(2 * (x - 2 * t))) 
+    h = 3  + cos(pi*(2 * (x - 2 * t))) 
     v = (1 + sin(pi*(2 * (x - t / 2)))) 
 
 
-    return SVector(eta, v, 0.0) 
+    return SVector(h, v, zero(h)) 
 end
 
-"""
-    source_terms_manufactured(q, x, t, equations::SerreGreenNaghdiEquations1D, mesh)
 
-A smooth manufactured solution in combination with [`initial_condition_manufactured`](@ref).
-"""
 
 #= 
 The source terms where calculated using a CAS, here Symbolics.jl
@@ -137,6 +133,11 @@ dv = (h * v_t - 1//3 * Dx(h^3 * v_tx) + 1//2 * g * Dx(h^2) + 1//2 * h * Dx(v^2) 
 
 and after this some substitutions to clean everything up.
 =#
+"""
+    source_terms_manufactured(q, x, t, equations::SerreGreenNaghdiEquations1D, mesh)
+
+A smooth manufactured solution in combination with [`initial_condition_manufactured`](@ref).
+"""
 function source_terms_manufactured(q, x, t, equations::SerreGreenNaghdiEquations1D{BathymetryFlat})
     g = gravity(equations)
             
