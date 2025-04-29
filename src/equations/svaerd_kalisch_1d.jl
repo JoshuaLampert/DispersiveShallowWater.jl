@@ -264,7 +264,7 @@ function create_cache(mesh, equations::SvaerdKalischEquations1D,
        D1 isa FourierDerivativeOperator
         D1_central = D1
         D1mat = sparse(D1_central)
-        minus_MD1betaD1 = D1mat' * Diagonal(M_beta) * D1mat
+        minus_MD1betaD1 = D1mat' * (Diagonal(M_beta) * D1mat)
         system_matrix = let cache = (; D1, M_h, minus_MD1betaD1)
             assemble_system_matrix!(cache, h,
                                     equations, boundary_conditions)
@@ -272,7 +272,7 @@ function create_cache(mesh, equations::SvaerdKalischEquations1D,
     elseif D1 isa PeriodicUpwindOperators
         D1_central = D1.central
         D1mat_minus = sparse(D1.minus)
-        minus_MD1betaD1 = D1mat_minus' * Diagonal(M_beta) * D1mat_minus
+        minus_MD1betaD1 = D1mat_minus' * (Diagonal(M_beta) * D1mat_minus)
         system_matrix = let cache = (; D1, M_h, minus_MD1betaD1)
             assemble_system_matrix!(cache, h,
                                     equations, boundary_conditions)
@@ -326,16 +326,17 @@ function create_cache(mesh, equations::SvaerdKalischEquations1D,
        D1 isa UniformCoupledOperator
         D1_central = D1
         D1mat = sparse(D1_central)
-        minus_MD1betaD1 = sparse(D1mat' * Diagonal(M_beta) *
-                                 D1mat * Pd)[(begin + 1):(end - 1), :]
+        minus_MD1betaD1 = sparse(D1mat' * (Diagonal(M_beta) *
+                                           D1mat * Pd))[(begin + 1):(end - 1), :]
         system_matrix = let cache = (; D1, M_h, minus_MD1betaD1)
             assemble_system_matrix!(cache, h, equations, boundary_conditions)
         end
     elseif D1 isa UpwindOperators
         D1_central = D1.central
         D1mat_minus = sparse(D1.minus)
-        minus_MD1betaD1 = sparse(D1mat_minus' * Diagonal(M_beta) *
-                                 D1mat_minus * Pd)[(begin + 1):(end - 1), :]
+        minus_MD1betaD1 = sparse(D1mat_minus' * (Diagonal(M_beta) *
+                                                 D1mat_minus * Pd))[(begin + 1):(end - 1),
+                                                                    :]
         system_matrix = let cache = (; D1, M_h, minus_MD1betaD1)
             assemble_system_matrix!(cache, h, equations, boundary_conditions)
         end
