@@ -298,14 +298,16 @@ end
     @test_allocations(semi, sol, allocs=900_000)
 end
 
-
-@testitem "serre_green_naghdi_manufactured.jl with bathymetry_flat" setup=[ Setup, SerreGreenNaghdiEquations1D] begin
+@testitem "serre_green_naghdi_manufactured.jl with bathymetry_flat" setup=[
+    Setup,
+    SerreGreenNaghdiEquations1D
+] begin
     @test_trixi_include(joinpath(EXAMPLES_DIR, "serre_green_naghdi_manufactured.jl"),
                         bathymetry_type=bathymetry_flat,
                         tspan=(0.0, 1.0),
                         l2=[5.034595145055819e-5 9.546213964026592e-7 0.0],
                         linf=[0.00028226143919152236 4.645237695388715e-6 0.0],
-                        cons_error=[ 4.440892098500626e-16 5.40264581627703e-7 0.0],
+                        cons_error=[4.440892098500626e-16 5.40264581627703e-7 0.0],
                         change_waterheight=-4.440892098500626e-16,
                         change_entropy_modified=-9.290636370451466e-6,)
 
