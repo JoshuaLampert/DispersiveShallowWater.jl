@@ -100,7 +100,7 @@ function initial_condition_convergence_test(x, t, equations::SerreGreenNaghdiEqu
     v = c * (1 - h1 / h)
 
     
-    return SVector(h, v, zero(h)) # eta and v ?
+    return SVector(h, v, zero(h))
 end
 
 """
