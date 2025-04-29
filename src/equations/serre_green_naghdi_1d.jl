@@ -124,16 +124,43 @@ end
 A smooth manufactured solution in combination with [`initial_condition_manufactured`](@ref).
 """
 
+#= 
+The source terms where calculated using a CAS, here Symbolics.jl
+For a chosen h and v, in this case
+h = 3  + cos(pi*(2 * (x - 2 * t))) 
+v = (1 + sin(pi*(2 * (x - t / 2)))) 
 
+...
+
+dh = (h_t + hv_x)
+dv = (h * v_t - 1//3 * Dx(h^3 * v_tx) + 1//2 * g * Dx(h^2) + 1//2 * h * Dx(v^2) + p_x)
+
+and after this some substitutions to clean everything up.
+=#
 function source_terms_manufactured(q, x, t, equations::SerreGreenNaghdiEquations1D{BathymetryFlat})
     g = gravity(equations)
+            
+    a3  = cospi(t - 2x)             
+    a4  = sinpi(t - 2x)             
+    a5  = sinpi(2t - 4x)            
+    a6  = sinpi(4t - 2x)            
+    a7  = 3 + cospi(4t - 2x)                
+    a9 = 1 - a4                    
+
+    
+    dh = 2π * ( -a6 - a6*a4 + a3*a7 )
 
 
-
-    dh = 4pi*sin(2pi*(-2t + x)) - 2pi*sin(2pi*(-2t + x))*(1 + sin(2pi*(-(1//2)*t + x))) + 2pi*cos(2pi*(-(1//2)*t + x))*(3 + cos(2pi*(-2t + x)))
-
-    dv =  -pi*cos(2pi*(-(1//2)*t + x))*(3 + cos(2pi*(-2t + x))) - (2//1)*g*pi*sin(2pi*(-2t + x))*(3 + cos(2pi*(-2t + x))) + (2//1)*pi*cos(2pi*(-(1//2)*t + x))*(3 + cos(2pi*(-2t + x)))*(1 + sin(2pi*(-(1//2)*t + x))) - (1//3)*(-(12//1)*(pi^3)*sin(2pi*(-2t + x))*((3 + cos(2pi*(-2t + x)))^2)*sin(2pi*(-(1//2)*t + x)) + (4//1)*(pi^3)*cos(2pi*(-(1//2)*t + x))*((3 + cos(2pi*(-2t + x)))^3)) - (4//3)*(pi^3)*sin(4pi*(-(1//2)*t + x))*((3 + cos(2pi*(-2t + x)))^3) - (8//1)*(pi^3)*sin(2pi*(-2t + x))*(cos(2pi*(-(1//2)*t + x))^2)*((3 + cos(2pi*(-2t + x)))^2) - (8//1)*(pi^3)*sin(2pi*(-2t + x))*((3 + cos(2pi*(-2t + x)))^2)*(1 + sin(2pi*(-(1//2)*t + x)))*sin(2pi*(-(1//2)*t + x)) + (8//3)*(pi^3)*cos(2pi*(-(1//2)*t + x))*((3 + cos(2pi*(-2t + x)))^3)*(1 + sin(2pi*(-(1//2)*t + x)))
-
+    dv = ( -π*a3*a7                       
+         + 2g*π*a6*a7                    
+         + 2π*a3*a7*a9                  
+         - (1/3)*(-12π^3*a6*a4*a7^2
+                     + 4π^3*a3*a7^3)       
+         + (4/3)*π^3*a5*a7^3            
+         + 8π^3*a6*a3^2*a7^2             
+         - 8π^3*a6*a7^2*a9*a4           
+         + (8/3)*π^3*a3*a7^3*a9 
+        )     
 
     return SVector( dh, dv, zero(dh))
 end
@@ -346,7 +373,7 @@ end
 #   Structure-preserving approximations of the Serre-Green-Naghdi
 #   equations in standard and hyperbolic form
 #   [arXiv: 2408.02665](https://arxiv.org/abs/2408.02665)
-# TODO: Implement source terms
+
 function rhs!(dq, q, t, mesh,
               equations::SerreGreenNaghdiEquations1D,
               initial_condition,
@@ -428,9 +455,13 @@ function rhs_sgn_central!(dq, q, t, equations, source_terms, solver, cache, ::Ba
                     +
                     p_x)
     end
-
-    @trixi_timeit timer() "source terms" calc_sources!(dq, q, t, source_terms, equations,
-                                                       solver)
+  
+    # add source term
+    # use dv as temporary storage to calculate source terms
+    fill!(dv, zero(eltype(dv)))
+    @trixi_timeit timer() "source terms" calc_sources!(dq, q, t, source_terms, equations, solver)
+    # add source terms to the right-hand side to be solved for
+    @.. tmp += dv
 
     # The code below is equivalent to
     #   dv .= (Diagonal(h) - D1mat * Diagonal(1/3 .* h.^3) * D1mat) \ tmp
@@ -522,16 +553,12 @@ function rhs_sgn_upwind!(dq, q, t, equations, source_terms, solver, cache, ::Bat
                     
     end
 
-
+    # add source term
     # use dv as temporary storage to calculate source terms
     fill!(dv, zero(eltype(dv)))
     @trixi_timeit timer() "source terms" calc_sources!(dq, q, t, source_terms, equations, solver)
     # add source terms to the right-hand side to be solved for
     @.. tmp += dv
-
-    # The code below is equivalent to
-
-   # dv .= (spdiagm(h) .- (1/3)*(sparse(D1_upwind.plus)*spdiagm(h.^3)*D1mat_minus)) \ tmp
 
 
     #   dv .= (Diagonal(h) - D1mat_plus * Diagonal(1/3 .* h.^3) * D1mat_minus) \ tmp
@@ -644,8 +671,6 @@ function rhs_sgn_central!(dq, q, t, equations, source_terms, solver, cache,
 
 
 
-    @trixi_timeit timer() "source terms" calc_sources!(dq, q, t, source_terms, equations,
-                                                       solver)
 
     # The code below is equivalent to
     #   dv .= (Diagonal(h .+ factor .* h .* b_x.^2) - D1mat * (Diagonal(1/3 .* h.^3) * D1mat - Diagonal(0.5 .* h.^2 .* b_x) * D1mat) \ tmp
@@ -761,8 +786,6 @@ function rhs_sgn_upwind!(dq, q, t, equations, source_terms, solver, cache,
         end
     end
 
-    @trixi_timeit timer() "source terms" calc_sources!(dq, q, t, source_terms, equations,
-                                                       solver)
 
     # The code below is equivalent to
     #   dv .= (Diagonal(h .+ factor .* h .* b_x.^2) - D1mat * (Diagonal(1/3 .* h.^3) * D1mat - Diagonal(0.5 .* h.^2 .* b_x)) - Diagonal(0.5 .* h.^2 .* b_x) * D1mat) \ tmp
