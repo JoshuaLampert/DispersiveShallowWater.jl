@@ -115,7 +115,7 @@ function initial_condition_manufactured(x, t,
     v = (1 + sin(pi*(2 * (x - t / 2)))) 
 
 
-    return SVector(h, v, zero(h)) 
+    return SVector(h, v, zero(h))
 end
 
 
@@ -123,8 +123,8 @@ end
 #= 
 The source terms where calculated using a CAS, here Symbolics.jl
 For a chosen h and v, in this case
-h = 3  + cos(pi*(2 * (x - 2 * t))) 
-v = (1 + sin(pi*(2 * (x - t / 2)))) 
+h = 3 + cos(pi * (2 * (x - 2 * t)))
+v = (1 + sin(pi * (2 * (x - t / 2))))
 
 ...
 
