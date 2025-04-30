@@ -27,19 +27,19 @@ For the mild-slope approximation, the Serre-Green-Naghdi equations are
 ```math
 \begin{aligned}
   h_t + (h v)_x &= 0,\\
-  h v_t - \frac{1}{3} (h^3 v_{tx})_x + \frac{1}{2} (h^2 b_x u_t)_x - \frac{1}{2} h^2 b_x u_{tx} + \frac{3}{4} h b_x^2 u_t
+  h v_t - \frac{1}{3} (h^3 v_{tx})_x + \frac{1}{2} (h^2 b_x v_t)_x - \frac{1}{2} h^2 b_x v_{tx} + \frac{3}{4} h b_x^2 v_t
     + \frac{1}{2} g (h^2)_x + g h b_x + \frac{1}{2} h (v^2)_x
     + p_x + \frac{3}{2} \frac{p}{h} b_x &= 0,\\
   p &= \frac{1}{3} h^3 v_{x}^2 - \frac{1}{3} h^3 v v_{xx}
     + \frac{1}{2} h^2 v (b_x v)_x.
 \end{aligned}
 ```
-For the general case of variable vathymetry without mild-slope
+For the general case of variable bathymetry without mild-slope
 approximation, the Serre-Green-Naghdi equations are
 ```math
 \begin{aligned}
   h_t + (h v)_x &= 0,\\
-  h v_t - \frac{1}{3} (h^3 v_{tx})_x + \frac{1}{2} (h^2 b_x u_t)_x - \frac{1}{2} h^2 b_x u_{tx} + h b_x^2 u_t
+  h v_t - \frac{1}{3} (h^3 v_{tx})_x + \frac{1}{2} (h^2 b_x v_t)_x - \frac{1}{2} h^2 b_x v_{tx} + h b_x^2 v_t
     + \frac{1}{2} g (h^2)_x + g h b_x + \frac{1}{2} h (v^2)_x
     + p_x + \frac{3}{2} \frac{p}{h} b_x + \psi b_x &= 0,\\
   p &= \frac{1}{3} h^3 v_{x}^2 - \frac{1}{3} h^3 v v_{xx}
