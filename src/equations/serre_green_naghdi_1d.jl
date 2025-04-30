@@ -372,7 +372,6 @@ end
 #   Structure-preserving approximations of the Serre-Green-Naghdi
 #   equations in standard and hyperbolic form
 #   [arXiv: 2408.02665](https://arxiv.org/abs/2408.02665)
-
 function rhs!(dq, q, t, mesh,
               equations::SerreGreenNaghdiEquations1D,
               initial_condition,
