@@ -297,3 +297,18 @@ end
 
     @test_allocations(semi, sol, allocs=900_000)
 end
+
+@testitem "serre_green_naghdi_manufactured.jl with bathymetry_flat" setup=[
+    Setup,
+    SerreGreenNaghdiEquations1D
+] begin
+    @test_trixi_include(joinpath(EXAMPLES_DIR, "serre_green_naghdi_manufactured.jl"),
+                        l2=[1.1464202670717813e-6 6.278194071026083e-7 0.0],
+                        linf=[2.9306942055384866e-6 8.332131531396669e-7 0.0],
+                        cons_error=[8.881784197001252e-16 5.479218779802508e-7 0.0],
+                        change_waterheight=-8.881784197001252e-16,
+                        change_entropy_modified=-1.9177564922756574e-6,
+                        atol=1e-11) # to make CI pass
+
+    @test_allocations(semi, sol, allocs=300_000)
+end

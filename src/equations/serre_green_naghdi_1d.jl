@@ -99,7 +99,70 @@ function initial_condition_convergence_test(x, t, equations::SerreGreenNaghdiEqu
     h = h1 + (h2 - h1) * sech(x_t / 2 * sqrt(3 * (h2 - h1) / (h1^2 * h2)))^2
     v = c * (1 - h1 / h)
 
-    return SVector(h, v, 0)
+    return SVector(h, v, zero(h))
+end
+
+"""
+    initial_condition_manufactured(x, t, equations::SerreGreenNaghdiEquations1D, mesh)
+
+A smooth manufactured solution in combination with [`source_terms_manufactured`](@ref).
+"""
+function initial_condition_manufactured(x, t,
+                                        equations::SerreGreenNaghdiEquations1D,
+                                        mesh)
+    h = 3 + cospi(2 * (x - 2 * t))
+    v = (1 + sinpi(2 * (x - t / 2)))
+
+    return SVector(h, v, zero(h))
+end
+
+#= 
+The source terms where calculated using a CAS, here Symbolics.jl
+See code: https://github.com/NumericalMathematics/DispersiveShallowWater.jl/pull/180#discussion_r2068562090
+For a chosen h and v, in this case
+h = 3 + cos(pi * (2 * (x - 2 * t)))
+v = (1 + sin(pi * (2 * (x - t / 2))))
+
+...
+
+dh = (h_t + hv_x)
+dv = (h * v_t - 1//3 * Dx(h^3 * v_tx) + 1//2 * g * Dx(h^2) + 1//2 * h * Dx(v^2) + p_x)
+
+and after this some substitutions to clean everything up.
+=#
+"""
+    source_terms_manufactured(q, x, t, equations::SerreGreenNaghdiEquations1D, mesh)
+
+A smooth manufactured solution in combination with [`initial_condition_manufactured`](@ref).
+"""
+function source_terms_manufactured(q, x, t,
+                                   equations::SerreGreenNaghdiEquations1D{BathymetryFlat})
+    g = gravity(equations)
+
+    a3 = cospi(t - 2x)
+    a4 = sinpi(t - 2x)
+    a5 = sinpi(2t - 4x)
+    a6 = sinpi(4t - 2x)
+    a7 = 3 + cospi(4t - 2x)
+    a9 = 1 - a4
+
+    dh = 2π * (-a6 - a6 * a4 + a3 * a7)
+
+    dv = (-π * a3 * a7
+          + 2g * π * a6 * a7
+          + 2π * a3 * a7 * a9
+          -
+          (1 / 3) * (-12π^3 * a6 * a4 * a7^2
+                     +
+                     4π^3 * a3 * a7^3)
+          + (4 / 3) * π^3 * a5 * a7^3
+          + 8π^3 * a6 * a3^2 * a7^2
+          -
+          8π^3 * a6 * a7^2 * a9 * a4
+          +
+          (8 / 3) * π^3 * a3 * a7^3 * a9)
+
+    return SVector(dh, dv, zero(dh))
 end
 
 # flat bathymetry
@@ -310,26 +373,27 @@ end
 #   Structure-preserving approximations of the Serre-Green-Naghdi
 #   equations in standard and hyperbolic form
 #   [arXiv: 2408.02665](https://arxiv.org/abs/2408.02665)
-# TODO: Implement source terms
 function rhs!(dq, q, t, mesh,
               equations::SerreGreenNaghdiEquations1D,
               initial_condition,
               boundary_conditions::BoundaryConditionPeriodic,
-              source_terms::Nothing,
+              source_terms,
               solver, cache)
     if cache.D1 isa PeriodicUpwindOperators
-        rhs_sgn_upwind!(dq, q, equations, source_terms, cache, equations.bathymetry_type,
+        rhs_sgn_upwind!(dq, q, t, equations, source_terms, solver, cache,
+                        equations.bathymetry_type,
                         boundary_conditions)
     else
-        rhs_sgn_central!(dq, q, equations, source_terms, cache, equations.bathymetry_type,
+        rhs_sgn_central!(dq, q, t, equations, source_terms, solver, cache,
+                         equations.bathymetry_type,
                          boundary_conditions)
     end
 
     return nothing
 end
 
-function rhs_sgn_central!(dq, q, equations, source_terms, cache, ::BathymetryFlat,
-                          boundary_conditions::BoundaryConditionPeriodic)
+function rhs_sgn_central!(dq, q, t, equations, source_terms, solver, cache,
+                          ::BathymetryFlat, boundary_conditions::BoundaryConditionPeriodic)
     # Unpack physical parameters and SBP operator `D1` as well as the
     # SBP operator in sparse matrix form `D1mat`
     g = gravity(equations)
@@ -379,18 +443,24 @@ function rhs_sgn_central!(dq, q, equations, source_terms, cache, ::BathymetryFla
         # Plain: h v_t + ... = 0
         #
         # Split form for energy conservation:
-        @.. tmp = -(g * h2_x - g * h * h_x
-                    +
-                    0.5 * h * v2_x
-                    -
-                    0.5 * v^2 * h_x
-                    +
-                    0.5 * hv_x * v
-                    -
-                    0.5 * h * v * v_x
-                    +
-                    p_x)
+        @.. dv = -(g * h2_x - g * h * h_x
+                   +
+                   0.5 * h * v2_x
+                   -
+                   0.5 * v^2 * h_x
+                   +
+                   0.5 * hv_x * v
+                   -
+                   0.5 * h * v * v_x
+                   +
+                   p_x)
     end
+
+    # add source term
+    @trixi_timeit timer() "source terms" calc_sources!(dq, q, t, source_terms, equations,
+                                                       solver)
+
+    tmp .= dv
 
     # The code below is equivalent to
     #   dv .= (Diagonal(h) - D1mat * Diagonal(1/3 .* h.^3) * D1mat) \ tmp
@@ -409,7 +479,7 @@ function rhs_sgn_central!(dq, q, equations, source_terms, cache, ::BathymetryFla
     return nothing
 end
 
-function rhs_sgn_upwind!(dq, q, equations, source_terms, cache, ::BathymetryFlat,
+function rhs_sgn_upwind!(dq, q, t, equations, source_terms, solver, cache, ::BathymetryFlat,
                          boundary_conditions::BoundaryConditionPeriodic)
     # Unpack physical parameters and SBP operator `D1` as well as the
     # SBP upwind operator in sparse matrix form `D1mat_minus`
@@ -465,19 +535,24 @@ function rhs_sgn_upwind!(dq, q, equations, source_terms, cache, ::BathymetryFlat
         # Plain: h v_t + ... = 0
         #
         # Split form for energy conservation:
-        @.. tmp = -(g * h2_x - g * h * h_x
-                    +
-                    0.5 * h * v2_x
-                    -
-                    0.5 * v^2 * h_x
-                    +
-                    0.5 * hv_x * v
-                    -
-                    0.5 * h * v * v_x
-                    +
-                    p_x)
+        @.. dv = -(g * h2_x - g * h * h_x
+                   +
+                   0.5 * h * v2_x
+                   -
+                   0.5 * v^2 * h_x
+                   +
+                   0.5 * hv_x * v
+                   -
+                   0.5 * h * v * v_x
+                   +
+                   p_x)
     end
 
+    # add source term
+    @trixi_timeit timer() "source terms" calc_sources!(dq, q, t, source_terms, equations,
+                                                       solver)
+
+    tmp .= dv
     # The code below is equivalent to
     #   dv .= (Diagonal(h) - D1mat_plus * Diagonal(1/3 .* h.^3) * D1mat_minus) \ tmp
     # but faster since the symbolic factorization is reused.
@@ -495,7 +570,7 @@ function rhs_sgn_upwind!(dq, q, equations, source_terms, cache, ::BathymetryFlat
     return nothing
 end
 
-function rhs_sgn_central!(dq, q, equations, source_terms, cache,
+function rhs_sgn_central!(dq, q, t, equations, source_terms, solver, cache,
                           ::Union{BathymetryMildSlope, BathymetryVariable},
                           boundary_conditions::BoundaryConditionPeriodic)
     # Unpack physical parameters and SBP operator `D1` as well as the
@@ -601,7 +676,7 @@ function rhs_sgn_central!(dq, q, equations, source_terms, cache,
     return nothing
 end
 
-function rhs_sgn_upwind!(dq, q, equations, source_terms, cache,
+function rhs_sgn_upwind!(dq, q, t, equations, source_terms, solver, cache,
                          ::Union{BathymetryMildSlope, BathymetryVariable},
                          boundary_conditions::BoundaryConditionPeriodic)
     # Unpack physical parameters and SBP operator `D1` as well as the

@@ -235,7 +235,7 @@ function source_terms_manufactured(q, x, t,
     # Source terms for variable bathymetry
     dh = -4 * pi * a1 - a5 * (2 * pi * a1 - 4 * pi * a7) + 2 * pi * a6 * (a2 + 2 * a8 + 7)
     dv = -2 * pi * a5 * a6 - pi * a6 + 4 * pi * a7 * g + g * (2 * pi * a1 - 4 * pi * a7)
-    dD = 0.0
+    dD = zero(dh)
     dw = 8 * pi^2 * a1 * a6 -
          a5 *
          (4 * pi^2 * a5 * (-a2 - 2 * a8 - 7) + 2 * pi * a6 * (-2 * pi * a1 + 4 * pi * a7)) -
