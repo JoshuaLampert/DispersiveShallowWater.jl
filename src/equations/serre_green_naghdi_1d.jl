@@ -118,6 +118,7 @@ end
 
 #= 
 The source terms where calculated using a CAS, here Symbolics.jl
+See code: https://github.com/NumericalMathematics/DispersiveShallowWater.jl/pull/180#discussion_r2068562090
 For a chosen h and v, in this case
 h = 3 + cos(pi * (2 * (x - 2 * t)))
 v = (1 + sin(pi * (2 * (x - t / 2))))
