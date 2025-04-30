@@ -393,8 +393,7 @@ function rhs!(dq, q, t, mesh,
 end
 
 function rhs_sgn_central!(dq, q, t, equations, source_terms, solver, cache,
-                          ::BathymetryFlat,
-                          boundary_conditions::BoundaryConditionPeriodic)
+                          ::BathymetryFlat, boundary_conditions::BoundaryConditionPeriodic)
     # Unpack physical parameters and SBP operator `D1` as well as the
     # SBP operator in sparse matrix form `D1mat`
     g = gravity(equations)
