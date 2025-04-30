@@ -382,7 +382,6 @@ function rhs!(dq, q, t, mesh,
         rhs_sgn_upwind!(dq, q, t, equations, source_terms, solver, cache,
                         equations.bathymetry_type,
                         boundary_conditions)
-
     else
         rhs_sgn_central!(dq, q, t, equations, source_terms, solver, cache,
                          equations.bathymetry_type,
@@ -494,7 +493,6 @@ function rhs_sgn_upwind!(dq, q, t, equations, source_terms, solver, cache, ::Bat
     # arrays for the water height `h` and the velocity `v`.
     eta, v, D = q.x
     dh, dv, dD = dq.x # dh = deta since b is constant in time
-
     fill!(dD, zero(eltype(dD)))
 
     @trixi_timeit timer() "hyperbolic terms" begin
@@ -559,9 +557,9 @@ function rhs_sgn_upwind!(dq, q, t, equations, source_terms, solver, cache, ::Bat
     # add source terms to the right-hand side to be solved for
     @.. tmp += dv
 
+    # The code below is equivalent to
     #   dv .= (Diagonal(h) - D1mat_plus * Diagonal(1/3 .* h.^3) * D1mat_minus) \ tmp
     # but faster since the symbolic factorization is reused.
-
     @trixi_timeit timer() "assembling elliptic operator" begin
         system_matrix = assemble_system_matrix!(cache, h,
                                                 D1, D1mat_minus,
