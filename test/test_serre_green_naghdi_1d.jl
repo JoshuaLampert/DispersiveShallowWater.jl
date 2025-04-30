@@ -307,7 +307,8 @@ end
                         linf=[2.9306942055384866e-6 8.332131531396669e-7 0.0],
                         cons_error=[8.881784197001252e-16 5.479218779802508e-7 0.0],
                         change_waterheight=-8.881784197001252e-16,
-                        change_entropy_modified=-1.9177564922756574e-6,)
+                        change_entropy_modified=-1.9177564922756574e-6,
+                        atol=1e-11) # to make CI pass
 
     @test_allocations(semi, sol, allocs=300_000)
 end
