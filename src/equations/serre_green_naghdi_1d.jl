@@ -110,8 +110,8 @@ A smooth manufactured solution in combination with [`source_terms_manufactured`]
 function initial_condition_manufactured(x, t,
                                         equations::SerreGreenNaghdiEquations1D,
                                         mesh)
-    h = 3 + cos(pi * (2 * (x - 2 * t)))
-    v = (1 + sin(pi * (2 * (x - t / 2))))
+    h = 3 + cospi(2 * (x - 2 * t))
+    v = (1 + sinpi(2 * (x - t / 2)))
 
     return SVector(h, v, zero(h))
 end
