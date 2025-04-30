@@ -443,26 +443,24 @@ function rhs_sgn_central!(dq, q, t, equations, source_terms, solver, cache,
         # Plain: h v_t + ... = 0
         #
         # Split form for energy conservation:
-        @.. tmp = -(g * h2_x - g * h * h_x
-                    +
-                    0.5 * h * v2_x
-                    -
-                    0.5 * v^2 * h_x
-                    +
-                    0.5 * hv_x * v
-                    -
-                    0.5 * h * v * v_x
-                    +
-                    p_x)
+        @.. dv = -(g * h2_x - g * h * h_x
+                   +
+                   0.5 * h * v2_x
+                   -
+                   0.5 * v^2 * h_x
+                   +
+                   0.5 * hv_x * v
+                   -
+                   0.5 * h * v * v_x
+                   +
+                   p_x)
     end
 
     # add source term
-    # use dv as temporary storage to calculate source terms
-    fill!(dv, zero(eltype(dv)))
     @trixi_timeit timer() "source terms" calc_sources!(dq, q, t, source_terms, equations,
                                                        solver)
-    # add source terms to the right-hand side to be solved for
-    @.. tmp += dv
+
+    tmp .= dv
 
     # The code below is equivalent to
     #   dv .= (Diagonal(h) - D1mat * Diagonal(1/3 .* h.^3) * D1mat) \ tmp
@@ -537,27 +535,24 @@ function rhs_sgn_upwind!(dq, q, t, equations, source_terms, solver, cache, ::Bat
         # Plain: h v_t + ... = 0
         #
         # Split form for energy conservation:
-        @.. tmp = -(g * h2_x - g * h * h_x
-                    +
-                    0.5 * h * v2_x
-                    -
-                    0.5 * v^2 * h_x
-                    +
-                    0.5 * hv_x * v
-                    -
-                    0.5 * h * v * v_x
-                    +
-                    p_x)
+        @.. dv = -(g * h2_x - g * h * h_x
+                   +
+                   0.5 * h * v2_x
+                   -
+                   0.5 * v^2 * h_x
+                   +
+                   0.5 * hv_x * v
+                   -
+                   0.5 * h * v * v_x
+                   +
+                   p_x)
     end
 
     # add source term
-    # use dv as temporary storage to calculate source terms
-    fill!(dv, zero(eltype(dv)))
     @trixi_timeit timer() "source terms" calc_sources!(dq, q, t, source_terms, equations,
                                                        solver)
-    # add source terms to the right-hand side to be solved for
-    @.. tmp += dv
 
+    tmp .= dv
     # The code below is equivalent to
     #   dv .= (Diagonal(h) - D1mat_plus * Diagonal(1/3 .* h.^3) * D1mat_minus) \ tmp
     # but faster since the symbolic factorization is reused.
