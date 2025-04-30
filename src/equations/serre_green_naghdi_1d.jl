@@ -110,8 +110,8 @@ A smooth manufactured solution in combination with [`source_terms_manufactured`]
 function initial_condition_manufactured(x, t,
                                         equations::SerreGreenNaghdiEquations1D,
                                         mesh)
-    h = 3 + cos(pi * (2 * (x - 2 * t)))
-    v = (1 + sin(pi * (2 * (x - t / 2))))
+    h = 3 + cospi(2 * (x - 2 * t))
+    v = (1 + sinpi(2 * (x - t / 2)))
 
     return SVector(h, v, zero(h))
 end
@@ -373,7 +373,6 @@ end
 #   Structure-preserving approximations of the Serre-Green-Naghdi
 #   equations in standard and hyperbolic form
 #   [arXiv: 2408.02665](https://arxiv.org/abs/2408.02665)
-
 function rhs!(dq, q, t, mesh,
               equations::SerreGreenNaghdiEquations1D,
               initial_condition,
@@ -384,7 +383,6 @@ function rhs!(dq, q, t, mesh,
         rhs_sgn_upwind!(dq, q, t, equations, source_terms, solver, cache,
                         equations.bathymetry_type,
                         boundary_conditions)
-
     else
         rhs_sgn_central!(dq, q, t, equations, source_terms, solver, cache,
                          equations.bathymetry_type,
@@ -395,8 +393,7 @@ function rhs!(dq, q, t, mesh,
 end
 
 function rhs_sgn_central!(dq, q, t, equations, source_terms, solver, cache,
-                          ::BathymetryFlat,
-                          boundary_conditions::BoundaryConditionPeriodic)
+                          ::BathymetryFlat, boundary_conditions::BoundaryConditionPeriodic)
     # Unpack physical parameters and SBP operator `D1` as well as the
     # SBP operator in sparse matrix form `D1mat`
     g = gravity(equations)
@@ -497,7 +494,6 @@ function rhs_sgn_upwind!(dq, q, t, equations, source_terms, solver, cache, ::Bat
     # arrays for the water height `h` and the velocity `v`.
     eta, v, D = q.x
     dh, dv, dD = dq.x # dh = deta since b is constant in time
-
     fill!(dD, zero(eltype(dD)))
 
     @trixi_timeit timer() "hyperbolic terms" begin
@@ -562,9 +558,9 @@ function rhs_sgn_upwind!(dq, q, t, equations, source_terms, solver, cache, ::Bat
     # add source terms to the right-hand side to be solved for
     @.. tmp += dv
 
+    # The code below is equivalent to
     #   dv .= (Diagonal(h) - D1mat_plus * Diagonal(1/3 .* h.^3) * D1mat_minus) \ tmp
     # but faster since the symbolic factorization is reused.
-
     @trixi_timeit timer() "assembling elliptic operator" begin
         system_matrix = assemble_system_matrix!(cache, h,
                                                 D1, D1mat_minus,

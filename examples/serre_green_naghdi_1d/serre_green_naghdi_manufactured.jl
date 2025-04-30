@@ -19,7 +19,7 @@ coordinates_max = 1.0
 N = 256
 mesh = Mesh1D(coordinates_min, coordinates_max, N)
 
-#= for testing rhs_sgn_upwind! use:
+#= for testing upwind operators use:
 D1 = upwind_operators(periodic_derivative_operator;
                       derivative_order = 1, accuracy_order = 4,
                       xmin = xmin(mesh), xmax = xmax(mesh),
@@ -27,7 +27,7 @@ D1 = upwind_operators(periodic_derivative_operator;
 solver = Solver(D1, nothing) 
 =#
 
-# for testing rhs_sgn_central! use:
+# for testing central operators use:
 acc_order = 4
 solver = Solver(mesh, acc_order)
 
