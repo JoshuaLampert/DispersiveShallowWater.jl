@@ -578,8 +578,6 @@ function rhs_sgn_upwind!(dq, q, t, equations, source_terms, solver, cache, ::Bat
     return nothing
 end
 
-using SparseArrays: spdiagm
-
 function rhs_sgn_central!(dq, q, t, equations, source_terms, solver, cache,
                           ::Union{BathymetryMildSlope, BathymetryVariable},
                           boundary_conditions::BoundaryConditionPeriodic)
