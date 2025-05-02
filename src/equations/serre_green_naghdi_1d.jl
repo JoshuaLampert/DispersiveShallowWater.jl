@@ -110,22 +110,36 @@ A smooth manufactured solution in combination with [`source_terms_manufactured`]
 function initial_condition_manufactured(x, t,
                                         equations::SerreGreenNaghdiEquations1D,
                                         mesh)
-    h = 3 + cospi(2 * (x - 2 * t))
+    h = 5 + cospi(2 * (x - 2 * t))
     v = (1 + sinpi(2 * (x - t / 2)))
 
-    return SVector(h, v, zero(h))
-end
+    if equations.bathymetry_type isa BathymetryFlat
+        D = zero(h)
+    elseif equations.bathymetry_type isa BathymetryVariable
+        D = -(1.5 - cospi(2 * x))
+    elseif equations.bathymetry_type isa BathymetryMildSlope
+        D = -(1.5 + 0.1 * x)
+    else
+        error("$(equations.bathymetry_type) not supported for initial_condition_manufactured")
+    end
 
+    b = -D
+    # watch out: The rhs! calculates using `h`
+    # but the initial condition needs to be given as `eta`.
+    eta = h + b
+
+    return SVector(eta, v, D)
+end
 #= 
 The source terms where calculated using a CAS, here Symbolics.jl
 See code: https://github.com/NumericalMathematics/DispersiveShallowWater.jl/pull/180#discussion_r2068562090
 For a chosen h and v, in this case
-h = 3 + cos(pi * (2 * (x - 2 * t)))
+h = 5 + cos(pi * (2 * (x - 2 * t)))
 v = (1 + sin(pi * (2 * (x - t / 2))))
 
 ...
 
-dh = (h_t + hv_x)
+dh = (h_t + hv_x) # ↓for flat bathymetry↓
 dv = (h * v_t - 1//3 * Dx(h^3 * v_tx) + 1//2 * g * Dx(h^2) + 1//2 * h * Dx(v^2) + p_x)
 
 and after this some substitutions to clean everything up.
@@ -143,7 +157,7 @@ function source_terms_manufactured(q, x, t,
     a4 = sinpi(t - 2x)
     a5 = sinpi(2t - 4x)
     a6 = sinpi(4t - 2x)
-    a7 = 3 + cospi(4t - 2x)
+    a7 = 5 + cospi(4t - 2x)
     a9 = 1 - a4
 
     dh = 2π * (-a6 - a6 * a4 + a3 * a7)
@@ -161,6 +175,64 @@ function source_terms_manufactured(q, x, t,
           8π^3 * a6 * a7^2 * a9 * a4
           +
           (8 / 3) * π^3 * a3 * a7^3 * a9)
+
+    return SVector(dh, dv, zero(dh))
+end
+
+function source_terms_manufactured(q, x, t,
+                                   equations::SerreGreenNaghdiEquations1D{BathymetryVariable})
+    g = gravity(equations)
+
+    a1 = cospi(2x)
+    a2 = sinpi(2x)
+    a3 = cospi(t - 2x)
+    a4 = sinpi(t - 2x)
+    a5 = sinpi(2t - 4x)
+    a6 = sinpi(4t - 2x)
+    a7 = cospi(4t - 2x)
+
+    a8 = 5 + a7
+    a11 = 1 - a4
+
+    dh = 2π * (a6 * a11 + a3 * a8 - 2 * a6)
+
+    dv = π * (2 * g * a2 * a7 + 10 * g * a2
+          + 2 * g * a6 * a7 + 10 * g * a6
+          + a3 * a7 + 5 * a3
+          -
+          2 * a3 * a4 * a7 - 10 * a3 * a4) +
+         π^3 * (8 * a1 * a2 * a4^2 * a7 + 40 * a1 * a2 * a4^2
+          -
+          16 * a1 * a2 * a4 * a7 - 80 * a1 * a2 * a4
+          + 8 * a1 * a2 * a7 + 40 * a1 * a2
+          -
+          12 * a1 * a3 * a4 * a7^2 - 120 * a1 * a3 * a4 * a7 - 300 * a1 * a3 * a4
+          + 10 * a1 * a3 * a7^2 + 100 * a1 * a3 * a7 + 250 * a1 * a3
+          + 8 * a1 * a4^2 * a6 * a7 + 40 * a1 * a4^2 * a6
+          -
+          16 * a1 * a4 * a6 * a7 - 80 * a1 * a4 * a6
+          + 8 * a1 * a6 * a7 + 40 * a1 * a6
+          -
+          8 * a2^2 * a3 * a4 * a7 - 40 * a2^2 * a3 * a4
+          + 4 * a2^2 * a3 * a7 + 20 * a2^2 * a3
+          + 8 * a2 * a3^2 * a7^2 + 80 * a2 * a3^2 * a7 + 200 * a2 * a3^2
+          -
+          8 * a2 * a3 * a4 * a6 * a7 - 40 * a2 * a3 * a4 * a6
+          + 4 * a2 * a3 * a6 * a7 + 20 * a2 * a3 * a6
+          -
+          4 * a2 * a4^2 * a7^2 - 40 * a2 * a4^2 * a7 - 100 * a2 * a4^2
+          + 8 * a2 * a4 * a7^2 + 80 * a2 * a4 * a7 + 200 * a2 * a4
+          -
+          4 * a2 * a7^2 - 40 * a2 * a7 - 100 * a2
+          + 8 * a3^2 * a6 * a7^2 + 80 * a3^2 * a6 * a7 + 200 * a3^2 * a6
+          -
+          8 * a3 * a4 * a7^3 / 3 - 40 * a3 * a4 * a7^2 - 200 * a3 * a4 * a7 -
+          1000 * a3 * a4 / 3
+          + 4 * a3 * a7^3 / 3 + 20 * a3 * a7^2 + 100 * a3 * a7 + 500 * a3 / 3
+          + 8 * a4^2 * a6 * a7^2 + 80 * a4^2 * a6 * a7 + 200 * a4^2 * a6
+          -
+          4 * a4 * a6 * a7^2 - 40 * a4 * a6 * a7 - 100 * a4 * a6
+          + 4 * a5 * a7^3 / 3 + 20 * a5 * a7^2 + 100 * a5 * a7 + 500 * a5 / 3)
 
     return SVector(dh, dv, zero(dh))
 end
@@ -643,21 +715,27 @@ function rhs_sgn_central!(dq, q, t, equations, source_terms, solver, cache,
         # Plain: h v_t + ... = 0
         #
         # Split form for energy conservation:
-        @.. tmp = -(g * h_hpb_x - g * eta * h_x
-                    +
-                    0.5 * h * v2_x
-                    -
-                    0.5 * v^2 * h_x
-                    +
-                    0.5 * hv_x * v
-                    -
-                    0.5 * h * v * v_x
-                    + p_x
-                    + 1.5 * p_h * b_x)
+        @.. dv = -(g * h_hpb_x - g * eta * h_x
+                   +
+                   0.5 * h * v2_x
+                   -
+                   0.5 * v^2 * h_x
+                   +
+                   0.5 * hv_x * v
+                   -
+                   0.5 * h * v * v_x
+                   + p_x
+                   + 1.5 * p_h * b_x)
         if equations.bathymetry_type isa BathymetryVariable
-            @.. tmp = tmp - psi * b_x
+            @.. dv = dv - psi * b_x
         end
     end
+
+    # add source term
+    @trixi_timeit timer() "source terms" calc_sources!(dq, q, t, source_terms, equations,
+                                                       solver)
+
+    tmp .= dv
 
     # The code below is equivalent to
     #   dv .= (Diagonal(h .+ factor .* h .* b_x.^2) - D1mat * (Diagonal(1/3 .* h.^3) * D1mat - Diagonal(0.5 .* h.^2 .* b_x) * D1mat) \ tmp
@@ -757,21 +835,27 @@ function rhs_sgn_upwind!(dq, q, t, equations, source_terms, solver, cache,
         # Plain: h v_t + ... = 0
         #
         # Split form for energy conservation:
-        @.. tmp = -(g * h_hpb_x - g * eta * h_x
-                    +
-                    0.5 * h * v2_x
-                    -
-                    0.5 * v^2 * h_x
-                    +
-                    0.5 * hv_x * v
-                    -
-                    0.5 * h * v * v_x
-                    + p_x
-                    + 1.5 * p_h * b_x)
+        @.. dv = -(g * h_hpb_x - g * eta * h_x
+                   +
+                   0.5 * h * v2_x
+                   -
+                   0.5 * v^2 * h_x
+                   +
+                   0.5 * hv_x * v
+                   -
+                   0.5 * h * v * v_x
+                   + p_x
+                   + 1.5 * p_h * b_x)
         if equations.bathymetry_type isa BathymetryVariable
-            @.. tmp = tmp - psi * b_x
+            @.. dv = dv - psi * b_x
         end
     end
+
+    # add source term
+    @trixi_timeit timer() "source terms" calc_sources!(dq, q, t, source_terms, equations,
+                                                       solver)
+
+    tmp .= dv
 
     # The code below is equivalent to
     #   dv .= (Diagonal(h .+ factor .* h .* b_x.^2) - D1mat * (Diagonal(1/3 .* h.^3) * D1mat - Diagonal(0.5 .* h.^2 .* b_x)) - Diagonal(0.5 .* h.^2 .* b_x) * D1mat) \ tmp

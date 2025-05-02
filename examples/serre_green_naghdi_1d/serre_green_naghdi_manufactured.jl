@@ -5,7 +5,10 @@ using SummationByPartsOperators: upwind_operators, periodic_derivative_operator
 ###############################################################################
 # Semidiscretization of the Serre-Green-Naghdi equations
 
-# for now only bathymetry_flat is implemented (bathymetry_variable soon)
+# bathymetry_variable or bathymetry_flat
+# bathymetry_mild_slope supports source terms but 
+# no manufactured solution is implemented.
+# also be aware that for bathymetry_variable, at t=1.0 eta is constant in x
 equations = SerreGreenNaghdiEquations1D(bathymetry_type = bathymetry_flat,
                                         gravity = 9.81)
 
