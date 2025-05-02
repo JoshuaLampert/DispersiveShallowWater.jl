@@ -18,11 +18,13 @@ module DispersiveShallowWater
 using BandedMatrices: BandedMatrix
 using DiffEqBase: DiffEqBase, SciMLBase, terminate!
 using FastBroadcast: @..
+using ForwardDiff: ForwardDiff
 using Interpolations: Interpolations, linear_interpolation
 using LinearAlgebra: mul!, ldiv!, I, Diagonal, Symmetric, diag, lu, cholesky, cholesky!,
                      issuccess
 using PolynomialBases: PolynomialBases
 using Printf: @printf, @sprintf
+using PreallocationTools: DiffCache, get_tmp
 using RecipesBase: RecipesBase, @recipe, @series
 using RecursiveArrayTools: ArrayPartition
 using Reexport: @reexport

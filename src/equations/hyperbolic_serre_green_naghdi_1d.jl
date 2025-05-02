@@ -250,20 +250,27 @@ function create_cache(mesh, equations::HyperbolicSerreGreenNaghdiEquations1D,
                       solver, initial_condition,
                       ::BoundaryConditionPeriodic,
                       RealT, uEltype)
-    h = ones(RealT, nnodes(mesh))
-    b = zero(h)
-    b_x = zero(h)
-    H_over_h = zero(h)
-    h_x = zero(h)
-    v_x = zero(h)
-    hv_x = zero(h)
-    v2_x = zero(h)
-    h_hpb_x = zero(h)
-    H_x = zero(h)
-    H2_h_x = zero(h)
-    w_x = zero(h)
-    hvw_x = zero(h)
-    tmp = zero(h)
+    # We use DiffCache from PreallocationTools.jl to enable automatic/algorithmic differentiation
+    # via ForwardDiff.jl. We also pass the second argument determing the chuck size since the
+    # typical use case is to compute Jacobians of the full `rhs!` evaluation, where the complete
+    # state vector is `q`, which is bigger than the storage for a single scalar variable.
+    # 5: eta, v, D, w, H
+    N = ForwardDiff.pickchunksize(5 * nnodes(mesh))
+    template = ones(RealT, nnodes(mesh))
+    h = DiffCache(template, N)
+    b = DiffCache(zero(template), N)
+    b_x = DiffCache(zero(template), N)
+    H_over_h = DiffCache(zero(template), N)
+    h_x = DiffCache(zero(template), N)
+    v_x = DiffCache(zero(template), N)
+    hv_x = DiffCache(zero(template), N)
+    v2_x = DiffCache(zero(template), N)
+    h_hpb_x = DiffCache(zero(template), N)
+    H_x = DiffCache(zero(template), N)
+    H2_h_x = DiffCache(zero(template), N)
+    w_x = DiffCache(zero(template), N)
+    hvw_x = DiffCache(zero(template), N)
+    tmp = DiffCache(zero(template), N)
 
     cache = (; h, b, b_x, H_over_h, h_x, v_x, hv_x, v2_x, h_hpb_x, H_x, H2_h_x, w_x, hvw_x,
              tmp)
@@ -298,7 +305,25 @@ function rhs!(dq, q, t, mesh,
 
     @trixi_timeit timer() "hyperbolic terms" begin
         # Compute all derivatives required below
-        (; h, b, b_x, H_over_h, h_x, v_x, hv_x, v2_x, h_hpb_x, H_x, H2_h_x, w_x, hvw_x, tmp) = cache
+
+        # First, we extract temporary storage from the `cache`.
+        # Since we use `DiffCache` from PreallocationTools.jl, we need to extract the
+        # appropriate arrays using `get_tmp` and need to pass an array with the element
+        # type we want to use, e.g., plain `Float64` or some dual numbers when using AD.
+        h = get_tmp(cache.h, eta)
+        b = get_tmp(cache.b, eta)
+        b_x = get_tmp(cache.b_x, eta)
+        H_over_h = get_tmp(cache.H_over_h, eta)
+        h_x = get_tmp(cache.h_x, eta)
+        v_x = get_tmp(cache.v_x, eta)
+        hv_x = get_tmp(cache.hv_x, eta)
+        v2_x = get_tmp(cache.v2_x, eta)
+        h_hpb_x = get_tmp(cache.h_hpb_x, eta)
+        H_x = get_tmp(cache.H_x, eta)
+        H2_h_x = get_tmp(cache.H2_h_x, eta)
+        w_x = get_tmp(cache.w_x, eta)
+        hvw_x = get_tmp(cache.hvw_x, eta)
+        tmp = get_tmp(cache.tmp, eta)
 
         @.. b = equations.eta0 - D
         @.. h = eta - b
@@ -436,7 +461,8 @@ function energy_total_modified!(e, q_global,
     # unpack physical parameters and SBP operator `D1`
     g = gravity(equations)
     (; lambda) = equations
-    (; h, b) = cache
+    h = get_tmp(cache.h, q_global)
+    b = get_tmp(cache.b, q_global)
 
     # `q_global` is an `ArrayPartition`. It collects the individual arrays for
     # the total water height `eta = h + b` and the velocity `v`.
