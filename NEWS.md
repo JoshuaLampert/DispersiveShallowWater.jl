@@ -5,6 +5,13 @@ DispersiveShallowWater.jl follows the interpretation of
 used in the Julia ecosystem. Notable changes will be documented in this file
 for human readability.
 
+## Changes in the v0.6 lifecycle
+
+#### Added
+
+- Add initial support for ForwardDiff.jl for `HyperbolicSerreGreenNaghdiEquations1D` and
+  `DispersiveShallowWater.jacobian` ([#185]).
+
 ## Changes when updating to v0.6 from v0.5.x
 
 #### Changed

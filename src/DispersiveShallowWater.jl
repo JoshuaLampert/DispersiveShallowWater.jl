@@ -18,11 +18,13 @@ module DispersiveShallowWater
 using BandedMatrices: BandedMatrix
 using DiffEqBase: DiffEqBase, SciMLBase, terminate!
 using FastBroadcast: @..
+using ForwardDiff: ForwardDiff
 using Interpolations: Interpolations, linear_interpolation
 using LinearAlgebra: mul!, ldiv!, I, Diagonal, Symmetric, diag, lu, cholesky, cholesky!,
                      issuccess
 using PolynomialBases: PolynomialBases
 using Printf: @printf, @sprintf
+using PreallocationTools: DiffCache, get_tmp
 using RecipesBase: RecipesBase, @recipe, @series
 using RecursiveArrayTools: ArrayPartition
 using Reexport: @reexport
@@ -44,7 +46,7 @@ using SummationByPartsOperators: SummationByPartsOperators,
                                  periodic_derivative_operator,
                                  derivative_order, integrate, mass_matrix,
                                  scale_by_mass_matrix!
-import SummationByPartsOperators: grid, xmin, xmax
+import SummationByPartsOperators: grid, xmin, xmax, semidiscretize
 using TimerOutputs: TimerOutputs, print_timer, reset_timer!
 @reexport using TrixiBase: trixi_include
 using TrixiBase: TrixiBase, @trixi_timeit, timer
