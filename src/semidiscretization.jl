@@ -221,3 +221,21 @@ function semidiscretize(semi::Semidiscretization, tspan)
     iip = true # is-inplace, i.e., we modify a vector when calling rhs!
     return ODEProblem{iip}(rhs!, q0, tspan, semi)
 end
+
+"""
+    DispersiveShallowWater.jacobian(semi::Semidiscretization;
+                                    t = 0.0,
+                                    q0 = compute_coefficients(semi.initial_condition, t, semi))
+
+Use the right-hand side operator of the semidiscretization `semi`
+and forward mode automatic differentiation to compute the Jacobian `J`
+of the semidiscretization `semi` at the state `q0`.
+"""
+function jacobian(semi::Semidiscretization;
+                  t = 0.0,
+                  q0 = compute_coefficients(semi.initial_condition, t, semi))
+    J = ForwardDiff.jacobian(similar(q0), q0) do dq, q
+        DispersiveShallowWater.rhs!(dq, q, semi, t)
+    end
+    return J
+end
