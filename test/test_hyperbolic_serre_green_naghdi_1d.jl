@@ -127,9 +127,9 @@ end
         h[i] = sqrt_eps * (rand() - 0.5)
         q[i] += h[i]
     end
-    dqh = similar(q)
-    DispersiveShallowWater.rhs!(dqh, q, semi, 0.0)
-    @test maximum(abs, vec(dq) + J * vec(h) - vec(dqh)) < 1.0e-11
+    dq_plus_h = similar(q)
+    DispersiveShallowWater.rhs!(dq_plus_h, q, semi, 0.0)
+    @test maximum(abs, vec(dq) + J * vec(h) - vec(dq_plus_h)) < 1.0e-11
 end
 
 @testitem "hyperbolic_serre_green_naghdi_well_balanced.jl" setup=[

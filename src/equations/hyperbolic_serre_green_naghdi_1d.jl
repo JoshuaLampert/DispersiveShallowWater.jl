@@ -250,8 +250,8 @@ function create_cache(mesh, equations::HyperbolicSerreGreenNaghdiEquations1D,
                       solver, initial_condition,
                       ::BoundaryConditionPeriodic,
                       RealT, uEltype)
-    # We use DiffCache from PreallocationTools.jl to enable automatic/algorithmic differentiation
-    # via ForwardDiff.jl. We also pass the second argument determining the chuck size since the
+    # We use `DiffCache` from PreallocationTools.jl to enable automatic/algorithmic differentiation
+    # via ForwardDiff.jl. We also pass the second argument determining the chunk size since the
     # typical use case is to compute Jacobians of the full `rhs!` evaluation, where the complete
     # state vector is `q`, which is bigger than the storage for a single scalar variable.
     # 5: eta, v, D, w, H
