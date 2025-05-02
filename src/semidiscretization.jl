@@ -230,6 +230,9 @@ end
 Use the right-hand side operator of the semidiscretization `semi`
 and forward mode automatic differentiation to compute the Jacobian `J`
 of the semidiscretization `semi` at the state `q0`.
+
+!!! warning
+    This functionality may not be implemented for all equations.
 """
 function jacobian(semi::Semidiscretization;
                   t = 0.0,
