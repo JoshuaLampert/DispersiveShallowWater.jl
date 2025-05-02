@@ -20,4 +20,5 @@ end
 
     using SparseArrays: sparse, SparseMatrixCSC
     using OrdinaryDiffEqTsit5: solve
+    using ForwardDiff: ForwardDiff
 end

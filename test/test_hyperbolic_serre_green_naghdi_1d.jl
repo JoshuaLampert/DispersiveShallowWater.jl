@@ -103,6 +103,35 @@ end
     @test_allocations(semi, sol, allocs=1_000)
 end
 
+@testitem "hyperbolic_serre_green_naghdi_soliton.jl Jacobian" setup=[
+    Setup,
+    HyperbolicSerreGreenNaghdiEquations1D,
+    AdditionalImports
+] begin
+    @test_trixi_include(joinpath(EXAMPLES_DIR,
+                                 "hyperbolic_serre_green_naghdi_soliton.jl"),
+                        tspan=(0.0, 0.1),)
+
+    J = @test_nowarn DispersiveShallowWater.jacobian(semi)
+    @test size(J, 1) == 5 * nnodes(semi.mesh)
+    @test size(J, 2) == 5 * nnodes(semi.mesh)
+
+    # Check whether the Jacobian agrees with a finite difference approximation
+    ode = semidiscretize(semi, (0.0, 0.1))
+    q = ode.u0
+    dq = similar(q)
+    DispersiveShallowWater.rhs!(dq, q, semi, 0.0)
+    h = similar(q)
+    sqrt_eps = sqrt(eps())
+    for i in eachindex(h)
+        h[i] = sqrt_eps * (rand() - 0.5)
+        q[i] += h[i]
+    end
+    dqh = similar(q)
+    DispersiveShallowWater.rhs!(dqh, q, semi, 0.0)
+    @test maximum(abs, vec(dq) + J * vec(h) - vec(dqh)) < 1.0e-11
+end
+
 @testitem "hyperbolic_serre_green_naghdi_well_balanced.jl" setup=[
     Setup,
     HyperbolicSerreGreenNaghdiEquations1D
