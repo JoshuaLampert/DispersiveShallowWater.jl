@@ -305,7 +305,7 @@ end
     @test_trixi_include(joinpath(EXAMPLES_DIR, "serre_green_naghdi_manufactured.jl"),
                         bathymetry_type=bathymetry_flat,
                         l2=[9.264487112500761e-7 3.2951669640300735e-7 0.0],
-                        linf=[2.3378983966537703e-6 5.457361316185683e-7 0.0],
+                        linf=[2.3378861335743295e-6 5.457361316185683e-7 0.0],
                         cons_error=[2.6645352591003757e-15 2.9640116527840377e-7 0.0],
                         change_waterheight=-2.6645352591003757e-15,
                         change_entropy_modified=-22.793274391960267,
