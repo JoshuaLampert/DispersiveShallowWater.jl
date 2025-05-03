@@ -9,7 +9,7 @@ using SummationByPartsOperators: upwind_operators, periodic_derivative_operator
 # bathymetry_mild_slope supports source terms but 
 # no manufactured solution is implemented.
 # also be aware that for bathymetry_variable, at t=1.0 eta is constant in x
-equations = SerreGreenNaghdiEquations1D(bathymetry_type = bathymetry_flat,
+equations = SerreGreenNaghdiEquations1D(bathymetry_type = bathymetry_variable,
                                         gravity = 9.81)
 
 initial_condition = initial_condition_manufactured
@@ -19,7 +19,7 @@ boundary_conditions = boundary_condition_periodic
 # create homogeneous mesh
 coordinates_min = 0.0
 coordinates_max = 1.0
-N = 256
+N = 512
 mesh = Mesh1D(coordinates_min, coordinates_max, N)
 
 #= for testing upwind operators use:
@@ -42,7 +42,7 @@ semi = Semidiscretization(mesh, equations, initial_condition, solver,
 ###############################################################################
 # Create `ODEProblem` and run the simulation
 
-tspan = (0.0, 1.0)
+tspan = (0.0, 1.2)
 ode = semidiscretize(semi, tspan)
 summary_callback = SummaryCallback()
 analysis_callback = AnalysisCallback(semi; interval = 10,

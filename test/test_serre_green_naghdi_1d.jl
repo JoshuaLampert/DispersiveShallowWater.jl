@@ -303,12 +303,28 @@ end
     SerreGreenNaghdiEquations1D
 ] begin
     @test_trixi_include(joinpath(EXAMPLES_DIR, "serre_green_naghdi_manufactured.jl"),
-                        l2=[1.1464202670717813e-6 6.278194071026083e-7 0.0],
-                        linf=[2.9306942055384866e-6 8.332131531396669e-7 0.0],
-                        cons_error=[8.881784197001252e-16 5.479218779802508e-7 0.0],
-                        change_waterheight=-8.881784197001252e-16,
-                        change_entropy_modified=-1.9177564922756574e-6,
+                        bathymetry_type=bathymetry_flat,
+                        l2=[5.7898977650715185e-8 2.05994772498728e-8 0.0],
+                        linf=[1.5279141774016125e-7 3.411654847518264e-8 0.0],
+                        cons_error=[8.881784197001252e-16 1.8530221024271043e-8 0.0],
+                        change_waterheight=8.881784197001252e-16,
+                        change_entropy_modified=-22.793374214146525,
                         atol=1e-11) # to make CI pass
 
-    @test_allocations(semi, sol, allocs=300_000)
+    @test_allocations(semi, sol, allocs=600_000)
+end
+
+@testitem "serre_green_naghdi_manufactured.jl with bathymetry_variable" setup=[
+    Setup,
+    SerreGreenNaghdiEquations1D
+] begin
+    @test_trixi_include(joinpath(EXAMPLES_DIR, "serre_green_naghdi_manufactured.jl"),
+                        bathymetry_type=bathymetry_variable,
+                        l2=[1.25611429253813e-5 3.916777820583774e-6 0.0],
+                        linf=[2.938450033607154e-5 7.127068272883008e-6 0.0],
+                        cons_error=[4.440892098500626e-15 3.29174210955685e-6 0.0],
+                        change_waterheight=-4.440892098500626e-15,
+                        change_entropy_modified=130.8017132204693,)
+
+    @test_allocations(semi, sol, allocs=810_000)
 end
