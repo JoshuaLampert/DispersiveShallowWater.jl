@@ -117,8 +117,6 @@ function initial_condition_manufactured(x, t,
         D = zero(h)
     elseif equations.bathymetry_type isa BathymetryVariable
         D = -(1.5 - cospi(2 * x))
-    elseif equations.bathymetry_type isa BathymetryMildSlope
-        D = -(1.5 + 0.1 * x)
     else
         error("$(equations.bathymetry_type) not supported for initial_condition_manufactured")
     end
