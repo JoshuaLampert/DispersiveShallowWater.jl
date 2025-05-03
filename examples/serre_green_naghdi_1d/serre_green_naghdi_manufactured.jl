@@ -19,7 +19,7 @@ boundary_conditions = boundary_condition_periodic
 # create homogeneous mesh
 coordinates_min = 0.0
 coordinates_max = 1.0
-N = 512
+N = 256
 mesh = Mesh1D(coordinates_min, coordinates_max, N)
 
 #= for testing upwind operators use:

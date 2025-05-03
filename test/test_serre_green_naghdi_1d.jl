@@ -304,14 +304,14 @@ end
 ] begin
     @test_trixi_include(joinpath(EXAMPLES_DIR, "serre_green_naghdi_manufactured.jl"),
                         bathymetry_type=bathymetry_flat,
-                        l2=[5.7898977650715185e-8 2.05994772498728e-8 0.0],
-                        linf=[1.5279141774016125e-7 3.411654847518264e-8 0.0],
-                        cons_error=[8.881784197001252e-16 1.8530221024271043e-8 0.0],
-                        change_waterheight=8.881784197001252e-16,
-                        change_entropy_modified=-22.793374214146525,
+                        l2=[9.264487112500761e-7 3.2951669640300735e-7 0.0],
+                        linf=[2.3378983966537703e-6 5.457361316185683e-7 0.0],
+                        cons_error=[2.6645352591003757e-15 2.9640116527840377e-7 0.0],
+                        change_waterheight=-2.6645352591003757e-15,
+                        change_entropy_modified=-22.793274391960267,
                         atol=1e-11) # to make CI pass
 
-    @test_allocations(semi, sol, allocs=600_000)
+    @test_allocations(semi, sol, allocs=300_000)
 end
 
 @testitem "serre_green_naghdi_manufactured.jl with bathymetry_variable" setup=[
@@ -320,11 +320,12 @@ end
 ] begin
     @test_trixi_include(joinpath(EXAMPLES_DIR, "serre_green_naghdi_manufactured.jl"),
                         bathymetry_type=bathymetry_variable,
-                        l2=[1.25611429253813e-5 3.916777820583774e-6 0.0],
-                        linf=[2.938450033607154e-5 7.127068272883008e-6 0.0],
-                        cons_error=[4.440892098500626e-15 3.29174210955685e-6 0.0],
-                        change_waterheight=-4.440892098500626e-15,
-                        change_entropy_modified=130.8017132204693,)
+                        l2=[0.00020091567099272015 6.26512426049926e-5 0.0],
+                        linf=[0.0004699841860116294 0.00011399758749819355 0.0],
+                        cons_error=[1.7763568394002505e-15 5.265416110067367e-5 0.0],
+                        change_waterheight=-1.7763568394002505e-15,
+                        change_entropy_modified=130.79560136094597,
+                        atol=1e-11) # to make CI pass
 
-    @test_allocations(semi, sol, allocs=810_000)
+    @test_allocations(semi, sol, allocs=410_000)
 end
