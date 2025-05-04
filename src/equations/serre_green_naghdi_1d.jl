@@ -99,7 +99,11 @@ function initial_condition_convergence_test(x, t, equations::SerreGreenNaghdiEqu
     h = h1 + (h2 - h1) * sech(x_t / 2 * sqrt(3 * (h2 - h1) / (h1^2 * h2)))^2
     v = c * (1 - h1 / h)
 
-    return SVector(h, v, zero(h))
+    D = zero(h)
+    b = -D
+    eta = h + b
+
+    return SVector(eta, v, D)
 end
 
 """
@@ -115,7 +119,8 @@ function initial_condition_manufactured(x, t,
 
     if equations.bathymetry_type isa BathymetryFlat
         D = zero(h)
-    elseif equations.bathymetry_type isa BathymetryVariable
+    elseif equations.bathymetry_type isa BathymetryVariable ||
+           equations.bathymetry_type isa BathymetryMildSlope
         D = -(1.5 - cospi(2 * x))
     else
         error("$(equations.bathymetry_type) not supported for initial_condition_manufactured")
@@ -194,43 +199,65 @@ function source_terms_manufactured(q, x, t,
 
     dh = 2π * (a6 * a11 + a3 * a8 - 2 * a6)
 
-    dv = π * (2 * g * a2 * a7 + 10 * g * a2
-          + 2 * g * a6 * a7 + 10 * g * a6
-          + a3 * a7 + 5 * a3
-          -
+    dv = π *
+         (2 * g * a2 * a7 + 10 * g * a2 + 2 * g * a6 * a7 + 10 * g * a6 + a3 * a7 + 5 * a3 -
           2 * a3 * a4 * a7 - 10 * a3 * a4) +
-         π^3 * (8 * a1 * a2 * a4^2 * a7 + 40 * a1 * a2 * a4^2
-          -
-          16 * a1 * a2 * a4 * a7 - 80 * a1 * a2 * a4
-          + 8 * a1 * a2 * a7 + 40 * a1 * a2
-          -
-          12 * a1 * a3 * a4 * a7^2 - 120 * a1 * a3 * a4 * a7 - 300 * a1 * a3 * a4
-          + 10 * a1 * a3 * a7^2 + 100 * a1 * a3 * a7 + 250 * a1 * a3
-          + 8 * a1 * a4^2 * a6 * a7 + 40 * a1 * a4^2 * a6
-          -
-          16 * a1 * a4 * a6 * a7 - 80 * a1 * a4 * a6
-          + 8 * a1 * a6 * a7 + 40 * a1 * a6
-          -
-          8 * a2^2 * a3 * a4 * a7 - 40 * a2^2 * a3 * a4
-          + 4 * a2^2 * a3 * a7 + 20 * a2^2 * a3
-          + 8 * a2 * a3^2 * a7^2 + 80 * a2 * a3^2 * a7 + 200 * a2 * a3^2
-          -
-          8 * a2 * a3 * a4 * a6 * a7 - 40 * a2 * a3 * a4 * a6
-          + 4 * a2 * a3 * a6 * a7 + 20 * a2 * a3 * a6
-          -
-          4 * a2 * a4^2 * a7^2 - 40 * a2 * a4^2 * a7 - 100 * a2 * a4^2
-          + 8 * a2 * a4 * a7^2 + 80 * a2 * a4 * a7 + 200 * a2 * a4
-          -
-          4 * a2 * a7^2 - 40 * a2 * a7 - 100 * a2
-          + 8 * a3^2 * a6 * a7^2 + 80 * a3^2 * a6 * a7 + 200 * a3^2 * a6
-          -
-          8 * a3 * a4 * a7^3 / 3 - 40 * a3 * a4 * a7^2 - 200 * a3 * a4 * a7 -
-          1000 * a3 * a4 / 3
-          + 4 * a3 * a7^3 / 3 + 20 * a3 * a7^2 + 100 * a3 * a7 + 500 * a3 / 3
-          + 8 * a4^2 * a6 * a7^2 + 80 * a4^2 * a6 * a7 + 200 * a4^2 * a6
-          -
-          4 * a4 * a6 * a7^2 - 40 * a4 * a6 * a7 - 100 * a4 * a6
-          + 4 * a5 * a7^3 / 3 + 20 * a5 * a7^2 + 100 * a5 * a7 + 500 * a5 / 3)
+         π^3 * (8 * a1 * a2 * a4^2 * a7 + 40 * a1 * a2 * a4^2 - 16 * a1 * a2 * a4 * a7 -
+          80 * a1 * a2 * a4 + 8 * a1 * a2 * a7 + 40 * a1 * a2 - 12 * a1 * a3 * a4 * a7^2 -
+          120 * a1 * a3 * a4 * a7 - 300 * a1 * a3 * a4 + 10 * a1 * a3 * a7^2 +
+          100 * a1 * a3 * a7 + 250 * a1 * a3 + 8 * a1 * a4^2 * a6 * a7 +
+          40 * a1 * a4^2 * a6 - 16 * a1 * a4 * a6 * a7 - 80 * a1 * a4 * a6 +
+          8 * a1 * a6 * a7 + 40 * a1 * a6 - 8 * a2^2 * a3 * a4 * a7 - 40 * a2^2 * a3 * a4 +
+          4 * a2^2 * a3 * a7 + 20 * a2^2 * a3 + 8 * a2 * a3^2 * a7^2 + 80 * a2 * a3^2 * a7 +
+          200 * a2 * a3^2 - 8 * a2 * a3 * a4 * a6 * a7 - 40 * a2 * a3 * a4 * a6 +
+          4 * a2 * a3 * a6 * a7 + 20 * a2 * a3 * a6 - 4 * a2 * a4^2 * a7^2 -
+          40 * a2 * a4^2 * a7 - 100 * a2 * a4^2 + 8 * a2 * a4 * a7^2 + 80 * a2 * a4 * a7 +
+          200 * a2 * a4 - 4 * a2 * a7^2 - 40 * a2 * a7 - 100 * a2 + 8 * a3^2 * a6 * a7^2 +
+          80 * a3^2 * a6 * a7 + 200 * a3^2 * a6 - 8 * a3 * a4 * a7^3 / 3 -
+          40 * a3 * a4 * a7^2 - 200 * a3 * a4 * a7 - 1000 * a3 * a4 / 3 +
+          4 * a3 * a7^3 / 3 + 20 * a3 * a7^2 + 100 * a3 * a7 + 500 * a3 / 3 +
+          8 * a4^2 * a6 * a7^2 + 80 * a4^2 * a6 * a7 + 200 * a4^2 * a6 -
+          4 * a4 * a6 * a7^2 - 40 * a4 * a6 * a7 - 100 * a4 * a6 + 4 * a5 * a7^3 / 3 +
+          20 * a5 * a7^2 + 100 * a5 * a7 + 500 * a5 / 3)
+
+    return SVector(dh, dv, zero(dh))
+end
+
+function source_terms_manufactured(q, x, t,
+                                   equations::SerreGreenNaghdiEquations1D{BathymetryMildSlope})
+    g = gravity(equations)
+    g = 9.81
+    a1 = cospi(2x)
+    a2 = sinpi(2x)
+    a3 = cospi(t - 2x)
+    a4 = sinpi(t - 2x)
+    a5 = sinpi(2t - 4x)
+    a6 = sinpi(4t - 2x)
+    a7 = cospi(4t - 2x)
+    a8 = 5 + a7
+    a11 = 1 - a4
+
+    dh = 2π * (a6 * a11 + a3 * a8 - 2 * a6)
+
+    dv = π * (2 * a2 * a7 * g + 10 * a2 * g - 2 * a3 * a4 * a7 - 10 * a3 * a4 + a3 * a7 +
+          5 * a3 + 2 * a6 * a7 * g + 10 * a6 * g) +
+         π^3 * (6 * a1 * a2 * a4^2 * a7 + 30 * a1 * a2 * a4^2 - 12 * a1 * a2 * a4 * a7 -
+          60 * a1 * a2 * a4 + 6 * a1 * a2 * a7 + 30 * a1 * a2 - 12 * a1 * a3 * a4 * a7^2 -
+          120 * a1 * a3 * a4 * a7 - 300 * a1 * a3 * a4 + 10 * a1 * a3 * a7^2 +
+          100 * a1 * a3 * a7 + 250 * a1 * a3 + 8 * a1 * a4^2 * a6 * a7 +
+          40 * a1 * a4^2 * a6 - 16 * a1 * a4 * a6 * a7 - 80 * a1 * a4 * a6 +
+          8 * a1 * a6 * a7 + 40 * a1 * a6 - 6 * a2^2 * a3 * a4 * a7 - 30 * a2^2 * a3 * a4 +
+          3 * a2^2 * a3 * a7 + 15 * a2^2 * a3 + 8 * a2 * a3^2 * a7^2 + 80 * a2 * a3^2 * a7 +
+          200 * a2 * a3^2 - 8 * a2 * a3 * a4 * a6 * a7 - 40 * a2 * a3 * a4 * a6 +
+          4 * a2 * a3 * a6 * a7 + 20 * a2 * a3 * a6 - 4 * a2 * a4^2 * a7^2 -
+          40 * a2 * a4^2 * a7 - 100 * a2 * a4^2 + 8 * a2 * a4 * a7^2 + 80 * a2 * a4 * a7 +
+          200 * a2 * a4 - 4 * a2 * a7^2 - 40 * a2 * a7 - 100 * a2 + 8 * a3^2 * a6 * a7^2 +
+          80 * a3^2 * a6 * a7 + 200 * a3^2 * a6 - 8 * a3 * a4 * a7^3 / 3 -
+          40 * a3 * a4 * a7^2 - 200 * a3 * a4 * a7 - 1000 * a3 * a4 / 3 +
+          4 * a3 * a7^3 / 3 + 20 * a3 * a7^2 + 100 * a3 * a7 + 500 * a3 / 3 +
+          8 * a4^2 * a6 * a7^2 + 80 * a4^2 * a6 * a7 + 200 * a4^2 * a6 -
+          4 * a4 * a6 * a7^2 - 40 * a4 * a6 * a7 - 100 * a4 * a6 + 4 * a5 * a7^3 / 3 +
+          20 * a5 * a7^2 + 100 * a5 * a7 + 500 * a5 / 3)
 
     return SVector(dh, dv, zero(dh))
 end
