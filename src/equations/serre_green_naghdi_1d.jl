@@ -123,7 +123,7 @@ function initial_condition_manufactured(x, t,
            equations.bathymetry_type isa BathymetryMildSlope
         D = -(1.5 - cospi(2 * x))
     else
-        error("$(equations.bathymetry_type) not supported for initial_condition_manufactured")
+        error("$(equations.bathymetry_type) not supported for initial_condition_manufactured for the Serre Green Naghdi Equation.")
     end
 
     b = -D

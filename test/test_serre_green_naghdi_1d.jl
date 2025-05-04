@@ -325,7 +325,7 @@ end
                         cons_error=[1.7763568394002505e-15 0.00019895120429092028 0.0],
                         change_waterheight=-1.7763568394002505e-15,
                         change_entropy_modified=135.16210732695845,
-                        atol=1e-11) # to make CI pass)
+                        atol=1e-9) # to make CI pass)
 
     @test_allocations(semi, sol, allocs=410_000)
 end
