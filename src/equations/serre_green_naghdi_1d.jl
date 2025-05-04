@@ -223,7 +223,7 @@ end
 function source_terms_manufactured(q, x, t,
                                    equations::SerreGreenNaghdiEquations1D{BathymetryMildSlope})
     g = gravity(equations)
-    g = 9.81
+
     a1 = cospi(2x)
     a2 = sinpi(2x)
     a3 = cospi(t - 2x)
