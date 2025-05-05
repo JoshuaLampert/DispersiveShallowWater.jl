@@ -5,8 +5,9 @@ using SummationByPartsOperators: upwind_operators, periodic_derivative_operator
 ###############################################################################
 # Semidiscretization of the Serre-Green-Naghdi equations
 
-# for now only bathymetry_flat is implemented (bathymetry_variable soon)
-equations = SerreGreenNaghdiEquations1D(bathymetry_type = bathymetry_flat,
+# bathymetry_flat, bathymetry_mild_slope or bathymetry_variable
+# be aware that for variable and mild_slope, at t=1.0 eta is constant in x
+equations = SerreGreenNaghdiEquations1D(bathymetry_type = bathymetry_variable,
                                         gravity = 9.81)
 
 initial_condition = initial_condition_manufactured
@@ -39,7 +40,7 @@ semi = Semidiscretization(mesh, equations, initial_condition, solver,
 ###############################################################################
 # Create `ODEProblem` and run the simulation
 
-tspan = (0.0, 1.0)
+tspan = (0.0, 1.2)
 ode = semidiscretize(semi, tspan)
 summary_callback = SummaryCallback()
 analysis_callback = AnalysisCallback(semi; interval = 10,
