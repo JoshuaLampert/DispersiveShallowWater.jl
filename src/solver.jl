@@ -41,6 +41,9 @@ Create a solver, where the summation-by-parts (SBP) operators are of order `accu
 associated to the `mesh`.
 """
 function Solver(mesh, accuracy_order)
+    if isodd(accuracy_order)
+        @warn "DispersiveShallowWater.jl is expecting a central difference operator. This is not given for an odd accuracy (got $accuracy_order) order.\n This can lead to a significant reduction in the order of convergence of the solution."
+    end
     D1 = periodic_derivative_operator(1, accuracy_order, mesh.xmin, mesh.xmax, mesh.N)
     D2 = periodic_derivative_operator(2, accuracy_order, mesh.xmin, mesh.xmax, mesh.N)
     @assert real(D1) == real(D2)

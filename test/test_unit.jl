@@ -12,7 +12,10 @@ end
 @testitem "Solver" setup=[Setup, AdditionalImports] begin
     mesh = Mesh1D(-1.0, 1.0, 10)
     p = 3
-    solver = @test_nowarn Solver(mesh, p)
+    @test_logs (:warn,
+                "DispersiveShallowWater.jl is expecting a central difference operator. This is not given for an odd accuracy (got $p) order.\n This can lead to a significant reduction in the order of convergence of the solution.") Solver(mesh,
+                                                                                                                                                                                                                                              p)
+    solver = @test_nowarn Solver(mesh, p + 1)
     @test_nowarn print(solver)
     @test_nowarn display(solver)
     @test solver.D1 isa PeriodicDerivativeOperator
