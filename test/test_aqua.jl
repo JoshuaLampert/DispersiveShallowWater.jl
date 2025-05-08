@@ -15,7 +15,7 @@
     # With the default settings as of 2025-05-08, JET.jl
     # reports issues originating from RecipesBase.jl.
     # The only way to ignore them seems to be something like the
-    # following hack inspired by the disucssion in
+    # following hack inspired by the discussion in
     # https://github.com/aviatesk/JET.jl/issues/570
     struct IgnoreReciesBase end
     function JET.match_module(::IgnoreReciesBase,
