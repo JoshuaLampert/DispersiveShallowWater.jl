@@ -12,7 +12,7 @@ Copied from [Trixi.jl](https://github.com/trixi-framework/Trixi.jl).
 readdir(examples_dir())
 ```
 """
-examples_dir() = pkgdir(DispersiveShallowWater, "examples")
+examples_dir() = pkgdir(DispersiveShallowWater, "examples")::String
 
 """
     get_examples()
