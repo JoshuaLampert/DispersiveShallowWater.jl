@@ -17,8 +17,8 @@
     # The only way to ignore them seems to be something like the
     # following hack inspired by the discussion in
     # https://github.com/aviatesk/JET.jl/issues/570
-    struct IgnoreReciesBase end
-    function JET.match_module(::IgnoreReciesBase,
+    struct IgnoreRecipesBase end
+    function JET.match_module(::IgnoreRecipesBase,
                               @nospecialize(report::JET.InferenceErrorReport))
         s = "MethodInstance for RecipesBase.apply_recipe"
         any(report.vst) do vst
@@ -27,5 +27,5 @@
     end
     test_package(DispersiveShallowWater;
                  target_defined_modules = true,
-                 ignored_modules = (IgnoreReciesBase(),))
+                 ignored_modules = (IgnoreRecipesBase(),))
 end
