@@ -28,5 +28,4 @@
     test_package(DispersiveShallowWater;
                  target_defined_modules = true,
                  ignored_modules = (IgnoreReciesBase(),))
-
 end
