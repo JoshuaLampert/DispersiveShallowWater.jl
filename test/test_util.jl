@@ -177,9 +177,11 @@ macro test_allocations(semi, sol, allocs)
 end
 
 macro test_nowarn_mod(expr, additional_ignore_content = [])
-    add_to_additional_ignore_content = [
-        r"┌ Warning: The still-water surface needs to be 0 for the BBM-BBM equations\n└ @ DispersiveShallowWater .*\n"
-    ]
-    append!($additional_ignore_content, add_to_additional_ignore_content)
-    @trixi_test_nowarn $(esc(expr)) $additional_ignore_content
+    quote
+        add_to_additional_ignore_content = [
+            r"┌ Warning: The still-water surface needs to be 0 for the BBM-BBM equations\n└ @ DispersiveShallowWater .*\n"
+        ]
+        append!($additional_ignore_content, add_to_additional_ignore_content)
+        @trixi_test_nowarn $(esc(expr)) $additional_ignore_content
+    end
 end
