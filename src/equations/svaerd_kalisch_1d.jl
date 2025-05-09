@@ -56,6 +56,11 @@ struct SvaerdKalischEquations1D{Bathymetry <: AbstractBathymetry, RealT <: Real}
     gamma::RealT   # coefficient
 end
 
+"""
+    SvärdKalischEquations1D
+
+Same as [`SvaerdKalischEquations1D`](@ref).
+"""
 const SvärdKalischEquations1D = SvaerdKalischEquations1D
 
 function SvaerdKalischEquations1D(; bathymetry_type = bathymetry_variable,
