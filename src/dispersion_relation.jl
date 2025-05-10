@@ -92,7 +92,7 @@ end
 # - Magnus Svärd, Henrik Kalisch (2023)
 #   A novel energy-bounded Boussinesq model and a well-balanced and stable numerical discretization
 #   [arXiv: 2302.09924](https://arxiv.org/abs/2302.09924)
-function (disp_rel::LinearDispersionRelation)(equations::SvärdKalischEquations1D, k)
+function (disp_rel::LinearDispersionRelation)(equations::SvaerdKalischEquations1D, k)
     h0 = disp_rel.ref_height
     g = gravity(equations)
     c0 = sqrt(g * h0)

@@ -430,7 +430,10 @@ end
     for (i, equations) in enumerate((EulerEquations1D(gravity = g),
                                      BBMEquation1D(gravity = g),
                                      BBMBBMEquations1D(gravity = g),
-                                     SvärdKalischEquations1D(gravity = g),
+                                     SvaerdKalischEquations1D(gravity = g,
+                                                              alpha = 0.0,
+                                                              beta = 0.2308939393939394,
+                                                              gamma = 0.04034343434343434),
                                      SerreGreenNaghdiEquations1D(gravity = g)))
         @test isapprox(disp_rel(equations, k), frequencies[i])
         @test isapprox(wave_speed(disp_rel, equations, k), wave_speeds[i])
