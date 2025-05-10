@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Dispersion · DispersiveShallowWater.jl</title><meta name="title" content="Dispersion · DispersiveShallowWater.jl"/><meta property="og:title" content="Dispersion · DispersiveShallowWater.jl"/><meta property="twitter:title" content="Dispersion · DispersiveShallowWater.jl"/><meta name="description" content="Documentation for DispersiveShallowWater.jl."/><meta property="og:description" content="Documentation for DispersiveShallowWater.jl."/><meta property="twitter:description" content="Documentation for DispersiveShallowWater.jl."/><meta property="og:url" content="https://NumericalMathematics.github.io/DispersiveShallowWater.jl/stable/dispersion/"/><meta property="twitter:url" content="https://NumericalMathematics.github.io/DispersiveShallowWater.jl/stable/dispersion/"/><link rel="canonical" href="https://NumericalMathematics.github.io/DispersiveShallowWater.jl/stable/dispersion/"/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../">DispersiveShallowWater.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li><a class="tocitem" href="../overview/">Overview</a></li><li class="is-active"><a class="tocitem" href>Dispersion</a></li><li><a class="tocitem" href="../development/">Development</a></li><li><span class="tocitem">Reference</span><ul><li><a class="tocitem" href="../ref-trixibase/">TrixiBase</a></li><li><a class="tocitem" href="../ref/">DispersiveShallowWater</a></li></ul></li><li><a class="tocitem" href="../changelog/">Changelog</a></li><li><a class="tocitem" href="../contributing/">Contributing</a></li><li><a class="tocitem" href="../code_of_conduct/">Code of Conduct</a></li><li><a class="tocitem" href="../license/">License</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Dispersion</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Dispersion</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/NumericalMathematics/DispersiveShallowWater.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/NumericalMathematics/DispersiveShallowWater.jl/blob/main/docs/src/dispersion.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Dispersive-properties-of-the-equations"><a class="docs-heading-anchor" href="#Dispersive-properties-of-the-equations">Dispersive properties of the equations</a><a id="Dispersive-properties-of-the-equations-1"></a><a class="docs-heading-anchor-permalink" href="#Dispersive-properties-of-the-equations" title="Permalink"></a></h1><p>The equations implemented in <a href="https://github.com/NumericalMathematics/DispersiveShallowWater.jl">DispersiveShallowWater.jl</a> describe the propagation of waves in a shallow water system. The equations are dispersive, meaning that the phase speed of the waves depends on their wavelength. This is in contrast to non-dispersive waves, where all waves travel at the same speed, such as the solution to the shallow water equations linearized around a state with vanishing velocity and constant water height <span>$h_0$</span>. In this case the phase speed is constantly given by <span>$c_0 = \sqrt{g h_0}$</span>, where <span>$g$</span> is the acceleration due to gravity and <span>$h_0$</span> is a reference water height.</p><p>The linear dispersion relation of a wave equation describes the relationship between the angular frequency <span>$\omega$</span> and the wavenumber <span>$k$</span> of a wave. The angular frequency is related to the period <span>$T$</span> of the wave by <span>$\omega = 2\pi / T$</span> and the wavenumber is related to the wavelength <span>$\lambda$</span> by <span>$k = 2\pi / \lambda$</span>. The simple case of just one wave traveling with speed <span>$c$</span> is a harmonic (or plane wave) solution of the form <span>$\eta(t, x) = \mathrm{e}^{\mathrm{i}(k x - \omega t)}$</span> with <span>$c = \omega / k$</span>. The linear dispersion relation of a wave equation is then derived by substituting this solution into a linearized version of the equation and solving for <span>$\omega$</span> in terms of <span>$k$</span>.</p><p>Since all the equations implemented in <a href="https://github.com/NumericalMathematics/DispersiveShallowWater.jl">DispersiveShallowWater.jl</a> are approximations to the full wave equations given by the Euler equations, their dispersion relations do not describe the exact speed of waves, but only an approximation to it, where the approximation usually becomes better for longer wavelengths. The dispersion relation of the full wave system is given by</p><p class="math-container">\[\omega(k) = \pm \sqrt{g k \tanh(h_0 k)}.\]</p><p>In <a href="https://github.com/NumericalMathematics/DispersiveShallowWater.jl">DispersiveShallowWater.jl</a>, we can investigate the dispersion relations of the different equations. Let us plot the wave speeds of the different equations normalized by the shallow water wave speed <span>$c_0$</span> as a function of the wave number. We pick a reference water height of <span>$h_0 = 0.8$</span> and gravitational acceleration of <span>$g = 9.81$</span>.</p><pre><code class="language-julia hljs">using DispersiveShallowWater
+using Plots
+
+eta0 = 0.0
+reference_height() = 0.8
+h0 = reference_height()
+g = 9.81
+disp_rel = LinearDispersionRelation(h0)
+k = 0.01:0.01:5.0
+
+euler = EulerEquations1D(; gravity = g, eta0 = eta0)
+c_euler = wave_speed.(disp_rel, euler, k; normalize = true)
+plot(k, c_euler, label = &quot;Euler&quot;, xlabel = &quot;k&quot;, ylabel = &quot;c / c_0&quot;, legend = :topright)
+
+bbm = BBMEquation1D(; gravity = g, eta0 = eta0, D = h0)
+c_bbm = wave_speed.(disp_rel, bbm, k; normalize = true)
+plot!(k, c_bbm, label = &quot;BBM&quot;)
+
+sk = SvaerdKalischEquations1D(; gravity = g, eta0 = eta0)
+c_sk = wave_speed.(disp_rel, sk, k; normalize = true)
+plot!(k, c_sk, label = &quot;Svärd-Kalisch&quot;)
+
+sgn = SerreGreenNaghdiEquations1D(; gravity = g, eta0 = eta0)
+c_sgn = wave_speed.(disp_rel, sgn, k; normalize = true)
+plot!(k, c_sgn, label = &quot;Serre-Green-Naghdi&quot;)</code></pre><p><img src="../dispersion_relations.png" alt="dispersion relations"/></p><p>To verify that the wave speed predicted by the dispersion relation is indeed the observed one, let us simulate a simple wave traveling in a domain with periodic boundary conditions. We initialize the wave as a traveling wave for the Euler equations by using the dispersion relation. As an example we solve the problem with the Svärd-Kalisch equations.</p><pre><code class="language-julia hljs">using OrdinaryDiffEqTsit5
+using Printf
+
+equations = sk
+wave_number() = 3.0
+frequency(k) = disp_rel(euler, k)
+
+function initial_condition_traveling_wave(x, t, equations, mesh)
+    k = wave_number()
+    omega = frequency(k)
+    h0 = reference_height()
+    A = 0.02
+    h = A * cos(k * x - omega * t)
+    v = sqrt(equations.gravity / k * tanh(k * h0)) * h / h0
+    eta = h + equations.eta0
+    D = h0
+    return SVector(eta, v, D)
+end
+
+k = wave_number()
+coordinates_min = 0
+coordinates_max = 10 * pi / k # five waves (wave length = 2pi/k)
+N = 512
+mesh = Mesh1D(coordinates_min, coordinates_max, N)
+
+# create solver with periodic SBP operators of accuracy order 4
+accuracy_order = 4
+solver = Solver(mesh, accuracy_order)
+
+# semidiscretization holds all the necessary data structures for the spatial discretization
+semi = Semidiscretization(mesh, equations, initial_condition_traveling_wave, solver,
+                          boundary_conditions = boundary_condition_periodic)
+
+tspan = (0.0, 3.0)
+ode = semidiscretize(semi, tspan)
+
+saveat = range(tspan..., length = 201)
+sol = solve(ode, Tsit5(), abstol = 1e-7, reltol = 1e-7,
+            save_everystep = false, saveat = saveat, tstops = saveat)
+
+x = 0.2 * (coordinates_max - coordinates_min)
+c_euler = wave_speed(disp_rel, euler, k)
+c = wave_speed(disp_rel, equations, k)
+anim = @animate for step in eachindex(sol.u)
+    t = sol.t[step]
+    x_t_euler = x + c_euler * t
+    x_t = x + c * t
+    index = argmin(abs.(DispersiveShallowWater.grid(semi) .- x_t))
+    scatter([x_t_euler], [initial_condition_traveling_wave(x_t_euler, t, euler, mesh)],
+            color = :blue, label = nothing)
+    eta, = sol.u[step].x
+    scatter!([x_t], [eta[index]],
+             color = :green, label = nothing)
+    plot!(semi =&gt; sol, plot_initial = true, plot_bathymetry = false,
+          conversion = waterheight_total, step = step, legend = :topleft, linewidth = 2,
+          plot_title = @sprintf(&quot;t = %.3f&quot;, t), yrange = (eta0 - 0.03, eta0 + 0.03),
+          linestyles = [:solid :dot], labels = [&quot;Euler&quot; &quot;Svärd-Kälisch&quot;],
+          color = [:blue :green])
+end
+gif(anim, &quot;traveling_waves.gif&quot;, fps = 25)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr36"><span class="sgr1">[ Info: </span></span>Saved animation to /home/runner/work/DispersiveShallowWater.jl/DispersiveShallowWater.jl/docs/build/traveling_waves.gif</code></pre><p><img src="../traveling_waves.gif" alt="traveling waves"/></p><p>The dots in the movie show that the wave speed predicted by the dispersion relation is indeed the same as the one obtained by numerically solving the equations. As expected from the plot above the wave speed of the Svärd-Kalisch equations is a bit faster than the correct one, which is due to the approximation made in the equations.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../overview/">« Overview</a><a class="docs-footer-nextpage" href="../development/">Development »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.10.2 on <span class="colophon-date" title="Saturday 26 April 2025 10:05">Saturday 26 April 2025</span>. Using Julia version 1.10.9.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
