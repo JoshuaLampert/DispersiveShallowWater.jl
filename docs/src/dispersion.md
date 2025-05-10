@@ -50,7 +50,8 @@ bbm = BBMEquation1D(; gravity = g, eta0 = eta0, D = h0)
 c_bbm = wave_speed.(disp_rel, bbm, k; normalize = true)
 plot!(k, c_bbm, label = "BBM")
 
-sk = SvaerdKalischEquations1D(; gravity = g, eta0 = eta0)
+sk = SvaerdKalischEquations1D(; gravity = g, eta0 = eta0,
+                              alpha = 0.0, beta = 0.2308939393939394, gamma = 0.04034343434343434)
 c_sk = wave_speed.(disp_rel, sk, k; normalize = true)
 plot!(k, c_sk, label = "Svärd-Kalisch")
 

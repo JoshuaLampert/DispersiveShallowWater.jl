@@ -1,7 +1,6 @@
 @doc raw"""
-    SvaerdKalischEquations1D(; bathymetry_type = bathymetry_variable,
-                             gravity, eta0 = 0.0, alpha = 0.0,
-                             beta = 0.2308939393939394, gamma = 0.04034343434343434)
+    SvaerdKalischEquations1D(; bathymetry_type = bathymetry_variable, gravity,
+                             eta0 = 0.0, alpha = 0.0, beta = 1/3, gamma = 0.0)
 
 Dispersive system by Svärd and Kalisch (2023) in one spatial dimension. The equations for variable bathymetry
 are given in conservative variables by
@@ -30,7 +29,7 @@ Currently, the equations only support a general variable bathymetry, see [`bathy
 
 `SvärdKalischEquations1D` is an alias for `SvaerdKalischEquations1D`.
 
-The equations by Svärd and Kalisch are presented and analyzed in Svärd and Kalisch (2023).
+The equations by Svärd and Kalisch are presented and analyzed in Svärd and Kalisch (2025).
 The semidiscretization implemented here conserves
 - the total water mass (integral of ``h``) as a linear invariant
 - the total momentum (integral of ``h v``) as a nonlinear invariant for flat bathymetry
@@ -39,9 +38,10 @@ The semidiscretization implemented here conserves
 for periodic boundary conditions (see Lampert, Ranocha).
 Additionally, it is well-balanced for the lake-at-rest stationary solution, see Lampert and Ranocha (2024).
 
-- Magnus Svärd, Henrik Kalisch (2023)
+- Magnus Svärd, Henrik Kalisch (2025)
   A novel energy-bounded Boussinesq model and a well-balanced and stable numerical discretization
-  [arXiv: 2302.09924](https://arxiv.org/abs/2302.09924)
+  [arXiv: 2302.09924](https://arxiv.org/abs/2302.09924),
+  [DOI: 10.1016/j.jcp.2024.113516](https://doi.org/10.1016/j.jcp.2024.113516)
 - Joshua Lampert, Hendrik Ranocha (2024)
   Structure-Preserving Numerical Methods for Two Nonlinear Systems of Dispersive Wave Equations
   [DOI: 10.48550/arXiv.2402.16669](https://doi.org/10.48550/arXiv.2402.16669)
@@ -63,9 +63,8 @@ Same as [`SvaerdKalischEquations1D`](@ref).
 """
 const SvärdKalischEquations1D = SvaerdKalischEquations1D
 
-function SvaerdKalischEquations1D(; bathymetry_type = bathymetry_variable,
-                                  gravity, eta0 = 0.0, alpha = 0.0,
-                                  beta = 0.2308939393939394, gamma = 0.04034343434343434)
+function SvaerdKalischEquations1D(; bathymetry_type = bathymetry_variable, gravity,
+                                  eta0 = 0.0, alpha = 0.0, beta = 1 / 3, gamma = 0.0)
     SvaerdKalischEquations1D(bathymetry_type, gravity, eta0, alpha, beta, gamma)
 end
 
