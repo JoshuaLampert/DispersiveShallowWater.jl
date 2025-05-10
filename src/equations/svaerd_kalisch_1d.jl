@@ -1,7 +1,6 @@
 @doc raw"""
-    SvaerdKalischEquations1D(; bathymetry_type = bathymetry_variable,
-                             gravity, eta0 = 0.0, alpha = 0.0,
-                             beta = 0.2308939393939394, gamma = 0.04034343434343434)
+    SvaerdKalischEquations1D(; bathymetry_type = bathymetry_variable, gravity,
+                             eta0 = 0.0, alpha = 0.0, beta = 1/3, gamma = 0.0)
 
 Dispersive system by Svärd and Kalisch (2023) in one spatial dimension. The equations for variable bathymetry
 are given in conservative variables by
@@ -63,9 +62,8 @@ Same as [`SvaerdKalischEquations1D`](@ref).
 """
 const SvärdKalischEquations1D = SvaerdKalischEquations1D
 
-function SvaerdKalischEquations1D(; bathymetry_type = bathymetry_variable,
-                                  gravity, eta0 = 0.0, alpha = 0.0,
-                                  beta = 0.2308939393939394, gamma = 0.04034343434343434)
+function SvaerdKalischEquations1D(; bathymetry_type = bathymetry_variable, gravity,
+                                  eta0 = 0.0, alpha = 0.0, beta = 1 / 3, gamma = 0.0)
     SvaerdKalischEquations1D(bathymetry_type, gravity, eta0, alpha, beta, gamma)
 end
 
